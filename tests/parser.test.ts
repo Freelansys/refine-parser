@@ -7,7 +7,7 @@ const parser = new SpecParser();
 function parseInput(text: string) {
   const lexingResult = SpecLexer.tokenize(text);
   parser.input = lexingResult.tokens;
-  const cst = parser.specFile();
+  const cst = parser.specFile() as any;
   return { parser, cst };
 }
 
@@ -70,7 +70,10 @@ describe("SpecParser", () => {
       expect(parser.errors).toHaveLength(0);
       expect(cst.name).toBe("specFile");
       expect(cst.children.declaration).toBeDefined();
-      expect(cst.children.declaration[0]?.name).toBe("declaration");
+      const declElement = cst.children.declaration[0];
+      expect(declElement && "name" in declElement && declElement.name).toBe(
+        "declaration",
+      );
     });
 
     it("should parse single-line object declaration", () => {
