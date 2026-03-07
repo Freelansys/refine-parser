@@ -1,4 +1,4 @@
-import { CstParser } from "chevrotain"
+import { CstParser } from "chevrotain";
 import {
   allTokens,
   ObjectTok,
@@ -14,134 +14,143 @@ import {
   Arrow,
   Identifier,
   SingleString,
-} from "./lexer.js"
+} from "./lexer.js";
 
-export class SelectParser extends CstParser {
+export class SpecParser extends CstParser {
   constructor() {
     super(allTokens);
 
-    const $ = this;
+    const $ = this as any;
 
     $.RULE("specFile", () => {
       $.MANY(() => {
-        $.SUBRULE($.declaration)
-      })
-    })
+        $.SUBRULE($.declaration);
+      });
+    });
 
     $.RULE("declaration", () => {
       $.OR([
         { ALT: () => $.SUBRULE($.objectDecl) },
         { ALT: () => $.SUBRULE($.morphismDecl) },
-        { ALT: () => $.SUBRULE($.subobjectDecl) }
-      ])
-    })
+        { ALT: () => $.SUBRULE($.subobjectDecl) },
+      ]);
+    });
 
     $.RULE("objectDecl", () => {
-      $.CONSUME(ObjectTok)
-      $.CONSUME(Identifier)
+      $.CONSUME(ObjectTok);
+      $.CONSUME(Identifier);
 
-      $.CONSUME(LCurly)
+      $.OPTION(() => {
+        $.CONSUME(LCurly);
 
-      $.MANY(() => {
-        $.SUBRULE($.fieldDecl)
-      })
+        $.MANY(() => {
+          $.SUBRULE($.fieldDecl);
+        });
 
-      $.CONSUME(RCurly)
-    })
+        $.CONSUME(RCurly);
+      });
+    });
 
     $.RULE("fieldDecl", () => {
-      $.CONSUME(Identifier)
-      $.CONSUME(Colon)
-      $.SUBRULE($.typeExpr)
-    })
+      $.CONSUME(Identifier);
+      $.CONSUME(Colon);
+      $.SUBRULE($.typeExpr);
+
+      $.MANY(() => {
+        $.CONSUME(Comma);
+        $.SUBRULE($.fieldDecl);
+      });
+    });
 
     $.RULE("paramList", () => {
-      $.SUBRULE($.param)
+      $.SUBRULE($.param);
 
       $.MANY(() => {
-        $.CONSUME(Comma)
-        $.SUBRULE2($.param)
-      })
-    })
+        $.CONSUME(Comma);
+        $.SUBRULE2($.param);
+      });
+    });
 
     $.RULE("param", () => {
-      $.CONSUME(Identifier)
-      $.CONSUME(Colon)
-      $.SUBRULE($.typeExpr)
-    })
+      $.CONSUME(Identifier);
+      $.CONSUME(Colon);
+      $.SUBRULE($.typeExpr);
+    });
 
     $.RULE("morphismDecl", () => {
-      $.CONSUME(MorphismTok)
+      $.CONSUME(MorphismTok);
 
-      $.CONSUME(Identifier)
+      $.CONSUME(Identifier);
 
-      $.CONSUME(LParen)
+      $.CONSUME(LParen);
 
       $.OPTION(() => {
-        $.SUBRULE($.paramList)
-      })
+        $.SUBRULE($.paramList);
+      });
 
-      $.CONSUME(RParen)
+      $.CONSUME(RParen);
 
-      $.CONSUME(Arrow)
+      $.CONSUME(Arrow);
 
-      $.SUBRULE($.typeExpr)
+      $.SUBRULE($.typeExpr);
 
-      $.SUBRULE($.block)
-    })
+      $.SUBRULE($.block);
+    });
 
     $.RULE("block", () => {
-      $.CONSUME(LCurly)
+      $.CONSUME(LCurly);
 
       $.MANY(() => {
-        $.SUBRULE($.statement)
-      })
+        $.SUBRULE($.statement);
+      });
 
-      $.CONSUME(RCurly)
-    })
+      $.CONSUME(RCurly);
+    });
 
     $.RULE("statement", () => {
-      $.CONSUME(SingleString)
-    })
+      $.CONSUME(SingleString);
+    });
 
     $.RULE("subobjectDecl", () => {
-      $.CONSUME(SubobjectTok)
+      $.CONSUME(SubobjectTok);
 
-      $.CONSUME(Identifier)
+      $.CONSUME(Identifier);
 
-      $.CONSUME(OfTok)
+      $.CONSUME(OfTok);
 
-      $.CONSUME2(Identifier)
-
-      $.SUBRULE($.predicateBlock)
-    })
-
-    $.RULE("predicateBlock", () => {
-      $.CONSUME(LCurly)
-
-      $.MANY(() => {
-        $.SUBRULE($.predicateStatement)
-      })
-
-      $.CONSUME(RCurly)
-    })
-
-    $.RULE("predicateStatement", () => {
-      $.CONSUME(StringLiteral)
-    })
-
-    $.RULE("typeExpr", () => {
-      $.SUBRULE($.atomicType)
+      $.CONSUME2(Identifier);
 
       $.OPTION(() => {
-        $.CONSUME(Arrow)
-        $.SUBRULE2($.typeExpr)
-      })
-    })
+        $.SUBRULE($.predicateBlock);
+      });
+    });
+
+    $.RULE("predicateBlock", () => {
+      $.CONSUME(LCurly);
+
+      $.MANY(() => {
+        $.SUBRULE($.predicateStatement);
+      });
+
+      $.CONSUME(RCurly);
+    });
+
+    $.RULE("predicateStatement", () => {
+      $.CONSUME(SingleString);
+    });
+
+    $.RULE("typeExpr", () => {
+      $.SUBRULE($.atomicType);
+
+      $.OPTION(() => {
+        $.CONSUME(Arrow);
+        $.SUBRULE2($.typeExpr);
+      });
+    });
 
     $.RULE("atomicType", () => {
-      $.CONSUME(Identifier)
-    })
+      $.CONSUME(Identifier);
+    });
 
     this.performSelfAnalysis();
   }
