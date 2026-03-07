@@ -11,6 +11,38 @@ function parseInput(text: string) {
   return { parser, cst };
 }
 
+function extractType(typeExprNode: any): string {
+  if (!typeExprNode || !typeExprNode.children) {
+    return typeExprNode?.image || "";
+  }
+
+  const children = typeExprNode.children;
+
+  if (children.LParen) {
+    let result = "(";
+    if (children.paramTypeList) {
+      const paramTypes =
+        children.paramTypeList[0]?.children?.atomicType
+          ?.map((a: any) => a?.children?.Identifier?.[0]?.image)
+          .filter(Boolean) || [];
+      result += paramTypes.join(", ");
+    }
+    result += ") -> ";
+    result += extractType(children.typeExpr?.[0]);
+    return result;
+  }
+
+  const atomicType = children.atomicType?.[0]?.children?.Identifier?.[0]?.image;
+  if (!atomicType) return "";
+
+  if (children.Arrow && children.typeExpr) {
+    const returnType = extractType(children.typeExpr[0]);
+    return `${atomicType} -> ${returnType}`;
+  }
+
+  return atomicType;
+}
+
 function extractFields(fieldDeclNode: any): any[] {
   const fields: any[] = [];
   if (!fieldDeclNode) return fields;
@@ -18,8 +50,7 @@ function extractFields(fieldDeclNode: any): any[] {
   const firstField = {
     name: fieldDeclNode.name,
     identifier: fieldDeclNode.children.Identifier?.[0]?.image,
-    type: fieldDeclNode.children.typeExpr?.[0]?.children?.atomicType?.[0]
-      ?.children?.Identifier?.[0]?.image,
+    type: extractType(fieldDeclNode.children.typeExpr?.[0]),
   };
   fields.push(firstField);
 
@@ -92,7 +123,20 @@ describe("SpecParser", () => {
         g: (string, number) -> bool 
       }
       `;
-      throw("not implemented")
+      const { parser, cst } = parseInput(testCase);
+      expect(parser.errors).toHaveLength(0);
+
+      const decl = cst.children.declaration[0];
+      const objDecl = decl.children.objectDecl[0];
+      expect(objDecl.children.Identifier[0].image).toBe("test");
+
+      const fieldDecls = extractFields(objDecl.children.fieldDecl[0]);
+      expect(fieldDecls).toHaveLength(2);
+      expect(fieldDecls[0].identifier).toBe("f");
+      expect(fieldDecls[0].type).toBe("string -> number");
+      expect(fieldDecls[1].identifier).toBe("g");
+      expect(fieldDecls[1].type).toBe("(string, number) -> bool");
+    });
   });
 
   describe("morphism declaration", () => {
@@ -180,7 +224,21 @@ describe("SpecParser", () => {
         "return the result of evaluating f on s"
       }
       `;
-      throw("not implemented")
+      const { parser, cst } = parseInput(testCase);
+      expect(parser.errors).toHaveLength(0);
+
+      const decl = cst.children.declaration[0];
+      const morphismDecl = decl.children.morphismDecl[0];
+      expect(morphismDecl.children.Identifier[0].image).toBe("evaluate");
+
+      const paramList = morphismDecl.children.paramList[0];
+      expect(paramList.children.param).toHaveLength(2);
+      expect(paramList.children.param[0].children.Identifier[0].image).toBe(
+        "f",
+      );
+      expect(paramList.children.param[1].children.Identifier[0].image).toBe(
+        "s",
+      );
     });
 
     it("should parse higher-order morphism declaration with multiple parameter", () => {
@@ -189,7 +247,24 @@ describe("SpecParser", () => {
         "return the result of evaluating f on s and n"
       }
       `;
-      throw("not implemented")
+      const { parser, cst } = parseInput(testCase);
+      expect(parser.errors).toHaveLength(0);
+
+      const decl = cst.children.declaration[0];
+      const morphismDecl = decl.children.morphismDecl[0];
+      expect(morphismDecl.children.Identifier[0].image).toBe("evaluate");
+
+      const paramList = morphismDecl.children.paramList[0];
+      expect(paramList.children.param).toHaveLength(3);
+      expect(paramList.children.param[0].children.Identifier[0].image).toBe(
+        "f",
+      );
+      expect(paramList.children.param[1].children.Identifier[0].image).toBe(
+        "s",
+      );
+      expect(paramList.children.param[2].children.Identifier[0].image).toBe(
+        "n",
+      );
     });
   });
 

@@ -140,11 +140,35 @@ export class SpecParser extends CstParser {
     });
 
     $.RULE("typeExpr", () => {
-      $.SUBRULE($.atomicType);
+      $.OR([
+        {
+          ALT: () => {
+            $.CONSUME(LParen);
+            $.OPTION(() => {
+              $.SUBRULE($.paramTypeList);
+            });
+            $.CONSUME(RParen);
+            $.CONSUME(Arrow);
+            $.SUBRULE($.typeExpr);
+          },
+        },
+        {
+          ALT: () => {
+            $.SUBRULE($.atomicType);
+            $.OPTION2(() => {
+              $.CONSUME2(Arrow);
+              $.SUBRULE2($.typeExpr);
+            });
+          },
+        },
+      ]);
+    });
 
-      $.OPTION(() => {
-        $.CONSUME(Arrow);
-        $.SUBRULE2($.typeExpr);
+    $.RULE("paramTypeList", () => {
+      $.SUBRULE($.atomicType);
+      $.MANY(() => {
+        $.CONSUME(Comma);
+        $.SUBRULE2($.atomicType);
       });
     });
 
