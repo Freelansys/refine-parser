@@ -1,23 +1,6 @@
 import { describe, it, expect } from "vitest";
 import {
   SpecLexer,
-  ObjectTok,
-  MorphismTok,
-  SubobjectTok,
-  OfTok,
-  LCurly,
-  RCurly,
-  LParen,
-  RParen,
-  Colon,
-  Arrow,
-  Equals,
-  Comma,
-  Dot,
-  Identifier,
-  WhiteSpace,
-  SingleString,
-  TripleString,
 } from "../src/lexer.js";
 
 describe("SpecLexer", () => {
