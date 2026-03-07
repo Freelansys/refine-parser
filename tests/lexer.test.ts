@@ -2,11 +2,9 @@ import { describe, it, expect } from "vitest";
 import {
   SpecLexer,
   ObjectTok,
-  ProcessTok,
+  MorphismTok,
   SubobjectTok,
   OfTok,
-  WhereTok,
-  FunTok,
   LCurly,
   RCurly,
   LParen,
@@ -18,22 +16,20 @@ import {
   Dot,
   Identifier,
   WhiteSpace,
+  SingleString,
+  TripleString,
 } from "../src/lexer.js";
 
 describe("SpecLexer", () => {
   describe("tokenization", () => {
     it("should tokenize keywords", () => {
-      const result = SpecLexer.tokenize(
-        "object process subobject of where fun",
-      );
+      const result = SpecLexer.tokenize("object morphism subobject of");
       expect(result.errors).toHaveLength(0);
       expect(result.tokens.map((t) => t.tokenType.name)).toEqual([
         "ObjectTok",
-        "ProcessTok",
+        "MorphismTok",
         "SubobjectTok",
         "OfTok",
-        "WhereTok",
-        "FunTok",
       ]);
     });
 
@@ -106,14 +102,29 @@ describe("SpecLexer", () => {
       ]);
     });
 
-    it("should handle keywords before identifiers (longest match)", () => {
+    it("should handle keywords with word boundary", () => {
       const result = SpecLexer.tokenize("object objectfoo");
       expect(result.errors).toHaveLength(0);
       expect(result.tokens.map((t) => t.tokenType.name)).toEqual([
         "ObjectTok",
-        "ObjectTok",
         "Identifier",
       ]);
+    });
+
+    it("should tokenize single-quoted strings", () => {
+      const result = SpecLexer.tokenize('"hello world"');
+      expect(result.errors).toHaveLength(0);
+      expect(result.tokens).toHaveLength(1);
+      expect(result.tokens[0]?.tokenType.name).toBe("SingleString");
+      expect(result.tokens[0]?.image).toBe('"hello world"');
+    });
+
+    it("should tokenize triple-quoted strings", () => {
+      const result = SpecLexer.tokenize('"""hello"""');
+      expect(result.errors).toHaveLength(0);
+      expect(result.tokens).toHaveLength(1);
+      expect(result.tokens[0]?.tokenType.name).toBe("TripleString");
+      expect(result.tokens[0]?.image).toBe('"""hello"""');
     });
   });
 

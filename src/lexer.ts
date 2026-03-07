@@ -1,4 +1,4 @@
-import { createToken, Lexer } from "chevrotain"
+import { createToken, Lexer } from "chevrotain";
 
 // -----------------
 // Whitespace
@@ -7,33 +7,53 @@ import { createToken, Lexer } from "chevrotain"
 export const WhiteSpace = createToken({
   name: "WhiteSpace",
   pattern: /\s+/,
-  group: Lexer.SKIPPED
-})
+  group: Lexer.SKIPPED,
+});
 
 // -----------------
 // Keywords
 // -----------------
 
-export const ObjectTok = createToken({ name: "ObjectTok", pattern: /object/ })
-export const ProcessTok = createToken({ name: "ProcessTok", pattern: /process/ })
-export const SubobjectTok = createToken({ name: "SubobjectTok", pattern: /subobject/ })
-export const OfTok = createToken({ name: "OfTok", pattern: /of/ })
-export const WhereTok = createToken({ name: "WhereTok", pattern: /where/ })
-export const FunTok = createToken({ name: "FunTok", pattern: /fun/ })
+export const ObjectTok = createToken({
+  name: "ObjectTok",
+  pattern: /object\b/,
+});
+export const MorphismTok = createToken({
+  name: "MorphismTok",
+  pattern: /morphism\b/,
+});
+export const SubobjectTok = createToken({
+  name: "SubobjectTok",
+  pattern: /subobject\b/,
+});
+export const OfTok = createToken({ name: "OfTok", pattern: /of\b/ });
+
+// -----------------
+// Constants
+// -----------------
+
+export const SingleString = createToken({
+  name: "SingleString",
+  pattern: /"([^"\\]|\\.)*"/,
+});
+export const TripleString = createToken({
+  name: "TripleString",
+  pattern: /"""[\s\S]*?"""/,
+});
 
 // -----------------
 // Symbols
 // -----------------
 
-export const LCurly = createToken({ name: "LCurly", pattern: /{/ })
-export const RCurly = createToken({ name: "RCurly", pattern: /}/ })
-export const LParen = createToken({ name: "LParen", pattern: /\(/ })
-export const RParen = createToken({ name: "RParen", pattern: /\)/ })
-export const Colon = createToken({ name: "Colon", pattern: /:/ })
-export const Arrow = createToken({ name: "Arrow", pattern: /->/ })
-export const Equals = createToken({ name: "Equals", pattern: /=/ })
-export const Comma = createToken({ name: "Comma", pattern: /,/ })
-export const Dot = createToken({ name: "Dot", pattern: /\./ })
+export const LCurly = createToken({ name: "LCurly", pattern: /{/ });
+export const RCurly = createToken({ name: "RCurly", pattern: /}/ });
+export const LParen = createToken({ name: "LParen", pattern: /\(/ });
+export const RParen = createToken({ name: "RParen", pattern: /\)/ });
+export const Colon = createToken({ name: "Colon", pattern: /:/ });
+export const Arrow = createToken({ name: "Arrow", pattern: /->/ });
+export const Equals = createToken({ name: "Equals", pattern: /=/ });
+export const Comma = createToken({ name: "Comma", pattern: /,/ });
+export const Dot = createToken({ name: "Dot", pattern: /\./ });
 
 // -----------------
 // Identifiers
@@ -41,19 +61,17 @@ export const Dot = createToken({ name: "Dot", pattern: /\./ })
 
 export const Identifier = createToken({
   name: "Identifier",
-  pattern: /[a-zA-Z_][a-zA-Z0-9_]*/
-})
+  pattern: /[a-zA-Z_][a-zA-Z0-9_]*/,
+});
 
 // Order matters: keywords must come before Identifier
 export const allTokens = [
   WhiteSpace,
 
   ObjectTok,
-  ProcessTok,
+  MorphismTok,
   SubobjectTok,
   OfTok,
-  WhereTok,
-  FunTok,
 
   Arrow,
   LCurly,
@@ -65,7 +83,10 @@ export const allTokens = [
   Comma,
   Dot,
 
-  Identifier
-]
+  TripleString,
+  SingleString,
 
-export const SpecLexer = new Lexer(allTokens)
+  Identifier,
+];
+
+export const SpecLexer = new Lexer(allTokens);
