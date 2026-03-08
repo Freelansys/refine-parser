@@ -1,63 +1,54 @@
 export interface SpecFile {
-  declarations: Declaration[]
+  declarations: Declaration[];
 }
 
-export type Declaration =
-  | ObjectDecl
-  | ProcessDecl
-  | SubobjectDecl
+export type Declaration = ObjectDecl | MorphismDecl | SubobjectDecl;
 
 export interface ObjectDecl {
-  kind: "ObjectDecl"
-  name: string
-  fields: FieldDecl[]
+  kind: "ObjectDecl";
+  name: string;
+  fields: FieldDecl[];
 }
 
 export interface FieldDecl {
-  name: string
-  type: TypeExpr
+  name: string;
+  type: TypeExpr;
 }
 
-export interface ProcessDecl {
-  kind: "ProcessDecl"
-  name: string
-  type: TypeExpr
-  body: Expr
+export interface MorphismDecl {
+  kind: "MorphismDecl";
+  name: string;
+  params: Param[];
+  returnType: TypeExpr;
+  body: Statement[];
+}
+
+export interface Param {
+  name: string;
+  type: TypeExpr;
 }
 
 export interface SubobjectDecl {
-  kind: "SubobjectDecl"
-  name: string
-  parent: string
-  predicate: Expr
+  kind: "SubobjectDecl";
+  name: string;
+  parent: string;
+  predicates: string[];
 }
 
-export type TypeExpr =
-  | NamedType
-  | FunctionType
+export type TypeExpr = NamedType | FunctionType;
 
 export interface NamedType {
-  kind: "NamedType"
-  name: string
+  kind: "NamedType";
+  name: string;
 }
 
 export interface FunctionType {
-  kind: "FunctionType"
-  from: TypeExpr
-  to: TypeExpr
+  kind: "FunctionType";
+  params: TypeExpr[];
+  returnType: TypeExpr;
 }
 
-export type Expr =
-  | IdentifierExpr
-  | LambdaExpr
-
-export interface IdentifierExpr {
-  kind: "Identifier"
-  name: string
-}
-
-export interface LambdaExpr {
-  kind: "Lambda"
-  param: string
-  body: Expr
+export interface Statement {
+  kind: "StringLiteral";
+  value: string;
 }
