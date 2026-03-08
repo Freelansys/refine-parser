@@ -12,7 +12,7 @@ function parseInput(text: string) {
 }
 
 describe("SpecParser", () => {
-  describe("object declaration - valid", () => {
+  describe("object declaration", () => {
     it("should parse empty object declaration", () => {
       const testCase = "object test { }";
       const { parser } = parseInput(testCase);
@@ -37,7 +37,7 @@ describe("SpecParser", () => {
     });
   });
 
-  describe("exponential declaration - valid", () => {
+  describe("exponential declaration", () => {
     it("should parse exponential declaration with single input and single output", () => {
       const testCase = "exponential exp from (s: string) to (n: number)";
       const { parser } = parseInput(testCase);
@@ -76,7 +76,7 @@ describe("SpecParser", () => {
     });
   });
 
-  describe("morphism declaration - valid", () => {
+  describe("morphism declaration", () => {
     it("should parse empty morphism declaration", () => {
       const testCase = "morphism test: exp { }";
       const { parser } = parseInput(testCase);
@@ -101,7 +101,28 @@ describe("SpecParser", () => {
     });
   });
 
-  describe("subobject declaration - valid", () => {
+  describe("constant declaration", () => {
+    it("should parse single-line constant definition", () => {
+      const testCase = `constant MyObj: obj { s = "some string", n = 23, m = 23.4, f = MyMorphism, e = 1e-2 }`;
+      const { parser } = parseInput(testCase);
+      expect(parser.errors).toHaveLength(0);
+    })
+
+    it("should parse multi-line constant definition", () => {
+      const testCase = `
+      constant MyObj: obj {
+        s = "some string",
+        n = 23,
+        m = 23.4,
+        f = MyMorphism,
+        e = 1e-2
+      }`;
+      const { parser } = parseInput(testCase);
+      expect(parser.errors).toHaveLength(0);
+    })
+  })
+
+  describe("subobject declaration", () => {
     it("should parse empty subobject declaration", () => {
       const testCase = "subobject Customer of Buyer { }";
       const { parser } = parseInput(testCase);

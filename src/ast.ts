@@ -6,6 +6,7 @@ export type Declaration =
   | ObjectDecl
   | ExponentialDecl
   | MorphismDecl
+  | ConstantDecl
   | SubobjectDecl;
 
 export interface ObjectDecl {
@@ -27,6 +28,23 @@ export interface MorphismDecl {
   exponential: string;
   body: Statement[];
 }
+
+export interface ConstantDecl {
+  kind: "ConstantDecl";
+  name: string;
+  type: NamedType;
+  bindings: ConstantBinding[];
+}
+
+export interface ConstantBinding {
+  name: string;
+  value: ConstantValue;
+}
+
+export type ConstantValue =
+  | { kind: "StringValue"; value: string }
+  | { kind: "NumberValue"; value: number }
+  | { kind: "IdentifierValue"; value: string };
 
 export interface SubobjectDecl {
   kind: "SubobjectDecl";

@@ -6,6 +6,7 @@ import type {
   ExponentialDecl,
   MorphismDecl,
   SubobjectDecl,
+  ConstantDecl
 } from "../src/ast.js";
 
 describe("SpecParserVisitor", () => {
@@ -75,6 +76,25 @@ describe("SpecParserVisitor", () => {
       expect(decl.output[0].type.name).toBe("number");
       expect(decl.output[1].name).toBe("b");
       expect(decl.output[1].type.name).toBe("bool");
+    });
+  });
+
+  describe("constant declaration", () => {
+    it("should convert constant definition to AST", () => {
+      const testCase = `
+      constant MyObj: obj {
+        s = "some string",
+        n = 23,
+        m = 23.4,
+        f = MyMorphism,
+        e = 1e-2
+      }`;
+      const ast = parseToAst(testCase);
+      const decl = ast.declarations[0] as ConstantDecl;
+      expect(decl.kind).toBe("ConstantDecl");
+      expect(decl.name).toBe("MyObj");
+      expect(decl.type.name).toBe("obj");
+      expect(decl.bindings[0].name).toBe("s");
     });
   });
 

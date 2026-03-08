@@ -33,14 +33,9 @@ export const SubobjectTok = createToken({
 export const OfTok = createToken({ name: "OfTok", pattern: /of\b/ });
 export const FromTok = createToken({ name: "FromTok", pattern: /from\b/ });
 export const ToTok = createToken({ name: "ToTok", pattern: /to\b/ });
-
-// -----------------
-// Constants
-// -----------------
-
-export const SingleString = createToken({
-  name: "SingleString",
-  pattern: /"([^"\\]|\\.)*"/,
+export const ConstantTok = createToken({
+  name: "ConstantTok",
+  pattern: /constant\b/,
 });
 
 // -----------------
@@ -53,6 +48,21 @@ export const LParen = createToken({ name: "LParen", pattern: /\(/ });
 export const RParen = createToken({ name: "RParen", pattern: /\)/ });
 export const Colon = createToken({ name: "Colon", pattern: /:/ });
 export const Comma = createToken({ name: "Comma", pattern: /,/ });
+export const Equals = createToken({ name: "Equals", pattern: /=/ });
+
+// -----------------
+// Constants
+// -----------------
+
+export const SingleString = createToken({
+  name: "SingleString",
+  pattern: /"([^"\\]|\\.)*"/,
+});
+
+export const NumberLiteral = createToken({
+  name: "NumberLiteral",
+  pattern: /[0-9]+(\.[0-9]+)?([eE][+-]?[0-9]+)?/,
+});
 
 // -----------------
 // Identifiers
@@ -74,6 +84,7 @@ export const allTokens = [
   OfTok,
   FromTok,
   ToTok,
+  ConstantTok,
 
   LCurly,
   RCurly,
@@ -81,8 +92,10 @@ export const allTokens = [
   RParen,
   Colon,
   Comma,
+  Equals,
 
   SingleString,
+  NumberLiteral,
 
   Identifier,
 ];

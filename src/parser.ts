@@ -5,6 +5,7 @@ import {
   ExponentialTok,
   MorphismTok,
   SubobjectTok,
+  ConstantTok,
   OfTok,
   FromTok,
   ToTok,
@@ -14,8 +15,10 @@ import {
   RParen,
   Colon,
   Comma,
+  Equals,
   Identifier,
   SingleString,
+  NumberLiteral,
 } from "./lexer.js";
 
 export class SpecParser extends CstParser {
@@ -35,6 +38,7 @@ export class SpecParser extends CstParser {
       { ALT: () => this.SUBRULE(this.objectDecl) },
       { ALT: () => this.SUBRULE(this.exponentialDecl) },
       { ALT: () => this.SUBRULE(this.morphismDecl) },
+      { ALT: () => this.SUBRULE(this.constantDecl) },
       { ALT: () => this.SUBRULE(this.subobjectDecl) },
     ]);
   });
@@ -134,6 +138,45 @@ export class SpecParser extends CstParser {
 
   private predicateStatement = this.RULE("predicateStatement", () => {
     this.CONSUME(SingleString);
+  });
+
+  private constantDecl = this.RULE("constantDecl", () => {
+    this.CONSUME(ConstantTok);
+    this.CONSUME(Identifier);
+    this.CONSUME(Colon);
+    this.SUBRULE(this.atomicType);
+    this.SUBRULE(this.constantBlock);
+  });
+
+  private constantBlock = this.RULE("constantBlock", () => {
+    this.CONSUME(LCurly);
+
+    this.SUBRULE(this.constantBindingList);
+
+    this.CONSUME(RCurly);
+  });
+
+  private constantBindingList = this.RULE("constantBindingList", () => {
+    this.SUBRULE(this.constantBinding);
+
+    this.MANY(() => {
+      this.CONSUME(Comma);
+      this.SUBRULE2(this.constantBinding);
+    });
+  });
+
+  private constantBinding = this.RULE("constantBinding", () => {
+    this.CONSUME(Identifier);
+    this.CONSUME(Equals);
+    this.SUBRULE(this.constantValue);
+  });
+
+  private constantValue = this.RULE("constantValue", () => {
+    this.OR([
+      { ALT: () => this.CONSUME(SingleString) },
+      { ALT: () => this.CONSUME(NumberLiteral) },
+      { ALT: () => this.CONSUME(Identifier) },
+    ]);
   });
 
   private atomicType = this.RULE("atomicType", () => {

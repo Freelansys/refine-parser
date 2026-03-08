@@ -5,6 +5,9 @@ import type {
   ObjectDecl,
   ExponentialDecl,
   MorphismDecl,
+  ConstantDecl,
+  ConstantBinding,
+  ConstantValue,
   TypedBinding,
   SubobjectDecl,
   NamedType,
@@ -39,6 +42,9 @@ export class SpecParserVisitor
     }
     if (ctx.morphismDecl) {
       return this.visit(ctx.morphismDecl[0]);
+    }
+    if (ctx.constantDecl) {
+      return this.visit(ctx.constantDecl[0]);
     }
     if (ctx.subobjectDecl) {
       return this.visit(ctx.subobjectDecl[0]);
@@ -113,6 +119,44 @@ export class SpecParserVisitor
 
   predicateStatement(ctx: any): string {
     return ctx.SingleString[0].image;
+  }
+
+  constantDecl(ctx: any): ConstantDecl {
+    const name = ctx.Identifier[0].image;
+    const type = this.visit(ctx.atomicType[0]);
+    const bindings: ConstantBinding[] = this.visit(ctx.constantBlock[0]);
+    return { kind: "ConstantDecl", name, type, bindings };
+  }
+
+  constantBlock(ctx: any): ConstantBinding[] {
+    return this.visit(ctx.constantBindingList[0]);
+  }
+
+  constantBindingList(ctx: any): ConstantBinding[] {
+    const bindings = ctx.constantBinding.map((b: any) => this.visit(b));
+    return bindings;
+  }
+
+  constantBinding(ctx: any): ConstantBinding {
+    const name = ctx.Identifier[0].image;
+    const value = this.visit(ctx.constantValue[0]);
+    return { name, value };
+  }
+
+  constantValue(ctx: any): ConstantValue {
+    if (ctx.SingleString) {
+      return { kind: "StringValue", value: ctx.SingleString[0].image };
+    }
+    if (ctx.NumberLiteral) {
+      return {
+        kind: "NumberValue",
+        value: parseFloat(ctx.NumberLiteral[0].image),
+      };
+    }
+    if (ctx.Identifier) {
+      return { kind: "IdentifierValue", value: ctx.Identifier[0].image };
+    }
+    throw new Error("Unknown constant value type");
   }
 
   atomicType(ctx: any): NamedType {
