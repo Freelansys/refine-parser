@@ -18,6 +18,10 @@ export const ObjectTok = createToken({
   name: "ObjectTok",
   pattern: /object\b/,
 });
+export const ExponentialTok = createToken({
+  name: "ExponentialTok",
+  pattern: /exponential\b/,
+});
 export const MorphismTok = createToken({
   name: "MorphismTok",
   pattern: /morphism\b/,
@@ -27,6 +31,8 @@ export const SubobjectTok = createToken({
   pattern: /subobject\b/,
 });
 export const OfTok = createToken({ name: "OfTok", pattern: /of\b/ });
+export const FromTok = createToken({ name: "FromTok", pattern: /from\b/ });
+export const ToTok = createToken({ name: "ToTok", pattern: /to\b/ });
 
 // -----------------
 // Constants
@@ -35,10 +41,6 @@ export const OfTok = createToken({ name: "OfTok", pattern: /of\b/ });
 export const SingleString = createToken({
   name: "SingleString",
   pattern: /"([^"\\]|\\.)*"/,
-});
-export const TripleString = createToken({
-  name: "TripleString",
-  pattern: /"""[\s\S]*?"""/,
 });
 
 // -----------------
@@ -50,10 +52,7 @@ export const RCurly = createToken({ name: "RCurly", pattern: /}/ });
 export const LParen = createToken({ name: "LParen", pattern: /\(/ });
 export const RParen = createToken({ name: "RParen", pattern: /\)/ });
 export const Colon = createToken({ name: "Colon", pattern: /:/ });
-export const Arrow = createToken({ name: "Arrow", pattern: /->/ });
-export const Equals = createToken({ name: "Equals", pattern: /=/ });
 export const Comma = createToken({ name: "Comma", pattern: /,/ });
-export const Dot = createToken({ name: "Dot", pattern: /\./ });
 
 // -----------------
 // Identifiers
@@ -69,21 +68,20 @@ export const allTokens = [
   WhiteSpace,
 
   ObjectTok,
+  ExponentialTok,
   MorphismTok,
   SubobjectTok,
   OfTok,
+  FromTok,
+  ToTok,
 
-  Arrow,
   LCurly,
   RCurly,
   LParen,
   RParen,
   Colon,
-  Equals,
   Comma,
-  Dot,
 
-  TripleString,
   SingleString,
 
   Identifier,

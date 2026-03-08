@@ -3,11 +3,10 @@ import type {
   SpecFile,
   Declaration,
   ObjectDecl,
-  FieldDecl,
+  ExponentialDecl,
   MorphismDecl,
-  Param,
+  TypedBinding,
   SubobjectDecl,
-  TypeExpr,
   NamedType,
   Statement,
 } from "./ast.js";
@@ -35,6 +34,9 @@ export class SpecParserVisitor
     if (ctx.objectDecl) {
       return this.visit(ctx.objectDecl[0]);
     }
+    if (ctx.exponentialDecl) {
+      return this.visit(ctx.exponentialDecl[0]);
+    }
     if (ctx.morphismDecl) {
       return this.visit(ctx.morphismDecl[0]);
     }
@@ -46,42 +48,39 @@ export class SpecParserVisitor
 
   objectDecl(ctx: any): ObjectDecl {
     const name = ctx.Identifier[0].image;
-    const fields: FieldDecl[] = ctx.fieldDecl ? this.visit(ctx.fieldDecl) : [];
+    const fields: TypedBinding[] = ctx.fieldDecl
+      ? this.visit(ctx.fieldDecl[0])
+      : [];
     return { kind: "ObjectDecl", name, fields };
   }
 
-  fieldDecl(ctx: any): FieldDecl[] {
-    const name = ctx.Identifier[0].image;
-    const type = this.visit(ctx.typeExpr[0]);
-
-    const currentField: FieldDecl = { name, type };
-    const results: FieldDecl[] = [currentField];
-
-    if (ctx.fieldDecl && ctx.fieldDecl.length > 0) {
-      const nestedFields = this.visit(ctx.fieldDecl[0]);
-      results.push(...nestedFields);
-    }
-
-    return results;
+  fieldDecl(ctx: any): TypedBinding[] {
+    return this.visit(ctx.typedBindingList[0]);
   }
 
-  paramList(ctx: any): Param[] {
-    const params = ctx.param.map((p: any) => this.visit(p));
-    return params;
+  exponentialDecl(ctx: any): ExponentialDecl {
+    const name = ctx.Identifier[0].image;
+    const input: TypedBinding[] = this.visit(ctx.typedBindingList[0]);
+    const output: TypedBinding[] = this.visit(ctx.typedBindingList[1]);
+    return { kind: "ExponentialDecl", name, input, output };
   }
 
-  param(ctx: any): Param {
+  typedBindingList(ctx: any): TypedBinding[] {
+    const bindings = ctx.typedBinding.map((b: any) => this.visit(b));
+    return bindings;
+  }
+
+  typedBinding(ctx: any): TypedBinding {
     const name = ctx.Identifier[0].image;
-    const type = this.visit(ctx.typeExpr[0]);
+    const type = this.visit(ctx.atomicType[0]);
     return { name, type };
   }
 
   morphismDecl(ctx: any): MorphismDecl {
     const name = ctx.Identifier[0].image;
-    const params: Param[] = ctx.paramList ? this.visit(ctx.paramList[0]) : [];
-    const returnType = this.visit(ctx.typeExpr[0]);
-    const body: Statement[] = this.visit(ctx.block[0]);
-    return { kind: "MorphismDecl", name, params, returnType, body };
+    const exponential = ctx.Identifier[1].image;
+    const body: Statement[] = ctx.block ? this.visit(ctx.block[0]) : [];
+    return { kind: "MorphismDecl", name, exponential, body };
   }
 
   block(ctx: any): Statement[] {
@@ -114,30 +113,6 @@ export class SpecParserVisitor
 
   predicateStatement(ctx: any): string {
     return ctx.SingleString[0].image;
-  }
-
-  typeExpr(ctx: any): TypeExpr {
-    if (ctx.LParen) {
-      const params: any[] = ctx.paramTypeList
-        ? this.visit(ctx.paramTypeList[0])
-        : [];
-      const returnType = this.visit(ctx.typeExpr[0]);
-      return { kind: "FunctionType", params, returnType };
-    }
-
-    const atomicType = this.visit(ctx.atomicType[0]);
-
-    if (ctx.Arrow && ctx.typeExpr && ctx.typeExpr.length > 0) {
-      const returnType = this.visit(ctx.typeExpr[0]);
-      return { kind: "FunctionType", params: [atomicType], returnType };
-    }
-
-    return atomicType;
-  }
-
-  paramTypeList(ctx: any): TypeExpr[] {
-    const types = ctx.atomicType.map((a: any) => this.visit(a));
-    return types;
   }
 
   atomicType(ctx: any): NamedType {

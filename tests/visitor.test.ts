@@ -3,12 +3,9 @@ import { parseToAst } from "../src/visitor.js";
 import type {
   SpecFile,
   ObjectDecl,
+  ExponentialDecl,
   MorphismDecl,
   SubobjectDecl,
-  FieldDecl,
-  Param,
-  TypeExpr,
-  Statement,
 } from "../src/ast.js";
 
 describe("SpecParserVisitor", () => {
@@ -40,60 +37,59 @@ describe("SpecParserVisitor", () => {
       expect(decl.fields[1].name).toBe("n");
       expect(decl.fields[1].type.name).toBe("number");
     });
+  });
 
-    it("should convert function type to AST", () => {
-      const ast = parseToAst("object test { f: string -> number }");
-      const decl = ast.declarations[0] as ObjectDecl;
-      expect(decl.fields[0].type.kind).toBe("FunctionType");
-      const funcType = decl.fields[0].type as any;
-      expect(funcType.params).toHaveLength(1);
-      expect(funcType.params[0].name).toBe("string");
-      expect(funcType.returnType.name).toBe("number");
+  describe("exponential declaration", () => {
+    it("should convert exponential declaration with single input and output to AST", () => {
+      const ast = parseToAst("exponential exp from (s: string) to (n: number)");
+      const decl = ast.declarations[0] as ExponentialDecl;
+      expect(decl.kind).toBe("ExponentialDecl");
+      expect(decl.name).toBe("exp");
+      expect(decl.input).toHaveLength(1);
+      expect(decl.input[0].name).toBe("s");
+      expect(decl.input[0].type.name).toBe("string");
+      expect(decl.output).toHaveLength(1);
+      expect(decl.output[0].name).toBe("n");
+      expect(decl.output[0].type.name).toBe("number");
     });
 
-    it("should convert parenthesized function type to AST", () => {
-      const ast = parseToAst("object test { f: (string, number) -> bool }");
-      const decl = ast.declarations[0] as ObjectDecl;
-      expect(decl.fields[0].type.kind).toBe("FunctionType");
-      const funcType = decl.fields[0].type as any;
-      expect(funcType.params).toHaveLength(2);
-      expect(funcType.params[0].name).toBe("string");
-      expect(funcType.params[1].name).toBe("number");
-      expect(funcType.returnType.name).toBe("bool");
+    it("should convert exponential declaration with multiple inputs to AST", () => {
+      const ast = parseToAst(
+        "exponential exp from (s: string, n: number) to (m: number)",
+      );
+      const decl = ast.declarations[0] as ExponentialDecl;
+      expect(decl.input).toHaveLength(2);
+      expect(decl.input[0].name).toBe("s");
+      expect(decl.input[1].name).toBe("n");
+      expect(decl.output).toHaveLength(1);
+    });
+
+    it("should convert exponential declaration with multiple outputs to AST", () => {
+      const ast = parseToAst(
+        "exponential exp from (s: string) to (n: number, b: bool)",
+      );
+      const decl = ast.declarations[0] as ExponentialDecl;
+      expect(decl.input).toHaveLength(1);
+      expect(decl.output).toHaveLength(2);
+      expect(decl.output[0].name).toBe("n");
+      expect(decl.output[0].type.name).toBe("number");
+      expect(decl.output[1].name).toBe("b");
+      expect(decl.output[1].type.name).toBe("bool");
     });
   });
 
   describe("morphism declaration", () => {
     it("should convert empty morphism declaration to AST", () => {
-      const ast = parseToAst("morphism test() -> void { }");
+      const ast = parseToAst("morphism test: exp { }");
       const decl = ast.declarations[0] as MorphismDecl;
       expect(decl.kind).toBe("MorphismDecl");
       expect(decl.name).toBe("test");
-      expect(decl.params).toHaveLength(0);
-      expect(decl.returnType.name).toBe("void");
+      expect(decl.exponential).toBe("exp");
       expect(decl.body).toHaveLength(0);
     });
 
-    it("should convert morphism declaration with parameter to AST", () => {
-      const ast = parseToAst("morphism test(s: string) -> void { }");
-      const decl = ast.declarations[0] as MorphismDecl;
-      expect(decl.params).toHaveLength(1);
-      expect(decl.params[0].name).toBe("s");
-      expect(decl.params[0].type.name).toBe("string");
-    });
-
-    it("should convert morphism declaration with multiple parameters to AST", () => {
-      const ast = parseToAst("morphism test(a: number, b: string) -> void { }");
-      const decl = ast.declarations[0] as MorphismDecl;
-      expect(decl.params).toHaveLength(2);
-      expect(decl.params[0].name).toBe("a");
-      expect(decl.params[0].type.name).toBe("number");
-      expect(decl.params[1].name).toBe("b");
-      expect(decl.params[1].type.name).toBe("string");
-    });
-
     it("should convert morphism declaration with body to AST", () => {
-      const ast = parseToAst('morphism test() -> void { "hello" }');
+      const ast = parseToAst('morphism test: exp { "hello" }');
       const decl = ast.declarations[0] as MorphismDecl;
       expect(decl.body).toHaveLength(1);
       expect(decl.body[0].kind).toBe("StringLiteral");
@@ -101,20 +97,11 @@ describe("SpecParserVisitor", () => {
     });
 
     it("should convert morphism declaration with multiple statements to AST", () => {
-      const ast = parseToAst('morphism test() -> void { "hello" "world" }');
+      const ast = parseToAst('morphism test: exp { "hello" "world" }');
       const decl = ast.declarations[0] as MorphismDecl;
       expect(decl.body).toHaveLength(2);
       expect(decl.body[0].value).toBe('"hello"');
       expect(decl.body[1].value).toBe('"world"');
-    });
-
-    it("should convert morphism declaration with function type parameter to AST", () => {
-      const ast = parseToAst("morphism test(f: string -> bool) -> void { }");
-      const decl = ast.declarations[0] as MorphismDecl;
-      expect(decl.params[0].type.kind).toBe("FunctionType");
-      const funcType = decl.params[0].type as any;
-      expect(funcType.params[0].name).toBe("string");
-      expect(funcType.returnType.name).toBe("bool");
     });
   });
 
@@ -149,12 +136,12 @@ describe("SpecParserVisitor", () => {
   describe("multiple declarations", () => {
     it("should convert multiple declarations to AST", () => {
       const ast = parseToAst(`
-        object Person { name: string, age: number }
-        morphism greet(p: Person) -> void { "hello" }
+        exponential exp from (s: string) to (n: number)
+        morphism test: exp { "hello" }
         subobject Student of Person { "is enrolled" }
       `);
       expect(ast.declarations).toHaveLength(3);
-      expect(ast.declarations[0].kind).toBe("ObjectDecl");
+      expect(ast.declarations[0].kind).toBe("ExponentialDecl");
       expect(ast.declarations[1].kind).toBe("MorphismDecl");
       expect(ast.declarations[2].kind).toBe("SubobjectDecl");
     });

@@ -1,7 +1,5 @@
 import { describe, it, expect } from "vitest";
-import {
-  SpecLexer,
-} from "../src/lexer.js";
+import { SpecLexer } from "../src/lexer.js";
 
 describe("SpecLexer", () => {
   describe("tokenization", () => {
@@ -17,7 +15,7 @@ describe("SpecLexer", () => {
     });
 
     it("should tokenize symbols", () => {
-      const result = SpecLexer.tokenize("{}():->=,");
+      const result = SpecLexer.tokenize("{}():,");
       expect(result.errors).toHaveLength(0);
       expect(result.tokens.map((t) => t.tokenType.name)).toEqual([
         "LCurly",
@@ -25,8 +23,6 @@ describe("SpecLexer", () => {
         "LParen",
         "RParen",
         "Colon",
-        "Arrow",
-        "Equals",
         "Comma",
       ]);
     });
@@ -68,23 +64,6 @@ describe("SpecLexer", () => {
       ]);
     });
 
-    it("should handle arrow token", () => {
-      const result = SpecLexer.tokenize("->");
-      expect(result.errors).toHaveLength(0);
-      expect(result.tokens).toHaveLength(1);
-      expect(result.tokens[0]?.tokenType.name).toBe("Arrow");
-    });
-
-    it("should handle dot token", () => {
-      const result = SpecLexer.tokenize("foo.bar");
-      expect(result.errors).toHaveLength(0);
-      expect(result.tokens.map((t) => t.tokenType.name)).toEqual([
-        "Identifier",
-        "Dot",
-        "Identifier",
-      ]);
-    });
-
     it("should handle keywords with word boundary", () => {
       const result = SpecLexer.tokenize("object objectfoo");
       expect(result.errors).toHaveLength(0);
@@ -100,14 +79,6 @@ describe("SpecLexer", () => {
       expect(result.tokens).toHaveLength(1);
       expect(result.tokens[0]?.tokenType.name).toBe("SingleString");
       expect(result.tokens[0]?.image).toBe('"hello world"');
-    });
-
-    it("should tokenize triple-quoted strings", () => {
-      const result = SpecLexer.tokenize('"""hello"""');
-      expect(result.errors).toHaveLength(0);
-      expect(result.tokens).toHaveLength(1);
-      expect(result.tokens[0]?.tokenType.name).toBe("TripleString");
-      expect(result.tokens[0]?.image).toBe('"""hello"""');
     });
   });
 

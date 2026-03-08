@@ -2,30 +2,30 @@ export interface SpecFile {
   declarations: Declaration[];
 }
 
-export type Declaration = ObjectDecl | MorphismDecl | SubobjectDecl;
+export type Declaration =
+  | ObjectDecl
+  | ExponentialDecl
+  | MorphismDecl
+  | SubobjectDecl;
 
 export interface ObjectDecl {
   kind: "ObjectDecl";
   name: string;
-  fields: FieldDecl[];
+  fields: TypedBinding[];
 }
 
-export interface FieldDecl {
+export interface ExponentialDecl {
+  kind: "ExponentialDecl";
   name: string;
-  type: TypeExpr;
+  input: TypedBinding[];
+  output: TypedBinding[];
 }
 
 export interface MorphismDecl {
   kind: "MorphismDecl";
   name: string;
-  params: Param[];
-  returnType: TypeExpr;
+  exponential: string;
   body: Statement[];
-}
-
-export interface Param {
-  name: string;
-  type: TypeExpr;
 }
 
 export interface SubobjectDecl {
@@ -35,17 +35,14 @@ export interface SubobjectDecl {
   predicates: string[];
 }
 
-export type TypeExpr = NamedType | FunctionType;
+export interface TypedBinding {
+  name: string;
+  type: NamedType;
+}
 
 export interface NamedType {
   kind: "NamedType";
   name: string;
-}
-
-export interface FunctionType {
-  kind: "FunctionType";
-  params: TypeExpr[];
-  returnType: TypeExpr;
 }
 
 export interface Statement {

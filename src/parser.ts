@@ -2,16 +2,18 @@ import { CstParser } from "chevrotain";
 import {
   allTokens,
   ObjectTok,
+  ExponentialTok,
   MorphismTok,
   SubobjectTok,
   OfTok,
+  FromTok,
+  ToTok,
   LCurly,
   RCurly,
   LParen,
   RParen,
   Colon,
   Comma,
-  Arrow,
   Identifier,
   SingleString,
 } from "./lexer.js";
@@ -31,6 +33,7 @@ export class SpecParser extends CstParser {
   private declaration = this.RULE("declaration", () => {
     this.OR([
       { ALT: () => this.SUBRULE(this.objectDecl) },
+      { ALT: () => this.SUBRULE(this.exponentialDecl) },
       { ALT: () => this.SUBRULE(this.morphismDecl) },
       { ALT: () => this.SUBRULE(this.subobjectDecl) },
     ]);
@@ -52,48 +55,42 @@ export class SpecParser extends CstParser {
   });
 
   private fieldDecl = this.RULE("fieldDecl", () => {
+    this.SUBRULE(this.typedBindingList);
+  });
+
+  private exponentialDecl = this.RULE("exponentialDecl", () => {
+    this.CONSUME(ExponentialTok);
     this.CONSUME(Identifier);
-    this.CONSUME(Colon);
-    this.SUBRULE(this.typeExpr);
+    this.CONSUME(FromTok);
+    this.CONSUME(LParen);
+    this.SUBRULE(this.typedBindingList);
+    this.CONSUME(RParen);
+    this.CONSUME(ToTok);
+    this.CONSUME2(LParen);
+    this.SUBRULE2(this.typedBindingList);
+    this.CONSUME2(RParen);
+  });
+
+  private typedBindingList = this.RULE("typedBindingList", () => {
+    this.SUBRULE(this.typedBinding);
 
     this.MANY(() => {
       this.CONSUME(Comma);
-      this.SUBRULE(this.fieldDecl);
+      this.SUBRULE2(this.typedBinding);
     });
   });
 
-  private paramList = this.RULE("paramList", () => {
-    this.SUBRULE(this.param);
-
-    this.MANY(() => {
-      this.CONSUME(Comma);
-      this.SUBRULE2(this.param);
-    });
-  });
-
-  private param = this.RULE("param", () => {
+  private typedBinding = this.RULE("typedBinding", () => {
     this.CONSUME(Identifier);
     this.CONSUME(Colon);
-    this.SUBRULE(this.typeExpr);
+    this.SUBRULE(this.atomicType);
   });
 
   private morphismDecl = this.RULE("morphismDecl", () => {
     this.CONSUME(MorphismTok);
-
     this.CONSUME(Identifier);
-
-    this.CONSUME(LParen);
-
-    this.OPTION(() => {
-      this.SUBRULE(this.paramList);
-    });
-
-    this.CONSUME(RParen);
-
-    this.CONSUME(Arrow);
-
-    this.SUBRULE(this.typeExpr);
-
+    this.CONSUME(Colon);
+    this.CONSUME2(Identifier);
     this.SUBRULE(this.block);
   });
 
@@ -137,39 +134,6 @@ export class SpecParser extends CstParser {
 
   private predicateStatement = this.RULE("predicateStatement", () => {
     this.CONSUME(SingleString);
-  });
-
-  private typeExpr = this.RULE("typeExpr", () => {
-    this.OR([
-      {
-        ALT: () => {
-          this.CONSUME(LParen);
-          this.OPTION(() => {
-            this.SUBRULE(this.paramTypeList);
-          });
-          this.CONSUME(RParen);
-          this.CONSUME(Arrow);
-          this.SUBRULE(this.typeExpr);
-        },
-      },
-      {
-        ALT: () => {
-          this.SUBRULE(this.atomicType);
-          this.OPTION2(() => {
-            this.CONSUME2(Arrow);
-            this.SUBRULE2(this.typeExpr);
-          });
-        },
-      },
-    ]);
-  });
-
-  private paramTypeList = this.RULE("paramTypeList", () => {
-    this.SUBRULE(this.atomicType);
-    this.MANY(() => {
-      this.CONSUME(Comma);
-      this.SUBRULE2(this.atomicType);
-    });
   });
 
   private atomicType = this.RULE("atomicType", () => {

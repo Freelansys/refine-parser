@@ -35,13 +35,41 @@ describe("SpecParser", () => {
       const { parser } = parseInput(testCase);
       expect(parser.errors).toHaveLength(0);
     });
+  });
 
-    it("should parse function types in object declaration", () => {
+  describe("exponential declaration - valid", () => {
+    it("should parse exponential declaration with single input and single output", () => {
+      const testCase = "exponential exp from (s: string) to (n: number)";
+      const { parser } = parseInput(testCase);
+      expect(parser.errors).toHaveLength(0);
+    });
+
+    it("should parse exponential declaration with multiple input and single output", () => {
+      const testCase =
+        "exponential exp from (s: string, n: number) to (m: number)";
+      const { parser } = parseInput(testCase);
+      expect(parser.errors).toHaveLength(0);
+    });
+
+    it("should parse exponential declaration with single input and multiple output", () => {
+      const testCase =
+        "exponential exp from (s: string) to (n: number, b: bool)";
+      const { parser } = parseInput(testCase);
+      expect(parser.errors).toHaveLength(0);
+    });
+
+    it("should parse exponential declaration with multiple input and multiple output", () => {
+      const testCase =
+        "exponential exp from (s: string, n: number) to (m: number, b: bool)";
+      const { parser } = parseInput(testCase);
+      expect(parser.errors).toHaveLength(0);
+    });
+
+    it("should parse multiline exponential declaration with multiple input and multiple input", () => {
       const testCase = `
-      object test {
-        f: string -> number,
-        g: (string, number) -> bool 
-      }
+      exponential exp
+        from (s: string, n: number)
+        to (m: number, b: bool)
       `;
       const { parser } = parseInput(testCase);
       expect(parser.errors).toHaveLength(0);
@@ -50,55 +78,22 @@ describe("SpecParser", () => {
 
   describe("morphism declaration - valid", () => {
     it("should parse empty morphism declaration", () => {
-      const testCase = "morphism test() -> void { }";
-      const { parser } = parseInput(testCase);
-      expect(parser.errors).toHaveLength(0);
-    });
-
-    it("should parse parametrized morphism declaration", () => {
-      const testCase = "morphism test(s: string) -> void { }";
+      const testCase = "morphism test: exp { }";
       const { parser } = parseInput(testCase);
       expect(parser.errors).toHaveLength(0);
     });
 
     it("should parse morphism declaration that has a body", () => {
-      const testCase = `morphism test() -> void { "print 'hello' in the console" }`;
-      const { parser } = parseInput(testCase);
-      expect(parser.errors).toHaveLength(0);
-    });
-
-    it("should parse parametrized morphism declaration that has a body", () => {
-      const testCase =
-        'morphism test(s: string) -> void { "print s in the console" }';
+      const testCase = `morphism test: exp { "print 'hello' in the console" }`;
       const { parser } = parseInput(testCase);
       expect(parser.errors).toHaveLength(0);
     });
 
     it("should parse parametrized morphism declaration that has a multi-line body", () => {
       const testCase = `
-      morphism test(a: number, b: number) -> void {
+      morphism test: exp {
         "add a to b"
         "print the result in the console"
-      }
-      `;
-      const { parser } = parseInput(testCase);
-      expect(parser.errors).toHaveLength(0);
-    });
-
-    it("should parse higher-order morphism declaration with single parameter", () => {
-      const testCase = `
-      morphism evaluate(f: string -> bool, s: string) -> bool {
-        "return the result of evaluating f on s"
-      }
-      `;
-      const { parser } = parseInput(testCase);
-      expect(parser.errors).toHaveLength(0);
-    });
-
-    it("should parse higher-order morphism declaration with multiple parameter", () => {
-      const testCase = `
-      morphism evaluate(f: (string, number) -> bool, s: string, n: number) -> bool {
-        "return the result of evaluating f on s and n"
       }
       `;
       const { parser } = parseInput(testCase);
@@ -149,14 +144,14 @@ describe("SpecParser", () => {
       expect(parser.errors.length).toBeGreaterThan(0);
     });
 
-    it("should fail when morphism declaration is missing arrow", () => {
-      const testCase = "morphism test() void { }";
+    it("should fail when morphism declaration is missing colon", () => {
+      const testCase = "morphism test exp { }";
       const { parser } = parseInput(testCase);
       expect(parser.errors.length).toBeGreaterThan(0);
     });
 
-    it("should fail when morphism declaration is missing closing parenthesis", () => {
-      const testCase = "morphism test( -> void { }";
+    it("should fail when morphism declaration is missing type reference", () => {
+      const testCase = "morphism test: { }";
       const { parser } = parseInput(testCase);
       expect(parser.errors.length).toBeGreaterThan(0);
     });
@@ -169,18 +164,6 @@ describe("SpecParser", () => {
 
     it("should fail when subobject declaration is missing parent type", () => {
       const testCase = "subobject Cat of { }";
-      const { parser } = parseInput(testCase);
-      expect(parser.errors.length).toBeGreaterThan(0);
-    });
-
-    it("should fail when type expression has mismatched parentheses", () => {
-      const testCase = "object test { f: (string -> number }";
-      const { parser } = parseInput(testCase);
-      expect(parser.errors.length).toBeGreaterThan(0);
-    });
-
-    it("should fail when type expression is missing return type", () => {
-      const testCase = "object test { f: string -> }";
       const { parser } = parseInput(testCase);
       expect(parser.errors.length).toBeGreaterThan(0);
     });
