@@ -37,6 +37,9 @@ export const ConstantTok = createToken({
   name: "ConstantTok",
   pattern: /constant\b/,
 });
+export const WhereTok = createToken({ name: "WhereTok", pattern: /where\b/ });
+export const AllTok = createToken({ name: "AllTok", pattern: /all\b/ });
+export const AnyTok = createToken({ name: "AnyTok", pattern: /any\b/ });
 
 // -----------------
 // Symbols
@@ -85,6 +88,9 @@ export const allTokens = [
   FromTok,
   ToTok,
   ConstantTok,
+  WhereTok,
+  AllTok,
+  AnyTok,
 
   LCurly,
   RCurly,

@@ -50,8 +50,13 @@ export interface SubobjectDecl {
   kind: "SubobjectDecl";
   name: string;
   parent: string;
-  predicates: string[];
+  predicates: PredicateExpression;
 }
+
+export type PredicateExpression =
+  | { kind: "Predicate"; value: string }
+  | { kind: "Conjunction"; value: PredicateExpression[] }
+  | { kind: "Disjunction"; value: PredicateExpression[] };
 
 export interface TypedBinding {
   name: string;

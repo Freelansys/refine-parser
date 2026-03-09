@@ -12,6 +12,7 @@ import type {
   SubobjectDecl,
   NamedType,
   Statement,
+  PredicateExpression,
 } from "./ast.js";
 import { SpecLexer } from "./lexer.js";
 import { SpecParser } from "./parser.js";
@@ -104,21 +105,39 @@ export class SpecParserVisitor
   subobjectDecl(ctx: any): SubobjectDecl {
     const name = ctx.Identifier[0].image;
     const parent = ctx.Identifier[1].image;
-    const predicates: string[] = ctx.predicateBlock
-      ? this.visit(ctx.predicateBlock[0])
-      : [];
+    const predicates: PredicateExpression = this.visit(ctx.predicateExpression[0]);
     return { kind: "SubobjectDecl", name, parent, predicates };
   }
 
-  predicateBlock(ctx: any): string[] {
-    const statements = ctx.predicateStatement
-      ? ctx.predicateStatement.map((s: any) => this.visit(s))
-      : [];
-    return statements;
+  predicateExpression(ctx: any): PredicateExpression {
+    if (ctx.predicateBlock) {
+      return this.visit(ctx.predicateBlock);
+    }
+    if (ctx.SingleString){
+      const rawValue = ctx.SingleString[0].image;
+      return {
+        kind: "Predicate",
+        value: rawValue.substring(1, rawValue.length - 1)
+      };
+    }
+    throw new Error("Unknown predicate expression type");
   }
 
-  predicateStatement(ctx: any): string {
-    return ctx.SingleString[0].image;
+  predicateBlock(ctx: any): PredicateExpression {
+    const isAll = ctx.AllTok !== undefined;
+    const children = ctx.predicateExpression.map((child: any) => this.visit(child));
+
+    if (isAll) {
+      return {
+        kind: "Conjunction",
+        value: children
+      };
+    } else {
+      return {
+        kind: "Disjunction",
+        value: children
+      };
+    }
   }
 
   constantDecl(ctx: any): ConstantDecl {

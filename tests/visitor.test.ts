@@ -141,30 +141,146 @@ describe("SpecParserVisitor", () => {
   });
 
   describe("subobject declaration", () => {
-    it("should convert empty subobject declaration to AST", () => {
-      const ast = parseToAst("subobject Cat of Animal { }");
+    it("should convert subobject declaration with a single constraint to AST", () => {
+      const ast = parseToAst(`subobject Cat of Animal where "is cute"`);
       const decl = ast.declarations[0] as SubobjectDecl;
-      expect(decl.kind).toBe("SubobjectDecl");
-      expect(decl.name).toBe("Cat");
-      expect(decl.parent).toBe("Animal");
-      expect(decl.predicates).toHaveLength(0);
+      expect(decl).toEqual({
+        kind: "SubobjectDecl",
+        name: "Cat",
+        parent: "Animal",
+        predicates: {
+          kind: "Predicate",
+          value: "is cute",
+        },
+      });
     });
 
-    it("should convert subobject declaration with predicate to AST", () => {
-      const ast = parseToAst('subobject Cat of Animal { "is cute" }');
+    it("should convert subobject declaration with a single constraint in conjunctive form to AST", () => {
+      const ast = parseToAst(`subobject Cat of Animal where all { "is cute" }`);
       const decl = ast.declarations[0] as SubobjectDecl;
-      expect(decl.predicates).toHaveLength(1);
-      expect(decl.predicates[0]).toBe('"is cute"');
+      expect(decl).toEqual({
+        kind: "SubobjectDecl",
+        name: "Cat",
+        parent: "Animal",
+        predicates: {
+          kind: "Conjunction",
+          value: [
+            {
+              kind: "Predicate",
+              value: "is cute",
+            },
+          ],
+        },
+      });
     });
 
-    it("should convert subobject declaration with multiple predicates to AST", () => {
+    it("should convert subobject declaration with a single constraint in disjunctive form to AST", () => {
+      const ast = parseToAst(`subobject Cat of Animal where any { "is cute" }`);
+      const decl = ast.declarations[0] as SubobjectDecl;
+      expect(decl).toEqual({
+        kind: "SubobjectDecl",
+        name: "Cat",
+        parent: "Animal",
+        predicates: {
+          kind: "Disjunction",
+          value: [
+            {
+              kind: "Predicate",
+              value: "is cute",
+            },
+          ],
+        },
+      });
+    });
+
+    it("should convert subobject declaration with multiple constraints in conjunctive form to AST", () => {
       const ast = parseToAst(
-        'subobject Cat of Animal { "is cute" "has pointy ears" }',
+        `subobject Cat of Animal where all { "is cute", "has pointy ears" }`,
       );
       const decl = ast.declarations[0] as SubobjectDecl;
-      expect(decl.predicates).toHaveLength(2);
-      expect(decl.predicates[0]).toBe('"is cute"');
-      expect(decl.predicates[1]).toBe('"has pointy ears"');
+      expect(decl).toEqual({
+        kind: "SubobjectDecl",
+        name: "Cat",
+        parent: "Animal",
+        predicates: {
+          kind: "Conjunction",
+          value: [
+            {
+              kind: "Predicate",
+              value: "is cute",
+            },
+            {
+              kind: "Predicate",
+              value: "has pointy ears",
+            },
+          ],
+        },
+      });
+    });
+
+    it("should convert subobject declaration with multiple constraints in disjunctive form to AST", () => {
+      const ast = parseToAst(
+        `subobject Cat of Animal where any { "is cute", "has pointy ears" }`,
+      );
+      const decl = ast.declarations[0] as SubobjectDecl;
+      expect(decl).toEqual({
+        kind: "SubobjectDecl",
+        name: "Cat",
+        parent: "Animal",
+        predicates: {
+          kind: "Disjunction",
+          value: [
+            {
+              kind: "Predicate",
+              value: "is cute",
+            },
+            {
+              kind: "Predicate",
+              value: "has pointy ears",
+            },
+          ],
+        },
+      });
+    });
+
+    it("should convert subobject declaration with complex constraints to AST", () => {
+      const ast = parseToAst(
+        `subobject Cat of Animal where all {
+          "is cute",
+          any {
+            "is brown",
+            "is black"
+          }
+        }`,
+      );
+      const decl = ast.declarations[0] as SubobjectDecl;
+      expect(decl).toEqual({
+        kind: "SubobjectDecl",
+        name: "Cat",
+        parent: "Animal",
+        predicates: {
+          kind: "Conjunction",
+          value: [
+            {
+              kind: "Predicate",
+              value: "is cute",
+            },
+            {
+              kind: "Disjunction",
+              value: [
+                {
+                  kind: "Predicate",
+                  value: "is brown",
+                },
+                {
+                  kind: "Predicate",
+                  value: "is black",
+                },
+              ],
+            },
+          ],
+        },
+      });
     });
   });
 
@@ -173,7 +289,7 @@ describe("SpecParserVisitor", () => {
       const ast = parseToAst(`
         exponential exp from (s: string) to (n: number)
         morphism test: exp { "hello" }
-        subobject Student of Person { "is enrolled" }
+        subobject Student of Person where "is enrolled"
       `);
       expect(ast.declarations).toHaveLength(3);
       expect(ast.declarations[0].kind).toBe("ExponentialDecl");

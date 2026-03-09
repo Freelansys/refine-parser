@@ -5,10 +5,13 @@ import {
   ExponentialTok,
   MorphismTok,
   SubobjectTok,
-  ConstantTok,
   OfTok,
   FromTok,
   ToTok,
+  ConstantTok,
+  WhereTok,
+  AllTok,
+  AnyTok,
   LCurly,
   RCurly,
   LParen,
@@ -114,30 +117,31 @@ export class SpecParser extends CstParser {
 
   private subobjectDecl = this.RULE("subobjectDecl", () => {
     this.CONSUME(SubobjectTok);
-
     this.CONSUME(Identifier);
-
     this.CONSUME(OfTok);
-
     this.CONSUME2(Identifier);
+    this.CONSUME(WhereTok);
+    this.SUBRULE(this.predicateExpression);
+  });
 
-    this.OPTION(() => {
-      this.SUBRULE(this.predicateBlock);
-    });
+  private predicateExpression = this.RULE("predicateExpression", () => {
+    this.OR([
+        { ALT: () => this.SUBRULE(this.predicateBlock) },
+        { ALT: () => this.CONSUME(SingleString) }
+    ]);
   });
 
   private predicateBlock = this.RULE("predicateBlock", () => {
+    this.OR([
+        { ALT: () => this.CONSUME(AllTok) },
+        { ALT: () => this.CONSUME(AnyTok) }
+    ]);
     this.CONSUME(LCurly);
-
-    this.MANY(() => {
-      this.SUBRULE(this.predicateStatement);
+    this.MANY_SEP({
+        SEP: Comma,
+        DEF: () => this.SUBRULE3(this.predicateExpression)
     });
-
     this.CONSUME(RCurly);
-  });
-
-  private predicateStatement = this.RULE("predicateStatement", () => {
-    this.CONSUME(SingleString);
   });
 
   private constantDecl = this.RULE("constantDecl", () => {
