@@ -20,6 +20,11 @@ import { SpecParser } from "./parser.js";
 const parserInstance = new SpecParser();
 const BaseSpecVisitor = parserInstance.getBaseCstVisitorConstructor();
 
+// Helper function to extract string value from SingleString token
+const getStringValue = (rawValue: string): string => {
+  return rawValue.substring(1, rawValue.length - 1);
+};
+
 export class SpecParserVisitor
   extends BaseSpecVisitor
   implements ICstVisitor<any, any>
@@ -101,18 +106,20 @@ export class SpecParserVisitor
     const rawValue = ctx.SingleString[0].image;
     return {
       kind: "StringLiteral",
-      value: rawValue.substring(1, rawValue.length - 1)
+      value: getStringValue(rawValue),
     };
   }
 
   subobjectDecl(ctx: any): SubobjectDecl {
     const name = ctx.Identifier[0].image;
     const parent = ctx.Identifier[1].image;
-    const predicates: PredicateExpression = this.visit(ctx.predicateExpression[0]);
+    const predicates: PredicateExpression = this.visit(
+      ctx.predicateExpression[0],
+    );
     return { kind: "SubobjectDecl", name, parent, predicates };
   }
 
-  predicateExpression(ctx: any): PredicateExpression {
+predicateExpression(ctx: any): PredicateExpression {
     if (ctx.predicateBlock) {
       return this.visit(ctx.predicateBlock);
     }
@@ -120,7 +127,7 @@ export class SpecParserVisitor
       const rawValue = ctx.SingleString[0].image;
       return {
         kind: "Predicate",
-        value: rawValue.substring(1, rawValue.length - 1)
+        value: getStringValue(rawValue)
       };
     }
     throw new Error("Unknown predicate expression type");
@@ -128,17 +135,19 @@ export class SpecParserVisitor
 
   predicateBlock(ctx: any): PredicateExpression {
     const isAll = ctx.AllTok !== undefined;
-    const children = ctx.predicateExpression.map((child: any) => this.visit(child));
+    const children = ctx.predicateExpression.map((child: any) =>
+      this.visit(child),
+    );
 
     if (isAll) {
       return {
         kind: "Conjunction",
-        value: children
+        value: children,
       };
     } else {
       return {
         kind: "Disjunction",
-        value: children
+        value: children,
       };
     }
   }
@@ -168,7 +177,10 @@ export class SpecParserVisitor
   constantValue(ctx: any): ConstantValue {
     if (ctx.SingleString) {
       const rawValue = ctx.SingleString[0].image;
-      return { kind: "StringValue", value: rawValue.substring(1, rawValue.length - 1) };
+      return {
+        kind: "StringValue",
+        value: getStringValue(rawValue),
+      };
     }
     if (ctx.NumberLiteral) {
       return {
