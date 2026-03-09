@@ -97,7 +97,7 @@ describe("SpecParserVisitor", () => {
       expect(decl.bindings).toHaveLength(5);
       expect(decl.bindings[0].name).toBe("s");
       expect(decl.bindings[0].value.kind).toBe("StringValue");
-      expect(decl.bindings[0].value.value).toBe('"some string"');
+      expect(decl.bindings[0].value.value).toBe("some string");
       expect(decl.bindings[1].name).toBe("n");
       expect(decl.bindings[1].value.kind).toBe("NumberValue");
       expect(decl.bindings[1].value.value).toBe(23);
@@ -128,15 +128,15 @@ describe("SpecParserVisitor", () => {
       const decl = ast.declarations[0] as MorphismDecl;
       expect(decl.body).toHaveLength(1);
       expect(decl.body[0].kind).toBe("StringLiteral");
-      expect(decl.body[0].value).toBe('"hello"');
+      expect(decl.body[0].value).toBe("hello");
     });
 
     it("should convert morphism declaration with multiple statements to AST", () => {
       const ast = parseToAst('morphism test: exp { "hello" "world" }');
       const decl = ast.declarations[0] as MorphismDecl;
       expect(decl.body).toHaveLength(2);
-      expect(decl.body[0].value).toBe('"hello"');
-      expect(decl.body[1].value).toBe('"world"');
+      expect(decl.body[0].value).toBe("hello");
+      expect(decl.body[1].value).toBe("world");
     });
   });
 

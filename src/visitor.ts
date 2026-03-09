@@ -98,8 +98,11 @@ export class SpecParserVisitor
   }
 
   statement(ctx: any): Statement {
-    const value = ctx.SingleString[0].image;
-    return { kind: "StringLiteral", value };
+    const rawValue = ctx.SingleString[0].image;
+    return {
+      kind: "StringLiteral",
+      value: rawValue.substring(1, rawValue.length - 1)
+    };
   }
 
   subobjectDecl(ctx: any): SubobjectDecl {
@@ -164,7 +167,8 @@ export class SpecParserVisitor
 
   constantValue(ctx: any): ConstantValue {
     if (ctx.SingleString) {
-      return { kind: "StringValue", value: ctx.SingleString[0].image };
+      const rawValue = ctx.SingleString[0].image;
+      return { kind: "StringValue", value: rawValue.substring(1, rawValue.length - 1) };
     }
     if (ctx.NumberLiteral) {
       return {
