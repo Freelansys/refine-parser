@@ -6,7 +6,7 @@ import type {
   ExponentialDecl,
   MorphismDecl,
   SubobjectDecl,
-  ConstantDecl
+  ConstantDecl,
 } from "../src/ast.js";
 
 describe("SpecParserVisitor", () => {
@@ -80,7 +80,7 @@ describe("SpecParserVisitor", () => {
   });
 
   describe("constant declaration", () => {
-    it("should convert constant definition to AST", () => {
+    it("should convert constant definition to AST and verify all bindings including values", () => {
       const testCase = `
       constant MyObj: obj {
         s = "some string",
@@ -94,7 +94,22 @@ describe("SpecParserVisitor", () => {
       expect(decl.kind).toBe("ConstantDecl");
       expect(decl.name).toBe("MyObj");
       expect(decl.type.name).toBe("obj");
+      expect(decl.bindings).toHaveLength(5);
       expect(decl.bindings[0].name).toBe("s");
+      expect(decl.bindings[0].value.kind).toBe("StringValue");
+      expect(decl.bindings[0].value.value).toBe('"some string"');
+      expect(decl.bindings[1].name).toBe("n");
+      expect(decl.bindings[1].value.kind).toBe("NumberValue");
+      expect(decl.bindings[1].value.value).toBe(23);
+      expect(decl.bindings[2].name).toBe("m");
+      expect(decl.bindings[2].value.kind).toBe("NumberValue");
+      expect(decl.bindings[2].value.value).toBe(23.4);
+      expect(decl.bindings[3].name).toBe("f");
+      expect(decl.bindings[3].value.kind).toBe("IdentifierValue");
+      expect(decl.bindings[3].value.value).toBe("MyMorphism");
+      expect(decl.bindings[4].name).toBe("e");
+      expect(decl.bindings[4].value.kind).toBe("NumberValue");
+      expect(decl.bindings[4].value.value).toBe(1e-2);
     });
   });
 
