@@ -126,31 +126,31 @@ describe("SpecParser", () => {
     it("should parse subobject declaration with a single constraint", () => {
       const testCase = `subobject Cat of Animal where "is cute"`;
       const { parser } = parseInput(testCase);
-      expect(parser.errors, parser.errors.join('\n')).toHaveLength(0);
+      expect(parser.errors).toHaveLength(0);
     });
 
     it("should parse subobject declaration with a single constraint in conjunctive form", () => {
       const testCase = `subobject Cat of Animal where all { "is cute" }`;
       const { parser } = parseInput(testCase);
-      expect(parser.errors, parser.errors.join('\n')).toHaveLength(0);
+      expect(parser.errors).toHaveLength(0);
     });
 
     it("should parse subobject declaration with a single constraint in disjunctive form", () => {
       const testCase = `subobject Cat of Animal where any { "is cute" }`;
       const { parser } = parseInput(testCase);
-      expect(parser.errors, parser.errors.join('\n')).toHaveLength(0);
+      expect(parser.errors).toHaveLength(0);
     });
 
     it("should parse subobject declaration with multiple constraints in conjunctive form", () => {
       const testCase = `subobject Cat of Animal where all { "is cute", "has pointy ears" }`;
       const { parser } = parseInput(testCase);
-      expect(parser.errors, parser.errors.join('\n')).toHaveLength(0);
+      expect(parser.errors).toHaveLength(0);
     });
 
     it("should parse subobject declaration with multiple constraints in disjunctive form", () => {
       const testCase = `subobject Cat of Animal where any { "is cute", "has pointy ears" }`;
       const { parser } = parseInput(testCase);
-      expect(parser.errors, parser.errors.join('\n')).toHaveLength(0);
+      expect(parser.errors).toHaveLength(0);
     });
 
     it("should parse multi-line subobject declaration with multiple constraints", () => {
@@ -160,7 +160,7 @@ describe("SpecParser", () => {
         "has pointy ears"
       }`;
       const { parser } = parseInput(testCase);
-      expect(parser.errors, parser.errors.join('\n')).toHaveLength(0);
+      expect(parser.errors).toHaveLength(0);
     });
 
     it("should parse subobject declaration with complex constraints", () => {
@@ -173,7 +173,7 @@ describe("SpecParser", () => {
         }
       }`;
       const { parser } = parseInput(testCase);
-      expect(parser.errors, parser.errors.join('\n')).toHaveLength(0);
+      expect(parser.errors).toHaveLength(0);
     });
   });
 
