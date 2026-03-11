@@ -145,48 +145,45 @@ describe("SpecParser", () => {
     });
 
     it("should parse subobject declaration with a single constraint in conjunctive form", () => {
-      const testCase = `subobject Cat of Animal where all { "is cute" }`;
+      const testCase = `subobject Cat of Animal where all ( "is cute" )`;
       const { parser } = parseInput(testCase);
       expect(parser.errors).toHaveLength(0);
     });
 
     it("should parse subobject declaration with a single constraint in disjunctive form", () => {
-      const testCase = `subobject Cat of Animal where any { "is cute" }`;
+      const testCase = `subobject Cat of Animal where any ( "is cute" )`;
       const { parser } = parseInput(testCase);
       expect(parser.errors).toHaveLength(0);
     });
 
     it("should parse subobject declaration with multiple constraints in conjunctive form", () => {
-      const testCase = `subobject Cat of Animal where all { "is cute", "has pointy ears" }`;
+      const testCase = `subobject Cat of Animal where all ( "is cute", "has pointy ears" )`;
       const { parser } = parseInput(testCase);
       expect(parser.errors).toHaveLength(0);
     });
 
     it("should parse subobject declaration with multiple constraints in disjunctive form", () => {
-      const testCase = `subobject Cat of Animal where any { "is cute", "has pointy ears" }`;
+      const testCase = `subobject Cat of Animal where any ( "is cute", "has pointy ears" )`;
       const { parser } = parseInput(testCase);
       expect(parser.errors).toHaveLength(0);
     });
 
     it("should parse multi-line subobject declaration with multiple constraints", () => {
       const testCase = `
-      subobject Cat of Animal where all {
+      subobject Cat of Animal where all (
         "is cute",
         "has pointy ears"
-      }`;
+      )`;
       const { parser } = parseInput(testCase);
       expect(parser.errors).toHaveLength(0);
     });
 
     it("should parse subobject declaration with complex constraints", () => {
       const testCase = `
-      subobject Cat of Animal where all {
+      subobject Cat of Animal where all (
         "is cute",
-        any {
-          "is brown",
-          "is black"
-        }
-      }`;
+        any ( "is brown", "is black" )
+      )`;
       const { parser } = parseInput(testCase);
       expect(parser.errors).toHaveLength(0);
     });

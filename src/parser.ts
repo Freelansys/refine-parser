@@ -140,12 +140,12 @@ export class SpecParser extends CstParser {
       { ALT: () => this.CONSUME(AllTok) },
       { ALT: () => this.CONSUME(AnyTok) },
     ]);
-    this.CONSUME(LCurly);
+    this.CONSUME(LParen);
     this.MANY_SEP({
       SEP: Comma,
       DEF: () => this.SUBRULE3(this.predicateExpression),
     });
-    this.CONSUME(RCurly);
+    this.CONSUME(RParen);
   });
 
   private constantDecl = this.RULE("constantDecl", () => {

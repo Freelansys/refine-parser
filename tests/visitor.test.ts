@@ -156,7 +156,7 @@ describe("SpecParserVisitor", () => {
     });
 
     it("should convert subobject declaration with a single constraint in conjunctive form to AST", () => {
-      const ast = parseToAst(`subobject Cat of Animal where all { "is cute" }`);
+      const ast = parseToAst(`subobject Cat of Animal where all ( "is cute" )`);
       const decl = ast.declarations[0] as SubobjectDecl;
       expect(decl).toEqual({
         kind: "SubobjectDecl",
@@ -175,7 +175,7 @@ describe("SpecParserVisitor", () => {
     });
 
     it("should convert subobject declaration with a single constraint in disjunctive form to AST", () => {
-      const ast = parseToAst(`subobject Cat of Animal where any { "is cute" }`);
+      const ast = parseToAst(`subobject Cat of Animal where any ( "is cute" )`);
       const decl = ast.declarations[0] as SubobjectDecl;
       expect(decl).toEqual({
         kind: "SubobjectDecl",
@@ -195,7 +195,7 @@ describe("SpecParserVisitor", () => {
 
     it("should convert subobject declaration with multiple constraints in conjunctive form to AST", () => {
       const ast = parseToAst(
-        `subobject Cat of Animal where all { "is cute", "has pointy ears" }`,
+        `subobject Cat of Animal where all ( "is cute", "has pointy ears" )`,
       );
       const decl = ast.declarations[0] as SubobjectDecl;
       expect(decl).toEqual({
@@ -220,7 +220,7 @@ describe("SpecParserVisitor", () => {
 
     it("should convert subobject declaration with multiple constraints in disjunctive form to AST", () => {
       const ast = parseToAst(
-        `subobject Cat of Animal where any { "is cute", "has pointy ears" }`,
+        `subobject Cat of Animal where any ( "is cute", "has pointy ears" )`,
       );
       const decl = ast.declarations[0] as SubobjectDecl;
       expect(decl).toEqual({
@@ -245,13 +245,10 @@ describe("SpecParserVisitor", () => {
 
     it("should convert subobject declaration with complex constraints to AST", () => {
       const ast = parseToAst(
-        `subobject Cat of Animal where all {
+        `subobject Cat of Animal where all (
           "is cute",
-          any {
-            "is brown",
-            "is black"
-          }
-        }`,
+          any ("is brown", "is black")
+        )`,
       );
       const decl = ast.declarations[0] as SubobjectDecl;
       expect(decl).toEqual({
