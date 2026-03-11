@@ -119,15 +119,15 @@ export class SpecParserVisitor
     return { kind: "SubobjectDecl", name, parent, predicates };
   }
 
-predicateExpression(ctx: any): PredicateExpression {
+  predicateExpression(ctx: any): PredicateExpression {
     if (ctx.predicateBlock) {
       return this.visit(ctx.predicateBlock);
     }
-    if (ctx.SingleString){
+    if (ctx.SingleString) {
       const rawValue = ctx.SingleString[0].image;
       return {
         kind: "Predicate",
-        value: getStringValue(rawValue)
+        value: getStringValue(rawValue),
       };
     }
     throw new Error("Unknown predicate expression type");
@@ -195,7 +195,17 @@ predicateExpression(ctx: any): PredicateExpression {
   }
 
   atomicType(ctx: any): NamedType {
-    const name = ctx.Identifier[0].image;
+    const name = ctx.Identifier
+      ? ctx.Identifier[0].image
+      : ctx.NumberTok
+        ? "Number"
+        : ctx.StringTok
+          ? "String"
+          : ctx.BoolTok
+            ? "Bool"
+            : ctx.UnitTok
+              ? "Unit"
+              : "Unknown";
     return { kind: "NamedType", name };
   }
 }

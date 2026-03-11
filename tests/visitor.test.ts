@@ -284,6 +284,82 @@ describe("SpecParserVisitor", () => {
     });
   });
 
+  describe("base types in object declarations", () => {
+    it("should convert object declaration with base types to AST", () => {
+      const ast = parseToAst("object test { n: Number, s: String }");
+      const decl = ast.declarations[0] as ObjectDecl;
+      expect(decl.fields).toHaveLength(2);
+      expect(decl.fields[0].name).toBe("n");
+      expect(decl.fields[0].type.name).toBe("Number");
+      expect(decl.fields[1].name).toBe("s");
+      expect(decl.fields[1].type.name).toBe("String");
+    });
+
+    it("should convert object declaration with mixed base and named types to AST", () => {
+      const ast = parseToAst(
+        "object test { n: Number, s: String, obj: MyObject }",
+      );
+      const decl = ast.declarations[0] as ObjectDecl;
+      expect(decl.fields).toHaveLength(3);
+      expect(decl.fields[0].name).toBe("n");
+      expect(decl.fields[0].type.name).toBe("Number");
+      expect(decl.fields[1].name).toBe("s");
+      expect(decl.fields[1].type.name).toBe("String");
+      expect(decl.fields[2].name).toBe("obj");
+      expect(decl.fields[2].type.name).toBe("MyObject");
+    });
+  });
+
+  describe("exponential declaration", () => {
+    it("should convert exponential declaration with single input and output to AST", () => {
+      const ast = parseToAst("exponential exp from (s: string) to (n: number)");
+      const decl = ast.declarations[0] as ExponentialDecl;
+      expect(decl.kind).toBe("ExponentialDecl");
+      expect(decl.name).toBe("exp");
+      expect(decl.input).toHaveLength(1);
+      expect(decl.input[0].name).toBe("s");
+      expect(decl.input[0].type.name).toBe("string");
+      expect(decl.output).toHaveLength(1);
+      expect(decl.output[0].name).toBe("n");
+      expect(decl.output[0].type.name).toBe("number");
+    });
+
+    it("should convert exponential declaration with multiple inputs to AST", () => {
+      const ast = parseToAst(
+        "exponential exp from (s: string, n: number) to (m: number)",
+      );
+      const decl = ast.declarations[0] as ExponentialDecl;
+      expect(decl.input).toHaveLength(2);
+      expect(decl.input[0].name).toBe("s");
+      expect(decl.input[1].name).toBe("n");
+      expect(decl.output).toHaveLength(1);
+    });
+
+    it("should convert exponential declaration with multiple outputs to AST", () => {
+      const ast = parseToAst(
+        "exponential exp from (s: string) to (n: number, b: bool)",
+      );
+      const decl = ast.declarations[0] as ExponentialDecl;
+      expect(decl.input).toHaveLength(1);
+      expect(decl.output).toHaveLength(2);
+      expect(decl.output[0].name).toBe("n");
+      expect(decl.output[0].type.name).toBe("number");
+      expect(decl.output[1].name).toBe("b");
+      expect(decl.output[1].type.name).toBe("bool");
+    });
+
+    it("should convert exponential declaration with base types to AST", () => {
+      const ast = parseToAst("exponential exp from (n: Number) to (s: String)");
+      const decl = ast.declarations[0] as ExponentialDecl;
+      expect(decl.input).toHaveLength(1);
+      expect(decl.input[0].name).toBe("n");
+      expect(decl.input[0].type.name).toBe("Number");
+      expect(decl.output).toHaveLength(1);
+      expect(decl.output[0].name).toBe("s");
+      expect(decl.output[0].type.name).toBe("String");
+    });
+  });
+
   describe("multiple declarations", () => {
     it("should convert multiple declarations to AST", () => {
       const ast = parseToAst(`

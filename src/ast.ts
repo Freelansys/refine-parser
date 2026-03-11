@@ -68,6 +68,8 @@ export interface NamedType {
   name: string;
 }
 
+export type BaseType = "Number" | "String" | "Bool" | "Unit";
+
 export interface Statement {
   kind: "StringLiteral";
   value: string;

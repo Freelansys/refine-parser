@@ -76,6 +76,21 @@ describe("SpecParser", () => {
     });
   });
 
+  describe("base types in exponential declarations", () => {
+    it("should parse exponential declaration with base types", () => {
+      const testCase = "exponential exp from (n: Number) to (s: String)";
+      const { parser } = parseInput(testCase);
+      expect(parser.errors).toHaveLength(0);
+    });
+
+    it("should parse exponential declaration with mixed base and named types", () => {
+      const testCase =
+        "exponential exp from (n: Number, s: String) to (b: Bool, obj: MyObject)";
+      const { parser } = parseInput(testCase);
+      expect(parser.errors).toHaveLength(0);
+    });
+  });
+
   describe("morphism declaration", () => {
     it("should parse empty morphism declaration", () => {
       const testCase = "morphism test: exp { }";
@@ -106,7 +121,7 @@ describe("SpecParser", () => {
       const testCase = `constant MyObj: obj { s = "some string", n = 23, m = 23.4, f = MyMorphism, e = 1e-2 }`;
       const { parser } = parseInput(testCase);
       expect(parser.errors).toHaveLength(0);
-    })
+    });
 
     it("should parse multi-line constant definition", () => {
       const testCase = `
@@ -119,8 +134,8 @@ describe("SpecParser", () => {
       }`;
       const { parser } = parseInput(testCase);
       expect(parser.errors).toHaveLength(0);
-    })
-  })
+    });
+  });
 
   describe("subobject declaration", () => {
     it("should parse subobject declaration with a single constraint", () => {

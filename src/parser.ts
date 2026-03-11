@@ -12,6 +12,10 @@ import {
   WhereTok,
   AllTok,
   AnyTok,
+  NumberTok,
+  StringTok,
+  BoolTok,
+  UnitTok,
   LCurly,
   RCurly,
   LParen,
@@ -126,20 +130,20 @@ export class SpecParser extends CstParser {
 
   private predicateExpression = this.RULE("predicateExpression", () => {
     this.OR([
-        { ALT: () => this.SUBRULE(this.predicateBlock) },
-        { ALT: () => this.CONSUME(SingleString) }
+      { ALT: () => this.SUBRULE(this.predicateBlock) },
+      { ALT: () => this.CONSUME(SingleString) },
     ]);
   });
 
   private predicateBlock = this.RULE("predicateBlock", () => {
     this.OR([
-        { ALT: () => this.CONSUME(AllTok) },
-        { ALT: () => this.CONSUME(AnyTok) }
+      { ALT: () => this.CONSUME(AllTok) },
+      { ALT: () => this.CONSUME(AnyTok) },
     ]);
     this.CONSUME(LCurly);
     this.MANY_SEP({
-        SEP: Comma,
-        DEF: () => this.SUBRULE3(this.predicateExpression)
+      SEP: Comma,
+      DEF: () => this.SUBRULE3(this.predicateExpression),
     });
     this.CONSUME(RCurly);
   });
@@ -184,6 +188,12 @@ export class SpecParser extends CstParser {
   });
 
   private atomicType = this.RULE("atomicType", () => {
-    this.CONSUME(Identifier);
+    this.OR([
+      { ALT: () => this.CONSUME(NumberTok) },
+      { ALT: () => this.CONSUME(StringTok) },
+      { ALT: () => this.CONSUME(BoolTok) },
+      { ALT: () => this.CONSUME(UnitTok) },
+      { ALT: () => this.CONSUME(Identifier) },
+    ]);
   });
 }

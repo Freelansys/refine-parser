@@ -42,6 +42,27 @@ export const AllTok = createToken({ name: "AllTok", pattern: /all\b/ });
 export const AnyTok = createToken({ name: "AnyTok", pattern: /any\b/ });
 
 // -----------------
+// Base Types
+// -----------------
+
+export const NumberTok = createToken({
+  name: "NumberTok",
+  pattern: /Number\b/,
+});
+export const StringTok = createToken({
+  name: "StringTok",
+  pattern: /String\b/,
+});
+export const BoolTok = createToken({
+  name: "BoolTok",
+  pattern: /Bool\b/,
+});
+export const UnitTok = createToken({
+  name: "UnitTok",
+  pattern: /Unit\b/,
+});
+
+// -----------------
 // Symbols
 // -----------------
 
@@ -91,6 +112,11 @@ export const allTokens = [
   WhereTok,
   AllTok,
   AnyTok,
+
+  NumberTok,
+  StringTok,
+  BoolTok,
+  UnitTok,
 
   LCurly,
   RCurly,
