@@ -14,6 +14,10 @@ export const WhiteSpace = createToken({
 // Keywords
 // -----------------
 
+export const LetTok = createToken({
+  name: "LetTok",
+  pattern: /let\b/,
+});
 export const ObjectTok = createToken({
   name: "ObjectTok",
   pattern: /object\b/,
@@ -101,6 +105,7 @@ export const Identifier = createToken({
 export const allTokens = [
   WhiteSpace,
 
+  LetTok,
   ObjectTok,
   ExponentialTok,
   MorphismTok,

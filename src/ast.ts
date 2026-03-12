@@ -7,7 +7,8 @@ export type Declaration =
   | ExponentialDecl
   | MorphismDecl
   | ConstantDecl
-  | SubobjectDecl;
+  | SubobjectDecl
+  | LetDecl;
 
 export interface ObjectDecl {
   kind: "ObjectDecl";
@@ -51,6 +52,12 @@ export interface SubobjectDecl {
   name: string;
   parent: string;
   predicates: PredicateExpression;
+}
+
+export interface LetDecl {
+  kind: "LetDecl";
+  name: string;
+  fields: TypedBinding[];
 }
 
 export type PredicateExpression =

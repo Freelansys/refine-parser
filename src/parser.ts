@@ -26,6 +26,7 @@ import {
   Identifier,
   SingleString,
   NumberLiteral,
+  LetTok,
 } from "./lexer.js";
 
 export class SpecParser extends CstParser {
@@ -47,6 +48,7 @@ export class SpecParser extends CstParser {
       { ALT: () => this.SUBRULE(this.morphismDecl) },
       { ALT: () => this.SUBRULE(this.constantDecl) },
       { ALT: () => this.SUBRULE(this.subobjectDecl) },
+      { ALT: () => this.SUBRULE(this.letDecl) },
     ]);
   });
 
@@ -126,6 +128,15 @@ export class SpecParser extends CstParser {
     this.CONSUME2(Identifier);
     this.CONSUME(WhereTok);
     this.SUBRULE(this.predicateExpression);
+  });
+
+  private letDecl = this.RULE("letDecl", () => {
+    this.CONSUME(LetTok);
+    this.CONSUME(Identifier);
+    this.CONSUME(Equals);
+    this.CONSUME(LParen);
+    this.SUBRULE(this.typedBindingList);
+    this.CONSUME(RParen);
   });
 
   private predicateExpression = this.RULE("predicateExpression", () => {

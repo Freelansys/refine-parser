@@ -13,6 +13,7 @@ import type {
   NamedType,
   Statement,
   PredicateExpression,
+  LetDecl,
 } from "./ast.js";
 import { SpecLexer } from "./lexer.js";
 import { SpecParser } from "./parser.js";
@@ -117,6 +118,14 @@ export class SpecParserVisitor
       ctx.predicateExpression[0],
     );
     return { kind: "SubobjectDecl", name, parent, predicates };
+  }
+
+  letDecl(ctx: any): LetDecl {
+    const name = ctx.Identifier[0].image;
+    const fields: TypedBinding[] = ctx.typedBindingList
+      ? this.visit(ctx.typedBindingList[0])
+      : [];
+    return { kind: "LetDecl", name, fields };
   }
 
   predicateExpression(ctx: any): PredicateExpression {

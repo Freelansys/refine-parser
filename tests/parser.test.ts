@@ -12,6 +12,30 @@ function parseInput(text: string) {
 }
 
 describe("SpecParser", () => {
+  describe("let declaration", () => {
+    it("should parse let declaration with single field", () => {
+      const testCase = "let test = (s: string)";
+      const { parser } = parseInput(testCase);
+      expect(parser.errors).toHaveLength(0);
+    });
+
+    it("should parse let declaration with multiple fields", () => {
+      const testCase = "let test = (s: string, n: number)";
+      const { parser } = parseInput(testCase);
+      expect(parser.errors).toHaveLength(0);
+    });
+
+    it("should parse let declaration with multi-line fields", () => {
+      const testCase = `
+      let test = (
+        s: string,
+        n: number
+      )`;
+      const { parser } = parseInput(testCase);
+      expect(parser.errors).toHaveLength(0);
+    });
+  });
+
   describe("object declaration", () => {
     it("should parse empty object declaration", () => {
       const testCase = "object test { }";
