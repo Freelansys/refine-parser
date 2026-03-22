@@ -4,7 +4,7 @@ import { SpexLexer } from "../src/lexer.js";
 describe("SpecLexer", () => {
   describe("tokenization", () => {
     it("should tokenize keywords", () => {
-      const result = SpexLexer.tokenize("object let select where if then else");
+      const result = SpexLexer.tokenize("object let select where if then else eval given");
       expect(result.errors).toHaveLength(0);
       expect(result.tokens.map((t) => t.tokenType.name)).toEqual([
         "ObjectTok",
@@ -14,6 +14,8 @@ describe("SpecLexer", () => {
         "IfTok",
         "ThenTok",
         "ElseTok",
+        "EvalTok",
+        "GivenTok"
       ]);
     });
 

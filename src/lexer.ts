@@ -27,6 +27,8 @@ export const WhereTok = createToken({ name: "WhereTok", pattern: /where\b/ });
 export const IfTok = createToken({ name: "IfTok", pattern: /if\b/ });
 export const ThenTok = createToken({ name: "ThenTok", pattern: /then\b/ });
 export const ElseTok = createToken({ name: "ElseTok", pattern: /else\b/ });
+export const EvalTok = createToken({ name: "EvalTok", pattern: /eval\b/ });
+export const GivenTok = createToken({ name: "GivenTok", pattern: /given\b/ });
 
 // -----------------
 // Symbols
@@ -86,6 +88,8 @@ export const allTokens = [
   IfTok,
   ThenTok,
   ElseTok,
+  EvalTok,
+  GivenTok,
 
   ArrowTok,
   LCurly,
