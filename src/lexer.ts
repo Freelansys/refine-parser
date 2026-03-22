@@ -34,8 +34,8 @@ export const ElseTok = createToken({ name: "ElseTok", pattern: /else\b/ });
 export const ArrowTok = createToken({ name: "ArrowTok", pattern: /->/ });
 export const LCurly = createToken({ name: "LCurly", pattern: /{/ });
 export const RCurly = createToken({ name: "RCurly", pattern: /}/ });
-export const LBracket = createToken({ name: "LCurly", pattern: /\[/ });
-export const RBracket = createToken({ name: "RCurly", pattern: /\]/ });
+export const LBracket = createToken({ name: "LBracket", pattern: /\[/ });
+export const RBracket = createToken({ name: "RBracket", pattern: /\]/ });
 export const LParen = createToken({ name: "LParen", pattern: /\(/ });
 export const RParen = createToken({ name: "RParen", pattern: /\)/ });
 export const Colon = createToken({ name: "Colon", pattern: /:/ });
@@ -46,8 +46,8 @@ export const Equals = createToken({ name: "Equals", pattern: /=/ });
 // Constants
 // -----------------
 
-export const SingleString = createToken({
-  name: "SingleString",
+export const StringLiteral = createToken({
+  name: "StringLiteral",
   pattern: /"([^"\\]|\\.)*"/,
 });
 
@@ -57,8 +57,13 @@ export const NumberLiteral = createToken({
 });
 
 export const BoolLiteral = createToken({
-  name: "NumberLiteral",
-  pattern: /\b(true|false)\b/g,
+  name: "BoolLiteral",
+  pattern: /\b(true|false)\b/,
+});
+
+export const Instruction = createToken({
+  name: "Instruction",
+  pattern: /"([^"\\]|\\.)*"/,
 });
 
 // -----------------
@@ -93,9 +98,10 @@ export const allTokens = [
   Comma,
   Equals,
 
-  SingleString,
+  StringLiteral,
   NumberLiteral,
   BoolLiteral,
+  Instruction,
 
   Identifier,
 ];
