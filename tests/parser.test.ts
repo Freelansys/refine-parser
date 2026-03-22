@@ -114,6 +114,18 @@ describe("SpecParser", () => {
       expect(parser.errors).toHaveLength(0);
     });
 
+    it("should parse eval expression declaration", () => {
+      const testCase = `let test: Number = eval "return 2"`;
+      const { parser } = parseInput(testCase);
+      expect(parser.errors).toHaveLength(0);
+    });
+
+    it("should parse eval with given expression declaration", () => {
+      const testCase = `let test: Number = eval "return \${a}" given { a: 2 }`;
+      const { parser } = parseInput(testCase);
+      expect(parser.errors).toHaveLength(0);
+    });
+
     it("should parse named object instance declaration", () => {
       const testCase = "let test: Number = last";
       const { parser } = parseInput(testCase);
@@ -128,6 +140,18 @@ describe("SpecParser", () => {
 
     it("should parse product object instance declaration with trailing commas", () => {
       const testCase = "let test: (s: String, n: Number) = { s: 'hello', n: 1, }";
+      const { parser } = parseInput(testCase);
+      expect(parser.errors).toHaveLength(0);
+    });
+
+    it("should parse exponential object instance with named instance declaration", () => {
+      const testCase = `let test: String -> Number = countAs`;
+      const { parser } = parseInput(testCase);
+      expect(parser.errors).toHaveLength(0);
+    });
+
+    it("should parse exponential object named instance declaration", () => {
+      const testCase = `let test: String -> Number = countAs given { mul: Number }`;
       const { parser } = parseInput(testCase);
       expect(parser.errors).toHaveLength(0);
     });
@@ -149,6 +173,17 @@ describe("SpecParser", () => {
     it("should parse exponential object instance composition declaration with multiple instruction", () => {
       const testCase = `let test: String -> Number = [
         let count: Number = eval "count 'a's in the string",
+        "return \${count}*2"
+      ]`;
+      const { parser } = parseInput(testCase);
+      expect(parser.errors).toHaveLength(0);
+    });
+
+    it("should parse exponential object instance composition declaration with named instances", () => {
+      const testCase = `let test: String -> Number = [
+        let count: Number = eval "count 'a's in the string",
+        doThis,
+        doThat given { s: String },
         "return \${count}*2"
       ]`;
       const { parser } = parseInput(testCase);
