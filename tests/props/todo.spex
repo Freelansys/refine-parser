@@ -1,0 +1,76 @@
+object Todo = (
+  id: Number,
+  title: String,
+  description: String,
+  completed: Bool,
+  createdAt: String,
+)
+object Database =  (
+  path: String
+)
+object CliInput = (
+  command: String,
+  arg1: Optional<String>,
+  arg2: Optional<String>
+)
+
+object ActiveTodo = select Todo where "${completed} is false"
+
+object Main = (args: List<String>) -> Unit
+object InitDb = Database -> Unit
+object AddTodo = (db: Database, title: String, description: String) -> Todo
+object ListTodos = Database -> ()
+object GetTodo = (db: Database, id: Integer) -> Todo
+object RemoveTodo = (db: Database, id: Integer) -> Bool
+object CompleteTodo = (db: Database, todo: ActiveTodo) -> Unit
+object PrintTodo = Todo -> Unit
+
+let Config: Database = {
+  path: 'todo.db'
+}
+
+let initDb: InitDb = [
+  "connect to sqlite database at ${path}",
+  "create table todos with columns id, title, description, completed, createdAt"
+]
+let addTodo: AddTodo =[
+  let createdAt: String = eval "get the current time from the os",
+  let completed: Bool = false,
+  "insert new row into sqlite table todos of ${db} with the given ${title}, ${description}, ${completed} and ${createdAt}",
+  let todo: Todo = eval "create a Todo using the assigned id of the row in the table",
+  "return ${todo}"
+]
+let getTodo: GetTodo = [
+  let todo: Todo = eval "query the sqlite table todo in ${db} using the given ${id}",
+  "return ${todo}"
+]
+let listTodos: ListTodos [
+  let todos: List<Todo> = eval "query sqlite table todos in ${db}",
+  List.map(printTodo, todos)
+]
+let completeTodo: CompleteTodo = [
+  "update the row with the given ${todo.id} in table todos of the sqlite ${db} by setting completed = true"
+]
+let removeTodo: RemoveTodo [
+  "delete the row with the given ${id} from table todos of the sqlite ${db}"
+]
+let printTodo: PrintTodo [
+  "print ${id}, ${title}, ${completed}"
+]
+
+let main: Main = [
+  let input: CliInput = eval "read command and arguments from cli",
+
+  if "${input.command} == 'init'" then initDb given Config,
+
+  if "${input.command} == 'add'" then addTodo given { db = Config, title = input.arg1, description = input.arg2 },
+
+  if "${input.command} == 'list'" then listTodos given Config,
+
+  if "${input.command} == 'done'" then [
+    let todo: Todo = eval getTodo given { db = Config, id = input.arg1 },
+    completeTodo given { db = Config, todo = todo }
+  ],
+
+  if "${input.command} == 'rm'" then removeTodo given { db = Config, id = input.arg1 }
+]
