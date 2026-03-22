@@ -1,379 +1,246 @@
 import { describe, it, expect } from "vitest";
 import { parseToAst } from "../src/visitor.js";
 import type {
-  SpecFile,
-  ObjectDecl,
-  ExponentialDecl,
-  MorphismDecl,
-  SubobjectDecl,
-  ConstantDecl,
+  ObjectDeclaration,
+  SpexFile,
 } from "../src/ast.js";
 
 describe("SpecParserVisitor", () => {
   describe("object declaration", () => {
-    it("should convert empty object declaration to AST", () => {
-      const ast = parseToAst("object test { }");
-      expect(ast.declarations).toHaveLength(1);
-      const decl = ast.declarations[0] as ObjectDecl;
-      expect(decl.kind).toBe("ObjectDecl");
-      expect(decl.name).toBe("test");
-      expect(decl.fields).toHaveLength(0);
-    });
-
-    it("should convert object declaration with single field to AST", () => {
-      const ast = parseToAst("object test { s: string }");
-      const decl = ast.declarations[0] as ObjectDecl;
-      expect(decl.fields).toHaveLength(1);
-      expect(decl.fields[0].name).toBe("s");
-      expect(decl.fields[0].type.kind).toBe("NamedType");
-      expect(decl.fields[0].type.name).toBe("string");
-    });
-
-    it("should convert object declaration with multiple fields to AST", () => {
-      const ast = parseToAst("object test { s: string, n: number }");
-      const decl = ast.declarations[0] as ObjectDecl;
-      expect(decl.fields).toHaveLength(2);
-      expect(decl.fields[0].name).toBe("s");
-      expect(decl.fields[0].type.name).toBe("string");
-      expect(decl.fields[1].name).toBe("n");
-      expect(decl.fields[1].type.name).toBe("number");
-    });
-  });
-
-  describe("exponential declaration", () => {
-    it("should convert exponential declaration with single input and output to AST", () => {
-      const ast = parseToAst("exponential exp from (s: string) to (n: number)");
-      const decl = ast.declarations[0] as ExponentialDecl;
-      expect(decl.kind).toBe("ExponentialDecl");
-      expect(decl.name).toBe("exp");
-      expect(decl.input).toHaveLength(1);
-      expect(decl.input[0].name).toBe("s");
-      expect(decl.input[0].type.name).toBe("string");
-      expect(decl.output).toHaveLength(1);
-      expect(decl.output[0].name).toBe("n");
-      expect(decl.output[0].type.name).toBe("number");
-    });
-
-    it("should convert exponential declaration with multiple inputs to AST", () => {
-      const ast = parseToAst(
-        "exponential exp from (s: string, n: number) to (m: number)",
-      );
-      const decl = ast.declarations[0] as ExponentialDecl;
-      expect(decl.input).toHaveLength(2);
-      expect(decl.input[0].name).toBe("s");
-      expect(decl.input[1].name).toBe("n");
-      expect(decl.output).toHaveLength(1);
-    });
-
-    it("should convert exponential declaration with multiple outputs to AST", () => {
-      const ast = parseToAst(
-        "exponential exp from (s: string) to (n: number, b: bool)",
-      );
-      const decl = ast.declarations[0] as ExponentialDecl;
-      expect(decl.input).toHaveLength(1);
-      expect(decl.output).toHaveLength(2);
-      expect(decl.output[0].name).toBe("n");
-      expect(decl.output[0].type.name).toBe("number");
-      expect(decl.output[1].name).toBe("b");
-      expect(decl.output[1].type.name).toBe("bool");
-    });
-  });
-
-  describe("constant declaration", () => {
-    it("should convert constant definition to AST and verify all bindings including values", () => {
-      const testCase = `
-      constant MyObj: obj {
-        s = "some string",
-        n = 23,
-        m = 23.4,
-        f = MyMorphism,
-        e = 1e-2
-      }`;
+    it("should convert named object declaration to AST", () => {
+      const testCase = "object MyObject = Number";
       const ast = parseToAst(testCase);
-      const decl = ast.declarations[0] as ConstantDecl;
-      expect(decl.kind).toBe("ConstantDecl");
-      expect(decl.name).toBe("MyObj");
-      expect(decl.type.name).toBe("obj");
-      expect(decl.bindings).toHaveLength(5);
-      expect(decl.bindings[0].name).toBe("s");
-      expect(decl.bindings[0].value.kind).toBe("StringValue");
-      expect(decl.bindings[0].value.value).toBe("some string");
-      expect(decl.bindings[1].name).toBe("n");
-      expect(decl.bindings[1].value.kind).toBe("NumberValue");
-      expect(decl.bindings[1].value.value).toBe(23);
-      expect(decl.bindings[2].name).toBe("m");
-      expect(decl.bindings[2].value.kind).toBe("NumberValue");
-      expect(decl.bindings[2].value.value).toBe(23.4);
-      expect(decl.bindings[3].name).toBe("f");
-      expect(decl.bindings[3].value.kind).toBe("IdentifierValue");
-      expect(decl.bindings[3].value.value).toBe("MyMorphism");
-      expect(decl.bindings[4].name).toBe("e");
-      expect(decl.bindings[4].value.kind).toBe("NumberValue");
-      expect(decl.bindings[4].value.value).toBe(1e-2);
-    });
-  });
-
-  describe("morphism declaration", () => {
-    it("should convert empty morphism declaration to AST", () => {
-      const ast = parseToAst("morphism test: exp { }");
-      const decl = ast.declarations[0] as MorphismDecl;
-      expect(decl.kind).toBe("MorphismDecl");
-      expect(decl.name).toBe("test");
-      expect(decl.exponential).toBe("exp");
-      expect(decl.body).toHaveLength(0);
-    });
-
-    it("should convert morphism declaration with body to AST", () => {
-      const ast = parseToAst('morphism test: exp { "hello" }');
-      const decl = ast.declarations[0] as MorphismDecl;
-      expect(decl.body).toHaveLength(1);
-      expect(decl.body[0].kind).toBe("StringLiteral");
-      expect(decl.body[0].value).toBe("hello");
-    });
-
-    it("should convert morphism declaration with multiple statements to AST", () => {
-      const ast = parseToAst('morphism test: exp { "hello" "world" }');
-      const decl = ast.declarations[0] as MorphismDecl;
-      expect(decl.body).toHaveLength(2);
-      expect(decl.body[0].value).toBe("hello");
-      expect(decl.body[1].value).toBe("world");
-    });
-  });
-
-  describe("subobject declaration", () => {
-    it("should convert subobject declaration with a single constraint to AST", () => {
-      const ast = parseToAst(`subobject Cat of Animal where "is cute"`);
-      const decl = ast.declarations[0] as SubobjectDecl;
+      const decl = ast.declarations[0] as ObjectDeclaration;
       expect(decl).toEqual({
-        kind: "SubobjectDecl",
-        name: "Cat",
-        parent: "Animal",
-        predicates: {
-          kind: "Predicate",
-          value: "is cute",
-        },
+        kind: "ObjectDeclaration",
+        name: "MyObject",
+        object: {
+          kind: "NamedObject",
+          name: "Number"
+        }
       });
     });
 
-    it("should convert subobject declaration with a single constraint in conjunctive form to AST", () => {
-      const ast = parseToAst(`subobject Cat of Animal where all ( "is cute" )`);
-      const decl = ast.declarations[0] as SubobjectDecl;
-      expect(decl).toEqual({
-        kind: "SubobjectDecl",
-        name: "Cat",
-        parent: "Animal",
-        predicates: {
-          kind: "Conjunction",
-          value: [
-            {
-              kind: "Predicate",
-              value: "is cute",
-            },
-          ],
-        },
-      });
+    it("should convert product object declaration to AST", () => {
+      const testCase = "object MyProduct = (n: Number, s: String)";
+      const ast = parseToAst(testCase);
+      throw Error("not implemented")
     });
 
-    it("should convert subobject declaration with a single constraint in disjunctive form to AST", () => {
-      const ast = parseToAst(`subobject Cat of Animal where any ( "is cute" )`);
-      const decl = ast.declarations[0] as SubobjectDecl;
-      expect(decl).toEqual({
-        kind: "SubobjectDecl",
-        name: "Cat",
-        parent: "Animal",
-        predicates: {
-          kind: "Disjunction",
-          value: [
-            {
-              kind: "Predicate",
-              value: "is cute",
-            },
-          ],
-        },
-      });
+    it("should convert product object declaration with trailing commas to AST", () => {
+      const testCase = "object MyProduct = (n: Number, s: String,)";
+      const ast = parseToAst(testCase);
+      throw Error("not implemented")
     });
 
-    it("should convert subobject declaration with multiple constraints in conjunctive form to AST", () => {
-      const ast = parseToAst(
-        `subobject Cat of Animal where all ( "is cute", "has pointy ears" )`,
-      );
-      const decl = ast.declarations[0] as SubobjectDecl;
-      expect(decl).toEqual({
-        kind: "SubobjectDecl",
-        name: "Cat",
-        parent: "Animal",
-        predicates: {
-          kind: "Conjunction",
-          value: [
-            {
-              kind: "Predicate",
-              value: "is cute",
-            },
-            {
-              kind: "Predicate",
-              value: "has pointy ears",
-            },
-          ],
-        },
-      });
+    it("should convert product object declaration with exponential objects to AST", () => {
+      const testCase = "object MyProduct = (f: Number -> String, n: Number)";
+      const ast = parseToAst(testCase);
+      throw Error("not implemented")
     });
 
-    it("should convert subobject declaration with multiple constraints in disjunctive form to AST", () => {
-      const ast = parseToAst(
-        `subobject Cat of Animal where any ( "is cute", "has pointy ears" )`,
-      );
-      const decl = ast.declarations[0] as SubobjectDecl;
-      expect(decl).toEqual({
-        kind: "SubobjectDecl",
-        name: "Cat",
-        parent: "Animal",
-        predicates: {
-          kind: "Disjunction",
-          value: [
-            {
-              kind: "Predicate",
-              value: "is cute",
-            },
-            {
-              kind: "Predicate",
-              value: "has pointy ears",
-            },
-          ],
-        },
-      });
+    it("should convert product object declaration with subobjects to AST", () => {
+      const testCase = `object MyProduct = (p: select Number where "value is positive", n: Number)`;
+      const ast = parseToAst(testCase);
+      throw Error("not implemented")
     });
 
-    it("should convert subobject declaration with complex constraints to AST", () => {
-      const ast = parseToAst(
-        `subobject Cat of Animal where all (
-          "is cute",
-          any ("is brown", "is black")
-        )`,
-      );
-      const decl = ast.declarations[0] as SubobjectDecl;
-      expect(decl).toEqual({
-        kind: "SubobjectDecl",
-        name: "Cat",
-        parent: "Animal",
-        predicates: {
-          kind: "Conjunction",
-          value: [
-            {
-              kind: "Predicate",
-              value: "is cute",
-            },
-            {
-              kind: "Disjunction",
-              value: [
-                {
-                  kind: "Predicate",
-                  value: "is brown",
-                },
-                {
-                  kind: "Predicate",
-                  value: "is black",
-                },
-              ],
-            },
-          ],
-        },
-      });
+    it("should convert exponential object declaration with named object to AST", () => {
+      const testCase = "object MyExponential = Number -> Unit";
+      const ast = parseToAst(testCase);
+      throw Error("not implemented")
+    });
+
+    it("should convert exponential object declaration with product objects to AST", () => {
+      const testCase = "object MyExponential = (n: Number) -> (s: String)";
+      const ast = parseToAst(testCase);
+      throw Error("not implemented")
+    });
+
+    it("should convert exponential object declaration with exponential objects to AST", () => {
+      const testCase = "object MyExponential = (f: Number -> String, n: Number) -> String";
+      const ast = parseToAst(testCase);
+      throw Error("not implemented")
+    });
+
+    it("should convert exponential object declaration with subobjects to AST", () => {
+      const testCase = `object MyExponential = select Number where "value is positive" -> select Number where "value is positive"`;
+      const ast = parseToAst(testCase);
+      throw Error("not implemented")
+    });
+
+    it("should convert subobject declaration with named objects to AST", () => {
+      const testCase = `object PositiveNumber = select Number where isPositive`;
+      const ast = parseToAst(testCase);
+      throw Error("not implemented")
+    });
+
+    it("should convert subobject declaration with named objects and instruction condition to AST", () => {
+      const testCase = `object PositiveNumber = select Number where "the number is positive"`;
+      const ast = parseToAst(testCase);
+      throw Error("not implemented")
+    });
+
+    it("should convert subobject declaration with named objects and composition condition to AST", () => {
+      const testCase = `object PositiveNumber = select Number where [
+        let isPositive: Bool = "the number is positive",
+        "return true if both \${isPositive} and odd"
+      ]`;
+      const ast = parseToAst(testCase);
+      throw Error("not implemented")
+    });
+
+    it("should convert subobject declaration with product objects to AST", () => {
+      const testCase = `object MySubobject = select (n: Number, s: String) where "\${n} is positive"`;
+      const ast = parseToAst(testCase);
+      throw Error("not implemented")
+    });
+
+    it("should convert subobject declaration with exponential objects to AST", () => {
+      const testCase = `object MySubobject = select (n: Number, s: String) -> Bool where "logs the given input"`;
+      const ast = parseToAst(testCase);
+      throw Error("not implemented")
+    });
+
+    it("should convert subobject declaration with subobjects to AST", () => {
+      const testCase = `object MySubobject = select select Number where "value is positive" where "value is odd"`;
+      const ast = parseToAst(testCase);
+      throw Error("not implemented")
     });
   });
 
-  describe("base types in object declarations", () => {
-    it("should convert object declaration with base types to AST", () => {
-      const ast = parseToAst("object test { n: Number, s: String }");
-      const decl = ast.declarations[0] as ObjectDecl;
-      expect(decl.fields).toHaveLength(2);
-      expect(decl.fields[0].name).toBe("n");
-      expect(decl.fields[0].type.name).toBe("Number");
-      expect(decl.fields[1].name).toBe("s");
-      expect(decl.fields[1].type.name).toBe("String");
+  describe("instance declaration", () => {
+    it("should convert literal declaration to AST", () => {
+      const testCase = "let test: Number = 1";
+      const ast = parseToAst(testCase);
+      throw Error("not implemented")
     });
 
-    it("should convert object declaration with mixed base and named types to AST", () => {
-      const ast = parseToAst(
-        "object test { n: Number, s: String, obj: MyObject }",
-      );
-      const decl = ast.declarations[0] as ObjectDecl;
-      expect(decl.fields).toHaveLength(3);
-      expect(decl.fields[0].name).toBe("n");
-      expect(decl.fields[0].type.name).toBe("Number");
-      expect(decl.fields[1].name).toBe("s");
-      expect(decl.fields[1].type.name).toBe("String");
-      expect(decl.fields[2].name).toBe("obj");
-      expect(decl.fields[2].type.name).toBe("MyObject");
-    });
-  });
-
-  describe("exponential declaration", () => {
-    it("should convert exponential declaration with single input and output to AST", () => {
-      const ast = parseToAst("exponential exp from (s: string) to (n: number)");
-      const decl = ast.declarations[0] as ExponentialDecl;
-      expect(decl.kind).toBe("ExponentialDecl");
-      expect(decl.name).toBe("exp");
-      expect(decl.input).toHaveLength(1);
-      expect(decl.input[0].name).toBe("s");
-      expect(decl.input[0].type.name).toBe("string");
-      expect(decl.output).toHaveLength(1);
-      expect(decl.output[0].name).toBe("n");
-      expect(decl.output[0].type.name).toBe("number");
+    it("should convert eval expression declaration to AST", () => {
+      const testCase = `let test: Number = eval "return 2"`;
+      const ast = parseToAst(testCase);
+      throw Error("not implemented")
     });
 
-    it("should convert exponential declaration with multiple inputs to AST", () => {
-      const ast = parseToAst(
-        "exponential exp from (s: string, n: number) to (m: number)",
-      );
-      const decl = ast.declarations[0] as ExponentialDecl;
-      expect(decl.input).toHaveLength(2);
-      expect(decl.input[0].name).toBe("s");
-      expect(decl.input[1].name).toBe("n");
-      expect(decl.output).toHaveLength(1);
+    it("should convert eval with given expression declaration to AST", () => {
+      const testCase = `let test: Number = eval "return \${a}" given { a: 2 }`;
+      const ast = parseToAst(testCase);
+      throw Error("not implemented")
     });
 
-    it("should convert exponential declaration with multiple outputs to AST", () => {
-      const ast = parseToAst(
-        "exponential exp from (s: string) to (n: number, b: bool)",
-      );
-      const decl = ast.declarations[0] as ExponentialDecl;
-      expect(decl.input).toHaveLength(1);
-      expect(decl.output).toHaveLength(2);
-      expect(decl.output[0].name).toBe("n");
-      expect(decl.output[0].type.name).toBe("number");
-      expect(decl.output[1].name).toBe("b");
-      expect(decl.output[1].type.name).toBe("bool");
+    it("should convert named object instance declaration to AST", () => {
+      const testCase = "let test: Number = last";
+      const ast = parseToAst(testCase);
+      throw Error("not implemented")
     });
 
-    it("should convert exponential declaration with base types to AST", () => {
-      const ast = parseToAst("exponential exp from (n: Number) to (s: String)");
-      const decl = ast.declarations[0] as ExponentialDecl;
-      expect(decl.input).toHaveLength(1);
-      expect(decl.input[0].name).toBe("n");
-      expect(decl.input[0].type.name).toBe("Number");
-      expect(decl.output).toHaveLength(1);
-      expect(decl.output[0].name).toBe("s");
-      expect(decl.output[0].type.name).toBe("String");
+    it("should convert product object instance declaration to AST", () => {
+      const testCase = "let test: (s: String, n: Number) = { s: 'hello', n: 1 }";
+      const ast = parseToAst(testCase);
+      throw Error("not implemented")
     });
-  });
 
-  describe("multiple declarations", () => {
-    it("should convert multiple declarations to AST", () => {
-      const ast = parseToAst(`
-        exponential exp from (s: string) to (n: number)
-        morphism test: exp { "hello" }
-        subobject Student of Person where "is enrolled"
-      `);
-      expect(ast.declarations).toHaveLength(3);
-      expect(ast.declarations[0].kind).toBe("ExponentialDecl");
-      expect(ast.declarations[1].kind).toBe("MorphismDecl");
-      expect(ast.declarations[2].kind).toBe("SubobjectDecl");
+    it("should convert product object instance declaration with trailing commas to AST", () => {
+      const testCase = "let test: (s: String, n: Number) = { s: 'hello', n: 1, }";
+      const ast = parseToAst(testCase);
+      throw Error("not implemented")
     });
-  });
 
-  describe("error handling", () => {
-    it("should throw error for invalid syntax", () => {
-      expect(() => parseToAst("object test { s: }")).toThrow();
+    it("should convert exponential object instance with named instance declaration to AST", () => {
+      const testCase = `let test: String -> Number = countAs`;
+      const ast = parseToAst(testCase);
+      throw Error("not implemented")
+    });
+
+    it("should convert exponential object named instance declaration to AST", () => {
+      const testCase = `let test: String -> Number = countAs given { mul: Number }`;
+      const ast = parseToAst(testCase);
+      throw Error("not implemented")
+    });
+
+    it("should convert exponential object instance instruction declaration to AST", () => {
+      const testCase = `let test: String -> Number = "count 'a's in the string"`;
+      const ast = parseToAst(testCase);
+      throw Error("not implemented")
+    });
+
+    it("should convert exponential object instance composition declaration with single instruction to AST", () => {
+      const testCase = `let test: String -> Number = [
+        "count 'a's in the string and return it"
+      ]`;
+      const ast = parseToAst(testCase);
+      throw Error("not implemented")
+    });
+
+    it("should convert exponential object instance composition declaration with multiple instruction to AST", () => {
+      const testCase = `let test: String -> Number = [
+        let count: Number = eval "count 'a's in the string",
+        "return \${count}*2"
+      ]`;
+      const ast = parseToAst(testCase);
+      throw Error("not implemented")
+    });
+
+    it("should convert exponential object instance composition declaration with named instances to AST", () => {
+      const testCase = `let test: String -> Number = [
+        let count: Number = eval "count 'a's in the string",
+        doThis,
+        doThat given { s: String },
+        "return \${count}*2"
+      ]`;
+      const ast = parseToAst(testCase);
+      throw Error("not implemented")
+    });
+
+    it("should convert exponential object instance composition declaration with trailing commas to AST", () => {
+      const testCase = `let test: String -> Number = [
+        let count: Number = eval "count 'a's in the string",
+        "return \${count}*2",
+      ]`;
+      const ast = parseToAst(testCase);
+      throw Error("not implemented")
+    });
+
+    it("should convert exponential object instance composition declaration with if expression to AST", () => {
+      const testCase = `let test: String -> Number = [
+        let count: Number = eval "count 'a's in the string",
+        if true then "return \${count}*2"
+      ]`;
+      const ast = parseToAst(testCase);
+      throw Error("not implemented")
+    });
+
+    it("should convert exponential object instance composition declaration with if and eval expression to AST", () => {
+      const testCase = `let test: String -> Number = [
+        let count: Number = eval "count 'a's in the string",
+        if eval "return true" then "return \${count}*2"
+      ]`;
+      const ast = parseToAst(testCase);
+      throw Error("not implemented")
+    });
+
+    it("should convert exponential object instance composition declaration with if else expression to AST", () => {
+      const testCase = `let test: String -> Number = [
+        let count: Number = eval "count 'a's in the string",
+        if true then "return \${count}*2" else "return -1"
+      ]`;
+      const ast = parseToAst(testCase);
+      throw Error("not implemented")
+    });
+
+    it("should convert exponential object instance nested composition declaration with if else expression to AST", () => {
+      const testCase = `let test: String -> Number = [
+        let count: Number = eval "count 'a's in the string",
+        if true then [
+          "do something",
+          "return \${count}*2"
+        ] else [
+          "do something else,
+          "return -1",
+        ]
+      ]`;
+      const ast = parseToAst(testCase);
+      throw Error("not implemented")
     });
   });
 });
