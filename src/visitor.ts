@@ -70,15 +70,15 @@ export class SpexParserVisitor
 
   objectExpression(ctx: any): ObjectExpression {
     if (ctx.base) {
-      const base = this.visit(ctx.base);
+      const exponent = this.visit(ctx.base);
       if (ctx.exponent) {
         return {
           kind: "ExponentialObject",
-          base,
-          exponent: this.visit(ctx.exponent),
+          base: this.visit(ctx.exponent),
+          exponent,
         };
       }
-      return base;
+      return exponent;
     }
     throw new Error("Invalid object expression");
   }

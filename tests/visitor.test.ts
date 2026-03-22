@@ -64,8 +64,8 @@ describe("SpecParserVisitor", () => {
           fields: {
             f: {
               kind: "ExponentialObject",
-              base: { kind: "NamedObject", name: "Number" },
-              exponent: { kind: "NamedObject", name: "String" },
+              exponent: { kind: "NamedObject", name: "Number" },
+              base: { kind: "NamedObject", name: "String" },
             },
             n: { kind: "NamedObject", name: "Number" },
           },
@@ -103,8 +103,8 @@ describe("SpecParserVisitor", () => {
         name: "MyExponential",
         object: {
           kind: "ExponentialObject",
-          base: { kind: "NamedObject", name: "Number" },
-          exponent: { kind: "NamedObject", name: "Unit" },
+          exponent: { kind: "NamedObject", name: "Number" },
+          base: { kind: "NamedObject", name: "Unit" },
         },
       });
     });
@@ -118,13 +118,13 @@ describe("SpecParserVisitor", () => {
         name: "MyExponential",
         object: {
           kind: "ExponentialObject",
-          base: {
+          exponent: {
             kind: "ProductObject",
             fields: {
               n: { kind: "NamedObject", name: "Number" },
             },
           },
-          exponent: {
+          base: {
             kind: "ProductObject",
             fields: {
               s: { kind: "NamedObject", name: "String" },
@@ -144,18 +144,18 @@ describe("SpecParserVisitor", () => {
         name: "MyExponential",
         object: {
           kind: "ExponentialObject",
-          base: {
+          exponent: {
             kind: "ProductObject",
             fields: {
               f: {
                 kind: "ExponentialObject",
-                base: { kind: "NamedObject", name: "Number" },
-                exponent: { kind: "NamedObject", name: "String" },
+                exponent: { kind: "NamedObject", name: "Number" },
+                base: { kind: "NamedObject", name: "String" },
               },
               n: { kind: "NamedObject", name: "Number" },
             },
           },
-          exponent: { kind: "NamedObject", name: "String" },
+          base: { kind: "NamedObject", name: "String" },
         },
       });
     });
@@ -169,12 +169,12 @@ describe("SpecParserVisitor", () => {
         name: "MyExponential",
         object: {
           kind: "ExponentialObject",
-          base: {
+          exponent: {
             kind: "SubObject",
             base: { kind: "NamedObject", name: "Number" },
             constraint: { kind: "Instruction", text: "value is positive" },
           },
-          exponent: {
+          base: {
             kind: "SubObject",
             base: { kind: "NamedObject", name: "Number" },
             constraint: { kind: "Instruction", text: "value is positive" },
@@ -280,14 +280,14 @@ describe("SpecParserVisitor", () => {
           kind: "SubObject",
           base: {
             kind: "ExponentialObject",
-            base: {
+            exponent: {
               kind: "ProductObject",
               fields: {
                 n: { kind: "NamedObject", name: "Number" },
                 s: { kind: "NamedObject", name: "String" },
               },
             },
-            exponent: { kind: "NamedObject", name: "Bool" },
+            base: { kind: "NamedObject", name: "Bool" },
           },
           constraint: { kind: "Instruction", text: "logs the given input" },
         },
@@ -437,8 +437,8 @@ describe("SpecParserVisitor", () => {
         name: "test",
         type: {
           kind: "ExponentialObject",
-          base: { kind: "NamedObject", name: "String" },
-          exponent: { kind: "NamedObject", name: "Number" },
+          exponent: { kind: "NamedObject", name: "String" },
+          base: { kind: "NamedObject", name: "Number" },
         },
         instance: { kind: "NamedInstance", name: "countAs" },
       });
@@ -453,8 +453,8 @@ describe("SpecParserVisitor", () => {
         name: "test",
         type: {
           kind: "ExponentialObject",
-          base: { kind: "NamedObject", name: "String" },
-          exponent: { kind: "NamedObject", name: "Number" },
+          exponent: { kind: "NamedObject", name: "String" },
+          base: { kind: "NamedObject", name: "Number" },
         },
         instance: {
           kind: "GivenExpression",
@@ -478,8 +478,8 @@ describe("SpecParserVisitor", () => {
         name: "test",
         type: {
           kind: "ExponentialObject",
-          base: { kind: "NamedObject", name: "String" },
-          exponent: { kind: "NamedObject", name: "Number" },
+          exponent: { kind: "NamedObject", name: "String" },
+          base: { kind: "NamedObject", name: "Number" },
         },
         instance: { kind: "Instruction", text: "count 'a's in the string" },
       });
@@ -496,8 +496,8 @@ describe("SpecParserVisitor", () => {
         name: "test",
         type: {
           kind: "ExponentialObject",
-          base: { kind: "NamedObject", name: "String" },
-          exponent: { kind: "NamedObject", name: "Number" },
+          exponent: { kind: "NamedObject", name: "String" },
+          base: { kind: "NamedObject", name: "Number" },
         },
         instance: {
           kind: "Composition",
@@ -523,8 +523,8 @@ describe("SpecParserVisitor", () => {
         name: "test",
         type: {
           kind: "ExponentialObject",
-          base: { kind: "NamedObject", name: "String" },
-          exponent: { kind: "NamedObject", name: "Number" },
+          exponent: { kind: "NamedObject", name: "String" },
+          base: { kind: "NamedObject", name: "Number" },
         },
         instance: {
           kind: "Composition",
@@ -561,8 +561,8 @@ describe("SpecParserVisitor", () => {
         name: "test",
         type: {
           kind: "ExponentialObject",
-          base: { kind: "NamedObject", name: "String" },
-          exponent: { kind: "NamedObject", name: "Number" },
+          exponent: { kind: "NamedObject", name: "String" },
+          base: { kind: "NamedObject", name: "Number" },
         },
         instance: {
           kind: "Composition",
@@ -608,8 +608,8 @@ describe("SpecParserVisitor", () => {
         name: "test",
         type: {
           kind: "ExponentialObject",
-          base: { kind: "NamedObject", name: "String" },
-          exponent: { kind: "NamedObject", name: "Number" },
+          exponent: { kind: "NamedObject", name: "String" },
+          base: { kind: "NamedObject", name: "Number" },
         },
         instance: {
           kind: "Composition",
@@ -644,8 +644,8 @@ describe("SpecParserVisitor", () => {
         name: "test",
         type: {
           kind: "ExponentialObject",
-          base: { kind: "NamedObject", name: "String" },
-          exponent: { kind: "NamedObject", name: "Number" },
+          exponent: { kind: "NamedObject", name: "String" },
+          base: { kind: "NamedObject", name: "Number" },
         },
         instance: {
           kind: "Composition",
@@ -685,8 +685,8 @@ describe("SpecParserVisitor", () => {
         name: "test",
         type: {
           kind: "ExponentialObject",
-          base: { kind: "NamedObject", name: "String" },
-          exponent: { kind: "NamedObject", name: "Number" },
+          exponent: { kind: "NamedObject", name: "String" },
+          base: { kind: "NamedObject", name: "Number" },
         },
         instance: {
           kind: "Composition",
@@ -729,8 +729,8 @@ describe("SpecParserVisitor", () => {
         name: "test",
         type: {
           kind: "ExponentialObject",
-          base: { kind: "NamedObject", name: "String" },
-          exponent: { kind: "NamedObject", name: "Number" },
+          exponent: { kind: "NamedObject", name: "String" },
+          base: { kind: "NamedObject", name: "Number" },
         },
         instance: {
           kind: "Composition",
@@ -776,8 +776,8 @@ describe("SpecParserVisitor", () => {
         name: "test",
         type: {
           kind: "ExponentialObject",
-          base: { kind: "NamedObject", name: "String" },
-          exponent: { kind: "NamedObject", name: "Number" },
+          exponent: { kind: "NamedObject", name: "String" },
+          base: { kind: "NamedObject", name: "Number" },
         },
         instance: {
           kind: "Composition",
