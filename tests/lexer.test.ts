@@ -4,7 +4,9 @@ import { SpexLexer } from "../src/lexer.js";
 describe("SpecLexer", () => {
   describe("tokenization", () => {
     it("should tokenize keywords", () => {
-      const result = SpexLexer.tokenize("object let select where if then else eval given");
+      const result = SpexLexer.tokenize(
+        "object let select where if then else eval given",
+      );
       expect(result.errors).toHaveLength(0);
       expect(result.tokens.map((t) => t.tokenType.name)).toEqual([
         "ObjectTok",
@@ -15,7 +17,7 @@ describe("SpecLexer", () => {
         "ThenTok",
         "ElseTok",
         "EvalTok",
-        "GivenTok"
+        "GivenTok",
       ]);
     });
 
@@ -73,18 +75,20 @@ describe("SpecLexer", () => {
     });
 
     it("should handle keywords with word boundary", () => {
-      const result = SpexLexer.tokenize("objectfoo fooobject letfoo foolet fooselect selectfoo fooif iffoo thenfoo foothen elsefoo fooelse");
+      const result = SpexLexer.tokenize(
+        "objectfoo fooobject letfoo foolet fooselect selectfoo fooif iffoo thenfoo foothen elsefoo fooelse",
+      );
       expect(result.errors).toHaveLength(0);
-      expect(result.tokens.map((t) => t.tokenType.name)).toEqual([
+      expect(result.tokens.map((t) => t.tokenType.name)).toEqual(
         Array(12).fill("Identifier"),
-      ]);
+      );
     });
 
     it("should tokenize single-quoted strings", () => {
       const result = SpexLexer.tokenize("'hello world'");
       expect(result.errors).toHaveLength(0);
       expect(result.tokens).toHaveLength(1);
-      expect(result.tokens[0]?.tokenType.name).toBe("SingleString");
+      expect(result.tokens[0]?.tokenType.name).toBe("StringLiteral");
       expect(result.tokens[0]?.image).toBe("'hello world'");
     });
 
@@ -100,9 +104,9 @@ describe("SpecLexer", () => {
       const result = SpexLexer.tokenize("-1 1 0.2 1e-2 .2");
       expect(result.errors).toHaveLength(0);
       expect(result.tokens).toHaveLength(5);
-      expect(result.tokens.map((t) => t.tokenType.name)).toEqual([
+      expect(result.tokens.map((t) => t.tokenType.name)).toEqual(
         Array(5).fill("NumberLiteral"),
-      ]);
+      );
       expect(result.tokens.map((t) => t.image)).toEqual([
         "-1",
         "1",
@@ -120,10 +124,7 @@ describe("SpecLexer", () => {
         "BoolLiteral",
         "BoolLiteral",
       ]);
-      expect(result.tokens.map((t) => t.image)).toEqual([
-        "true",
-        "false",
-      ]);
+      expect(result.tokens.map((t) => t.image)).toEqual(["true", "false"]);
     });
   });
 
