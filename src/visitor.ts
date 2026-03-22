@@ -15,7 +15,7 @@ import type {
   PredicateExpression,
   LetDecl,
 } from "./ast.js";
-import { SpecLexer } from "./lexer.js";
+import { SpexLexer } from "./lexer.js";
 import { SpecParser } from "./parser.js";
 
 const parserInstance = new SpecParser();
@@ -220,7 +220,7 @@ export class SpecParserVisitor
 }
 
 export function parseToAst(text: string): SpecFile {
-  const lexingResult = SpecLexer.tokenize(text);
+  const lexingResult = SpexLexer.tokenize(text);
   parserInstance.input = lexingResult.tokens;
   const cst = parserInstance.specFile();
 

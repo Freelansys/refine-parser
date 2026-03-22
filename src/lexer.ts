@@ -22,56 +22,20 @@ export const ObjectTok = createToken({
   name: "ObjectTok",
   pattern: /object\b/,
 });
-export const ExponentialTok = createToken({
-  name: "ExponentialTok",
-  pattern: /exponential\b/,
-});
-export const MorphismTok = createToken({
-  name: "MorphismTok",
-  pattern: /morphism\b/,
-});
-export const SubobjectTok = createToken({
-  name: "SubobjectTok",
-  pattern: /subobject\b/,
-});
-export const OfTok = createToken({ name: "OfTok", pattern: /of\b/ });
-export const FromTok = createToken({ name: "FromTok", pattern: /from\b/ });
-export const ToTok = createToken({ name: "ToTok", pattern: /to\b/ });
-export const ConstantTok = createToken({
-  name: "ConstantTok",
-  pattern: /constant\b/,
-});
+export const SelectTok = createToken({ name: "SelectTok", pattern: /select\b/ });
 export const WhereTok = createToken({ name: "WhereTok", pattern: /where\b/ });
-export const AllTok = createToken({ name: "AllTok", pattern: /all\b/ });
-export const AnyTok = createToken({ name: "AnyTok", pattern: /any\b/ });
-
-// -----------------
-// Base Types
-// -----------------
-
-export const NumberTok = createToken({
-  name: "NumberTok",
-  pattern: /Number\b/,
-});
-export const StringTok = createToken({
-  name: "StringTok",
-  pattern: /String\b/,
-});
-export const BoolTok = createToken({
-  name: "BoolTok",
-  pattern: /Bool\b/,
-});
-export const UnitTok = createToken({
-  name: "UnitTok",
-  pattern: /Unit\b/,
-});
+export const IfTok = createToken({ name: "IfTok", pattern: /if\b/ });
+export const ThenTok = createToken({ name: "ThenTok", pattern: /then\b/ });
+export const ElseTok = createToken({ name: "ElseTok", pattern: /else\b/ });
 
 // -----------------
 // Symbols
 // -----------------
-
+export const ArrowTok = createToken({ name: "ArrowTok", pattern: /->/ });
 export const LCurly = createToken({ name: "LCurly", pattern: /{/ });
 export const RCurly = createToken({ name: "RCurly", pattern: /}/ });
+export const LBracket = createToken({ name: "LCurly", pattern: /\[/ });
+export const RBracket = createToken({ name: "RCurly", pattern: /\]/ });
 export const LParen = createToken({ name: "LParen", pattern: /\(/ });
 export const RParen = createToken({ name: "RParen", pattern: /\)/ });
 export const Colon = createToken({ name: "Colon", pattern: /:/ });
@@ -92,6 +56,11 @@ export const NumberLiteral = createToken({
   pattern: /[0-9]+(\.[0-9]+)?([eE][+-]?[0-9]+)?/,
 });
 
+export const BoolLiteral = createToken({
+  name: "NumberLiteral",
+  pattern: /\b(true|false)\b/g,
+});
+
 // -----------------
 // Identifiers
 // -----------------
@@ -107,24 +76,17 @@ export const allTokens = [
 
   LetTok,
   ObjectTok,
-  ExponentialTok,
-  MorphismTok,
-  SubobjectTok,
-  OfTok,
-  FromTok,
-  ToTok,
-  ConstantTok,
+  SelectTok,
   WhereTok,
-  AllTok,
-  AnyTok,
+  IfTok,
+  ThenTok,
+  ElseTok,
 
-  NumberTok,
-  StringTok,
-  BoolTok,
-  UnitTok,
-
+  ArrowTok,
   LCurly,
   RCurly,
+  LBracket,
+  RBracket,
   LParen,
   RParen,
   Colon,
@@ -133,8 +95,9 @@ export const allTokens = [
 
   SingleString,
   NumberLiteral,
+  BoolLiteral,
 
   Identifier,
 ];
 
-export const SpecLexer = new Lexer(allTokens);
+export const SpexLexer = new Lexer(allTokens);
