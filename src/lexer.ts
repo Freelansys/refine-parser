@@ -22,7 +22,10 @@ export const ObjectTok = createToken({
   name: "ObjectTok",
   pattern: /object\b/,
 });
-export const SelectTok = createToken({ name: "SelectTok", pattern: /select\b/ });
+export const SelectTok = createToken({
+  name: "SelectTok",
+  pattern: /select\b/,
+});
 export const WhereTok = createToken({ name: "WhereTok", pattern: /where\b/ });
 export const IfTok = createToken({ name: "IfTok", pattern: /if\b/ });
 export const ThenTok = createToken({ name: "ThenTok", pattern: /then\b/ });
@@ -50,12 +53,12 @@ export const Equals = createToken({ name: "Equals", pattern: /=/ });
 
 export const StringLiteral = createToken({
   name: "StringLiteral",
-  pattern: /"([^"\\]|\\.)*"/,
+  pattern: /'([^'\\]|\\.)*'/,
 });
 
 export const NumberLiteral = createToken({
   name: "NumberLiteral",
-  pattern: /[0-9]+(\.[0-9]+)?([eE][+-]?[0-9]+)?/,
+  pattern: /-?((\.[0-9]+)|([0-9]+(\.[0-9]*)?))([eE][+-]?[0-9]+)?/,
 });
 
 export const BoolLiteral = createToken({
