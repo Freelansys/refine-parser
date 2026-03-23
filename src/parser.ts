@@ -2,39 +2,39 @@ import { CstParser } from "chevrotain";
 import {
   allTokens,
   ObjectTok,
-  ExponentialTok,
-  MorphismTok,
-  SubobjectTok,
-  OfTok,
-  FromTok,
-  ToTok,
-  ConstantTok,
+  SelectTok,
   WhereTok,
-  AllTok,
-  AnyTok,
-  NumberTok,
-  StringTok,
-  BoolTok,
-  UnitTok,
+  ArrowTok,
   LCurly,
   RCurly,
+  LBracket,
+  RBracket,
   LParen,
   RParen,
   Colon,
   Comma,
+  Dot,
   Equals,
   Identifier,
-  SingleString,
+  StringLiteral,
   NumberLiteral,
+  BoolLiteral,
+  Instruction,
+  LetTok,
+  GivenTok,
+  IfTok,
+  ThenTok,
+  ElseTok,
+  EvalTok,
 } from "./lexer.js";
 
-export class SpecParser extends CstParser {
+export class SpexParser extends CstParser {
   constructor() {
     super(allTokens);
     this.performSelfAnalysis();
   }
 
-  public specFile = this.RULE("specFile", () => {
+  public spexFile = this.RULE("spexFile", () => {
     this.MANY(() => {
       this.SUBRULE(this.declaration);
     });
@@ -42,158 +42,199 @@ export class SpecParser extends CstParser {
 
   private declaration = this.RULE("declaration", () => {
     this.OR([
-      { ALT: () => this.SUBRULE(this.objectDecl) },
-      { ALT: () => this.SUBRULE(this.exponentialDecl) },
-      { ALT: () => this.SUBRULE(this.morphismDecl) },
-      { ALT: () => this.SUBRULE(this.constantDecl) },
-      { ALT: () => this.SUBRULE(this.subobjectDecl) },
+      {
+        GATE: this.BACKTRACK(this.objectDeclaration),
+        ALT: () => this.SUBRULE(this.objectDeclaration),
+      },
+      {
+        GATE: this.BACKTRACK(this.instanceDeclaration),
+        ALT: () => this.SUBRULE(this.instanceDeclaration),
+      },
     ]);
   });
 
-  private objectDecl = this.RULE("objectDecl", () => {
+  private objectDeclaration = this.RULE("objectDeclaration", () => {
     this.CONSUME(ObjectTok);
     this.CONSUME(Identifier);
+    this.CONSUME(Equals);
+    this.SUBRULE(this.objectExpression);
+  });
 
+  private instanceDeclaration = this.RULE("instanceDeclaration", () => {
+    this.CONSUME(LetTok);
+    this.CONSUME(Identifier);
+    this.CONSUME(Colon);
+    this.SUBRULE(this.objectExpression);
+    this.CONSUME(Equals);
+    this.SUBRULE(this.instanceExpression);
+  });
+
+  private objectExpression = this.RULE("objectExpression", () => {
+    this.SUBRULE(this.objectOperand, { LABEL: "base" });
     this.OPTION(() => {
-      this.CONSUME(LCurly);
-
-      this.MANY(() => {
-        this.SUBRULE(this.fieldDecl);
-      });
-
-      this.CONSUME(RCurly);
+      this.CONSUME(ArrowTok);
+      this.SUBRULE2(this.objectExpression, { LABEL: "exponent" });
     });
   });
 
-  private fieldDecl = this.RULE("fieldDecl", () => {
-    this.SUBRULE(this.typedBindingList);
+  private objectOperand = this.RULE("objectOperand", () => {
+    this.OR([
+      {
+        GATE: this.BACKTRACK(this.subObject),
+        ALT: () => this.SUBRULE(this.subObject),
+      },
+      {
+        GATE: this.BACKTRACK(this.productObject),
+        ALT: () => this.SUBRULE(this.productObject),
+      },
+      {
+        ALT: () => this.SUBRULE(this.namedObject),
+      },
+    ]);
   });
 
-  private exponentialDecl = this.RULE("exponentialDecl", () => {
-    this.CONSUME(ExponentialTok);
+  private namedObject = this.RULE("namedObject", () => {
     this.CONSUME(Identifier);
-    this.CONSUME(FromTok);
+  });
+
+  private productObject = this.RULE("productObject", () => {
     this.CONSUME(LParen);
-    this.SUBRULE(this.typedBindingList);
+    this.MANY(() => {
+      this.CONSUME(Identifier);
+      this.CONSUME(Colon);
+      this.SUBRULE(this.objectExpression);
+      this.OPTION(() => this.CONSUME(Comma));
+    });
     this.CONSUME(RParen);
-    this.CONSUME(ToTok);
-    this.CONSUME2(LParen);
-    this.SUBRULE2(this.typedBindingList);
-    this.CONSUME2(RParen);
   });
 
-  private typedBindingList = this.RULE("typedBindingList", () => {
-    this.SUBRULE(this.typedBinding);
-
-    this.MANY(() => {
-      this.CONSUME(Comma);
-      this.SUBRULE2(this.typedBinding);
-    });
-  });
-
-  private typedBinding = this.RULE("typedBinding", () => {
-    this.CONSUME(Identifier);
-    this.CONSUME(Colon);
-    this.SUBRULE(this.atomicType);
-  });
-
-  private morphismDecl = this.RULE("morphismDecl", () => {
-    this.CONSUME(MorphismTok);
-    this.CONSUME(Identifier);
-    this.CONSUME(Colon);
-    this.CONSUME2(Identifier);
-    this.SUBRULE(this.block);
-  });
-
-  private block = this.RULE("block", () => {
-    this.CONSUME(LCurly);
-
-    this.MANY(() => {
-      this.SUBRULE(this.statement);
-    });
-
-    this.CONSUME(RCurly);
-  });
-
-  private statement = this.RULE("statement", () => {
-    this.CONSUME(SingleString);
-  });
-
-  private subobjectDecl = this.RULE("subobjectDecl", () => {
-    this.CONSUME(SubobjectTok);
-    this.CONSUME(Identifier);
-    this.CONSUME(OfTok);
-    this.CONSUME2(Identifier);
+  private subObject = this.RULE("subObject", () => {
+    this.CONSUME(SelectTok);
+    this.SUBRULE(this.objectExpression, { LABEL: "base" });
     this.CONSUME(WhereTok);
-    this.SUBRULE(this.predicateExpression);
+    this.SUBRULE2(this.instanceExpression, { LABEL: "constraint" });
   });
 
-  private predicateExpression = this.RULE("predicateExpression", () => {
-    this.OR([
-      { ALT: () => this.SUBRULE(this.predicateBlock) },
-      { ALT: () => this.CONSUME(SingleString) },
-    ]);
-  });
-
-  private predicateBlock = this.RULE("predicateBlock", () => {
-    this.OR([
-      { ALT: () => this.CONSUME(AllTok) },
-      { ALT: () => this.CONSUME(AnyTok) },
-    ]);
-    this.CONSUME(LCurly);
-    this.MANY_SEP({
-      SEP: Comma,
-      DEF: () => this.SUBRULE3(this.predicateExpression),
-    });
-    this.CONSUME(RCurly);
-  });
-
-  private constantDecl = this.RULE("constantDecl", () => {
-    this.CONSUME(ConstantTok);
-    this.CONSUME(Identifier);
-    this.CONSUME(Colon);
-    this.SUBRULE(this.atomicType);
-    this.SUBRULE(this.constantBlock);
-  });
-
-  private constantBlock = this.RULE("constantBlock", () => {
-    this.CONSUME(LCurly);
-
-    this.SUBRULE(this.constantBindingList);
-
-    this.CONSUME(RCurly);
-  });
-
-  private constantBindingList = this.RULE("constantBindingList", () => {
-    this.SUBRULE(this.constantBinding);
-
+  private instanceExpression = this.RULE("instanceExpression", () => {
+    this.SUBRULE(this.instancePrimary, { LABEL: "base" });
     this.MANY(() => {
-      this.CONSUME(Comma);
-      this.SUBRULE2(this.constantBinding);
+      this.CONSUME(Dot);
+      this.CONSUME(Identifier, { LABEL: "property" });
+    });
+    this.MANY2(() => {
+      this.CONSUME(GivenTok);
+      this.SUBRULE(this.instanceExpression, { LABEL: "givenInstance" });
     });
   });
 
-  private constantBinding = this.RULE("constantBinding", () => {
+  private instancePrimary = this.RULE("instancePrimary", () => {
+    this.OR([
+      {
+        GATE: this.BACKTRACK(this.evalExpression),
+        ALT: () => this.SUBRULE(this.evalExpression),
+      },
+      {
+        GATE: this.BACKTRACK(this.ifExpression),
+        ALT: () => this.SUBRULE(this.ifExpression),
+      },
+      {
+        GATE: this.BACKTRACK(this.composition),
+        ALT: () => this.SUBRULE(this.composition),
+      },
+      {
+        GATE: this.BACKTRACK(this.productInstance),
+        ALT: () => this.SUBRULE(this.productInstance),
+      },
+      {
+        ALT: () => this.SUBRULE(this.literalOrNamedInstance),
+      },
+    ]);
+  });
+
+  private literalOrNamedInstance = this.RULE("literalOrNamedInstance", () => {
+    this.OR([
+      { ALT: () => this.CONSUME(Instruction) },
+      { ALT: () => this.CONSUME(StringLiteral) },
+      { ALT: () => this.CONSUME(NumberLiteral) },
+      { ALT: () => this.CONSUME(BoolLiteral) },
+      { ALT: () => this.CONSUME(Identifier) },
+    ]);
+  });
+
+  private productInstance = this.RULE("productInstance", () => {
+    this.CONSUME(LCurly);
+    this.MANY(() => {
+      this.CONSUME(Identifier);
+      this.CONSUME(Colon);
+      this.SUBRULE(this.instanceExpression);
+      this.OPTION(() => this.CONSUME(Comma));
+    });
+    this.CONSUME(RCurly);
+  });
+
+  private composition = this.RULE("composition", () => {
+    this.CONSUME(LBracket);
+    this.MANY(() => {
+      this.OR([
+        {
+          GATE: this.BACKTRACK(this.localDeclaration),
+          ALT: () => this.SUBRULE(this.localDeclaration),
+        },
+        {
+          ALT: () => this.SUBRULE(this.instanceExpression),
+        },
+      ]);
+      this.OPTION(() => this.CONSUME(Comma));
+    });
+    this.CONSUME(RBracket);
+  });
+
+  private localDeclaration = this.RULE("localDeclaration", () => {
+    this.OR([
+      {
+        GATE: this.BACKTRACK(this.localObjectDeclaration),
+        ALT: () => this.SUBRULE(this.localObjectDeclaration),
+      },
+      {
+        GATE: this.BACKTRACK(this.localInstanceDeclaration),
+        ALT: () => this.SUBRULE(this.localInstanceDeclaration),
+      },
+    ]);
+  });
+
+  private localObjectDeclaration = this.RULE("localObjectDeclaration", () => {
+    this.CONSUME(ObjectTok);
     this.CONSUME(Identifier);
     this.CONSUME(Equals);
-    this.SUBRULE(this.constantValue);
+    this.SUBRULE(this.objectExpression);
   });
 
-  private constantValue = this.RULE("constantValue", () => {
-    this.OR([
-      { ALT: () => this.CONSUME(SingleString) },
-      { ALT: () => this.CONSUME(NumberLiteral) },
-      { ALT: () => this.CONSUME(Identifier) },
-    ]);
+  private localInstanceDeclaration = this.RULE(
+    "localInstanceDeclaration",
+    () => {
+      this.CONSUME(LetTok);
+      this.CONSUME(Identifier);
+      this.CONSUME(Colon);
+      this.SUBRULE(this.objectExpression);
+      this.CONSUME(Equals);
+      this.SUBRULE(this.instanceExpression);
+    },
+  );
+
+  private evalExpression = this.RULE("evalExpression", () => {
+    this.CONSUME(EvalTok);
+    this.SUBRULE(this.instanceExpression, { LABEL: "morphism" });
   });
 
-  private atomicType = this.RULE("atomicType", () => {
-    this.OR([
-      { ALT: () => this.CONSUME(NumberTok) },
-      { ALT: () => this.CONSUME(StringTok) },
-      { ALT: () => this.CONSUME(BoolTok) },
-      { ALT: () => this.CONSUME(UnitTok) },
-      { ALT: () => this.CONSUME(Identifier) },
-    ]);
+  private ifExpression = this.RULE("ifExpression", () => {
+    this.CONSUME(IfTok);
+    this.SUBRULE(this.instanceExpression, { LABEL: "condition" });
+    this.CONSUME(ThenTok);
+    this.SUBRULE2(this.instanceExpression, { LABEL: "then" });
+    this.OPTION(() => {
+      this.CONSUME(ElseTok);
+      this.SUBRULE3(this.instanceExpression, { LABEL: "else" });
+    });
+    this.OPTION2(() => this.CONSUME(Comma));
   });
 }

@@ -1,32 +1,38 @@
 import type { ICstVisitor } from "chevrotain";
 import type {
-  SpecFile,
+  SpexFile,
   Declaration,
-  ObjectDecl,
-  ExponentialDecl,
-  MorphismDecl,
-  ConstantDecl,
-  ConstantBinding,
-  ConstantValue,
-  TypedBinding,
-  SubobjectDecl,
-  NamedType,
-  Statement,
-  PredicateExpression,
+  ObjectDeclaration,
+  InstanceDeclaration,
+  ObjectExpression,
+  InstanceExpression,
+  NamedObject,
+  ProductObject,
+  ExponentialObject,
+  SubObject,
+  ProductInstance,
+  IfExpression,
+  GivenExpression,
+  PropertyAccess,
+  Step,
+  Composition,
 } from "./ast.js";
-import { SpecLexer } from "./lexer.js";
-import { SpecParser } from "./parser.js";
+import { SpexLexer } from "./lexer.js";
+import { SpexParser } from "./parser.js";
 
-const parserInstance = new SpecParser();
-const BaseSpecVisitor = parserInstance.getBaseCstVisitorConstructor();
+const parserInstance = new SpexParser();
+const BaseSpexVisitor = parserInstance.getBaseCstVisitorConstructor();
 
-// Helper function to extract string value from SingleString token
 const getStringValue = (rawValue: string): string => {
   return rawValue.substring(1, rawValue.length - 1);
 };
 
-export class SpecParserVisitor
-  extends BaseSpecVisitor
+const getInstructionValue = (rawValue: string): string => {
+  return rawValue.substring(1, rawValue.length - 1);
+};
+
+export class SpexParserVisitor
+  extends BaseSpexVisitor
   implements ICstVisitor<any, any>
 {
   constructor() {
@@ -34,186 +40,221 @@ export class SpecParserVisitor
     this.validateVisitor();
   }
 
-  specFile(ctx: any): SpecFile {
+  spexFile(ctx: any): SpexFile {
     const declarations = ctx.declaration.map((decl: any) => this.visit(decl));
-    return { declarations };
+    return { kind: "SpexFile", declarations };
   }
 
   declaration(ctx: any): Declaration {
-    if (ctx.objectDecl) {
-      return this.visit(ctx.objectDecl[0]);
+    if (ctx.objectDeclaration) {
+      return this.visit(ctx.objectDeclaration);
     }
-    if (ctx.exponentialDecl) {
-      return this.visit(ctx.exponentialDecl[0]);
-    }
-    if (ctx.morphismDecl) {
-      return this.visit(ctx.morphismDecl[0]);
-    }
-    if (ctx.constantDecl) {
-      return this.visit(ctx.constantDecl[0]);
-    }
-    if (ctx.subobjectDecl) {
-      return this.visit(ctx.subobjectDecl[0]);
-    }
-    throw new Error("Unknown declaration type");
+    return this.visit(ctx.instanceDeclaration);
   }
 
-  objectDecl(ctx: any): ObjectDecl {
-    const name = ctx.Identifier[0].image;
-    const fields: TypedBinding[] = ctx.fieldDecl
-      ? this.visit(ctx.fieldDecl[0])
-      : [];
-    return { kind: "ObjectDecl", name, fields };
-  }
-
-  fieldDecl(ctx: any): TypedBinding[] {
-    return this.visit(ctx.typedBindingList[0]);
-  }
-
-  exponentialDecl(ctx: any): ExponentialDecl {
-    const name = ctx.Identifier[0].image;
-    const input: TypedBinding[] = this.visit(ctx.typedBindingList[0]);
-    const output: TypedBinding[] = this.visit(ctx.typedBindingList[1]);
-    return { kind: "ExponentialDecl", name, input, output };
-  }
-
-  typedBindingList(ctx: any): TypedBinding[] {
-    const bindings = ctx.typedBinding.map((b: any) => this.visit(b));
-    return bindings;
-  }
-
-  typedBinding(ctx: any): TypedBinding {
-    const name = ctx.Identifier[0].image;
-    const type = this.visit(ctx.atomicType[0]);
-    return { name, type };
-  }
-
-  morphismDecl(ctx: any): MorphismDecl {
-    const name = ctx.Identifier[0].image;
-    const exponential = ctx.Identifier[1].image;
-    const body: Statement[] = ctx.block ? this.visit(ctx.block[0]) : [];
-    return { kind: "MorphismDecl", name, exponential, body };
-  }
-
-  block(ctx: any): Statement[] {
-    const statements = ctx.statement
-      ? ctx.statement.map((s: any) => this.visit(s))
-      : [];
-    return statements;
-  }
-
-  statement(ctx: any): Statement {
-    const rawValue = ctx.SingleString[0].image;
+  objectDeclaration(ctx: any): ObjectDeclaration {
     return {
-      kind: "StringLiteral",
-      value: getStringValue(rawValue),
+      kind: "ObjectDeclaration",
+      name: ctx.Identifier[0].image,
+      object: this.visit(ctx.objectExpression),
     };
   }
 
-  subobjectDecl(ctx: any): SubobjectDecl {
-    const name = ctx.Identifier[0].image;
-    const parent = ctx.Identifier[1].image;
-    const predicates: PredicateExpression = this.visit(
-      ctx.predicateExpression[0],
-    );
-    return { kind: "SubobjectDecl", name, parent, predicates };
+  instanceDeclaration(ctx: any): InstanceDeclaration {
+    return {
+      kind: "InstanceDeclaration",
+      name: ctx.Identifier[0].image,
+      type: this.visit(ctx.objectExpression),
+      instance: this.visit(ctx.instanceExpression),
+    };
   }
 
-  predicateExpression(ctx: any): PredicateExpression {
-    if (ctx.predicateBlock) {
-      return this.visit(ctx.predicateBlock);
+  objectExpression(ctx: any): ObjectExpression {
+    if (ctx.base) {
+      const exponent = this.visit(ctx.base);
+      if (ctx.exponent) {
+        return {
+          kind: "ExponentialObject",
+          base: this.visit(ctx.exponent),
+          exponent,
+        };
+      }
+      return exponent;
     }
-    if (ctx.SingleString) {
-      const rawValue = ctx.SingleString[0].image;
+    throw new Error("Invalid object expression");
+  }
+
+  objectOperand(ctx: any): ObjectExpression {
+    if (ctx.subObject) {
+      return this.visit(ctx.subObject);
+    }
+    if (ctx.productObject) {
+      return this.visit(ctx.productObject);
+    }
+    return this.visit(ctx.namedObject);
+  }
+
+  namedObject(ctx: any): NamedObject {
+    return {
+      kind: "NamedObject",
+      name: ctx.Identifier[0].image,
+    };
+  }
+
+  productObject(ctx: any): ProductObject {
+    const fields: Record<string, ObjectExpression> = {};
+    for (let i = 0; i < ctx.Identifier.length; i++) {
+      const name = ctx.Identifier[i].image;
+      fields[name] = this.visit(ctx.objectExpression[i]);
+    }
+    return { kind: "ProductObject", fields };
+  }
+
+  subObject(ctx: any): SubObject {
+    return {
+      kind: "SubObject",
+      base: this.visit(ctx.base),
+      constraint: this.visit(ctx.constraint),
+    };
+  }
+
+  instanceExpression(ctx: any): InstanceExpression {
+    let expr = this.visit(ctx.base);
+    if (ctx.GivenTok) {
+      for (let i = 0; i < ctx.GivenTok.length; i++) {
+        const givenInstance = this.visit(ctx.givenInstance[i]);
+        expr = {
+          kind: "GivenExpression",
+          morphism: expr,
+          instance: givenInstance,
+        };
+      }
+    }
+    if (ctx.property) {
+      for (const prop of ctx.property) {
+        expr = {
+          kind: "PropertyAccess",
+          object: expr,
+          property: prop.image,
+        };
+      }
+    }
+    return expr;
+  }
+
+  instancePrimary(ctx: any): InstanceExpression {
+    if (ctx.evalExpression) {
+      return this.visit(ctx.evalExpression);
+    }
+    if (ctx.ifExpression) {
+      return this.visit(ctx.ifExpression);
+    }
+    if (ctx.composition) {
+      return this.visit(ctx.composition);
+    }
+    if (ctx.productInstance) {
+      return this.visit(ctx.productInstance);
+    }
+    return this.visit(ctx.literalOrNamedInstance);
+  }
+
+  literalOrNamedInstance(ctx: any): any {
+    if (ctx.Instruction) {
       return {
-        kind: "Predicate",
-        value: getStringValue(rawValue),
+        kind: "Instruction",
+        text: getInstructionValue(ctx.Instruction[0].image),
       };
     }
-    throw new Error("Unknown predicate expression type");
-  }
-
-  predicateBlock(ctx: any): PredicateExpression {
-    const isAll = ctx.AllTok !== undefined;
-    const children = ctx.predicateExpression.map((child: any) =>
-      this.visit(child),
-    );
-
-    if (isAll) {
+    if (ctx.StringLiteral) {
       return {
-        kind: "Conjunction",
-        value: children,
-      };
-    } else {
-      return {
-        kind: "Disjunction",
-        value: children,
-      };
-    }
-  }
-
-  constantDecl(ctx: any): ConstantDecl {
-    const name = ctx.Identifier[0].image;
-    const type = this.visit(ctx.atomicType[0]);
-    const bindings: ConstantBinding[] = this.visit(ctx.constantBlock[0]);
-    return { kind: "ConstantDecl", name, type, bindings };
-  }
-
-  constantBlock(ctx: any): ConstantBinding[] {
-    return this.visit(ctx.constantBindingList[0]);
-  }
-
-  constantBindingList(ctx: any): ConstantBinding[] {
-    const bindings = ctx.constantBinding.map((b: any) => this.visit(b));
-    return bindings;
-  }
-
-  constantBinding(ctx: any): ConstantBinding {
-    const name = ctx.Identifier[0].image;
-    const value = this.visit(ctx.constantValue[0]);
-    return { name, value };
-  }
-
-  constantValue(ctx: any): ConstantValue {
-    if (ctx.SingleString) {
-      const rawValue = ctx.SingleString[0].image;
-      return {
-        kind: "StringValue",
-        value: getStringValue(rawValue),
+        kind: "StringLiteral",
+        value: getStringValue(ctx.StringLiteral[0].image),
       };
     }
     if (ctx.NumberLiteral) {
       return {
-        kind: "NumberValue",
+        kind: "NumberLiteral",
         value: parseFloat(ctx.NumberLiteral[0].image),
       };
     }
-    if (ctx.Identifier) {
-      return { kind: "IdentifierValue", value: ctx.Identifier[0].image };
+    if (ctx.BoolLiteral) {
+      return {
+        kind: "BoolLiteral",
+        value: ctx.BoolLiteral[0].image === "true",
+      };
     }
-    throw new Error("Unknown constant value type");
+    return {
+      kind: "NamedInstance",
+      name: ctx.Identifier[0].image,
+    };
   }
 
-  atomicType(ctx: any): NamedType {
-    const name = ctx.Identifier
-      ? ctx.Identifier[0].image
-      : ctx.NumberTok
-        ? "Number"
-        : ctx.StringTok
-          ? "String"
-          : ctx.BoolTok
-            ? "Bool"
-            : ctx.UnitTok
-              ? "Unit"
-              : "Unknown";
-    return { kind: "NamedType", name };
+  productInstance(ctx: any): ProductInstance {
+    const fields: Record<string, InstanceExpression> = {};
+    for (let i = 0; i < ctx.Identifier.length; i++) {
+      const name = ctx.Identifier[i].image;
+      fields[name] = this.visit(ctx.instanceExpression[i]);
+    }
+    return { kind: "ProductInstance", fields };
+  }
+
+  composition(ctx: any): Composition {
+    const steps: Step[] = [];
+    for (const localDecl of ctx.localDeclaration || []) {
+      steps.push(this.visit(localDecl));
+    }
+    for (const expr of ctx.instanceExpression || []) {
+      steps.push(this.visit(expr));
+    }
+    return { kind: "Composition", steps };
+  }
+
+  localDeclaration(ctx: any): Declaration {
+    if (ctx.localObjectDeclaration) {
+      return this.visit(ctx.localObjectDeclaration);
+    }
+    return this.visit(ctx.localInstanceDeclaration);
+  }
+
+  localObjectDeclaration(ctx: any): ObjectDeclaration {
+    return {
+      kind: "ObjectDeclaration",
+      name: ctx.Identifier[0].image,
+      object: this.visit(ctx.objectExpression),
+    };
+  }
+
+  localInstanceDeclaration(ctx: any): InstanceDeclaration {
+    return {
+      kind: "InstanceDeclaration",
+      name: ctx.Identifier[0].image,
+      type: this.visit(ctx.objectExpression),
+      instance: this.visit(ctx.instanceExpression),
+    };
+  }
+
+  evalExpression(ctx: any): InstanceExpression {
+    const morphism = this.visit(ctx.morphism);
+    return {
+      kind: "EvalExpression",
+      morphism,
+    };
+  }
+
+  ifExpression(ctx: any): IfExpression {
+    return {
+      kind: "IfExpression",
+      condition: this.visit(ctx.condition),
+      then: this.visit(ctx.then),
+      else: ctx.else ? this.visit(ctx.else) : null,
+    };
   }
 }
 
-export function parseToAst(text: string): SpecFile {
-  const lexingResult = SpecLexer.tokenize(text);
+export function parseToAst(text: string): SpexFile {
+  const lexingResult = SpexLexer.tokenize(text);
   parserInstance.input = lexingResult.tokens;
-  const cst = parserInstance.specFile();
+  const cst = parserInstance.spexFile();
 
   if (parserInstance.errors.length > 0) {
     throw new Error(
@@ -221,6 +262,6 @@ export function parseToAst(text: string): SpecFile {
     );
   }
 
-  const visitor = new SpecParserVisitor();
+  const visitor = new SpexParserVisitor();
   return visitor.visit(cst);
 }

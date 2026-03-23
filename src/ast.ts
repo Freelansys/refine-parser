@@ -1,76 +1,129 @@
-export interface SpecFile {
+export type SpexFile = {
+  kind: "SpexFile";
   declarations: Declaration[];
-}
+};
 
-export type Declaration =
-  | ObjectDecl
-  | ExponentialDecl
-  | MorphismDecl
-  | ConstantDecl
-  | SubobjectDecl;
+export type Declaration = ObjectDeclaration | InstanceDeclaration;
 
-export interface ObjectDecl {
-  kind: "ObjectDecl";
+export type ObjectDeclaration = {
+  kind: "ObjectDeclaration";
   name: string;
-  fields: TypedBinding[];
-}
+  object: ObjectExpression;
+};
 
-export interface ExponentialDecl {
-  kind: "ExponentialDecl";
+export type InstanceDeclaration = {
+  kind: "InstanceDeclaration";
   name: string;
-  input: TypedBinding[];
-  output: TypedBinding[];
-}
+  type: ObjectExpression;
+  instance: InstanceExpression;
+};
 
-export interface MorphismDecl {
-  kind: "MorphismDecl";
+export type ObjectExpression =
+  | NamedObject
+  | ProductObject
+  | ExponentialObject
+  | SubObject;
+
+export type InstanceExpression =
+  | Literal
+  | NamedInstance
+  | PropertyAccess
+  | ProductInstance
+  | ExponentialInstance
+  | EvalExpression;
+
+export type NamedObject = {
+  kind: "NamedObject";
   name: string;
-  exponential: string;
-  body: Statement[];
-}
+};
 
-export interface ConstantDecl {
-  kind: "ConstantDecl";
+export type ProductObject = {
+  kind: "ProductObject";
+  fields: Record<string, ObjectExpression>;
+};
+
+export type ExponentialObject = {
+  kind: "ExponentialObject";
+  base: ObjectExpression;
+  exponent: ObjectExpression;
+};
+
+export type SubObject = {
+  kind: "SubObject";
+  base: ObjectExpression;
+  constraint: InstanceExpression;
+};
+
+export type Literal = StringLiteral | NumberLiteral | BoolLiteral | UnitLiteral;
+
+export type NamedInstance = {
+  kind: "NamedInstance";
   name: string;
-  type: NamedType;
-  bindings: ConstantBinding[];
-}
+};
 
-export interface ConstantBinding {
-  name: string;
-  value: ConstantValue;
-}
+export type PropertyAccess = {
+  kind: "PropertyAccess";
+  object: InstanceExpression;
+  property: string;
+};
 
-export type ConstantValue =
-  | { kind: "StringValue"; value: string }
-  | { kind: "NumberValue"; value: number }
-  | { kind: "IdentifierValue"; value: string };
+export type ProductInstance = {
+  kind: "ProductInstance";
+  fields: Record<string, InstanceExpression>;
+};
 
-export interface SubobjectDecl {
-  kind: "SubobjectDecl";
-  name: string;
-  parent: string;
-  predicates: PredicateExpression;
-}
+export type ExponentialInstance =
+  | Instruction
+  | Composition
+  | IfExpression
+  | GivenExpression;
 
-export type PredicateExpression =
-  | { kind: "Predicate"; value: string }
-  | { kind: "Conjunction"; value: PredicateExpression[] }
-  | { kind: "Disjunction"; value: PredicateExpression[] };
+export type EvalExpression = {
+  kind: "EvalExpression";
+  morphism: InstanceExpression;
+};
 
-export interface TypedBinding {
-  name: string;
-  type: NamedType;
-}
-
-export interface NamedType {
-  kind: "NamedType";
-  name: string;
-}
-
-export type BaseType = "Number" | "String" | "Bool" | "Unit";
-
-export interface Statement {
+export type StringLiteral = {
   kind: "StringLiteral";
   value: string;
-}
+};
+
+export type NumberLiteral = {
+  kind: "NumberLiteral";
+  value: number;
+};
+
+export type BoolLiteral = {
+  kind: "BoolLiteral";
+  value: boolean;
+};
+
+export type UnitLiteral = {
+  kind: "UnitLiteral";
+  value: {};
+};
+
+export type Instruction = {
+  kind: "Instruction";
+  text: string;
+};
+
+export type Composition = {
+  kind: "Composition";
+  steps: Step[];
+};
+
+export type IfExpression = {
+  kind: "IfExpression";
+  condition: InstanceExpression;
+  then: InstanceExpression;
+  else: InstanceExpression | null;
+};
+
+export type GivenExpression = {
+  kind: "GivenExpression";
+  morphism: InstanceExpression;
+  instance: InstanceExpression;
+};
+
+export type Step = InstanceExpression | Declaration;
