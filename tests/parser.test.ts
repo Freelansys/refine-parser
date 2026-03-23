@@ -56,7 +56,8 @@ describe("SpecParser", () => {
     });
 
     it("should parse exponential object declaration with exponential objects", () => {
-      const testCase = "object MyExponential = (f: Number -> String, n: Number) -> String";
+      const testCase =
+        "object MyExponential = (f: Number -> String, n: Number) -> String";
       const { parser } = parseInput(testCase);
       expect(parser.errors).toHaveLength(0);
     });
@@ -133,13 +134,15 @@ describe("SpecParser", () => {
     });
 
     it("should parse product object instance declaration", () => {
-      const testCase = "let test: (s: String, n: Number) = { s: 'hello', n: 1 }";
+      const testCase =
+        "let test: (s: String, n: Number) = { s: 'hello', n: 1 }";
       const { parser } = parseInput(testCase);
       expect(parser.errors).toHaveLength(0);
     });
 
     it("should parse product object instance declaration with trailing commas", () => {
-      const testCase = "let test: (s: String, n: Number) = { s: 'hello', n: 1, }";
+      const testCase =
+        "let test: (s: String, n: Number) = { s: 'hello', n: 1, }";
       const { parser } = parseInput(testCase);
       expect(parser.errors).toHaveLength(0);
     });
@@ -237,6 +240,43 @@ describe("SpecParser", () => {
           "return -1",
         ]
       ]`;
+      const { parser } = parseInput(testCase);
+      expect(parser.errors).toHaveLength(0);
+    });
+
+    it("should parse property access on named instance", () => {
+      const testCase = "let test: String = input.arg1";
+      const { parser } = parseInput(testCase);
+      expect(parser.errors).toHaveLength(0);
+    });
+
+    it("should parse nested property access", () => {
+      const testCase = "let test: String = foo.bar.baz";
+      const { parser } = parseInput(testCase);
+      expect(parser.errors).toHaveLength(0);
+    });
+
+    it("should parse property access in product instance", () => {
+      const testCase = "let test: (s: String) = { s: config.path }";
+      const { parser } = parseInput(testCase);
+      expect(parser.errors).toHaveLength(0);
+    });
+
+    it("should parse given with named instance", () => {
+      const testCase = "let test: String -> Number = countAs given db";
+      const { parser } = parseInput(testCase);
+      expect(parser.errors).toHaveLength(0);
+    });
+
+    it("should parse given with product instance", () => {
+      const testCase =
+        "let test: String -> Number = countAs given { db: Database }";
+      const { parser } = parseInput(testCase);
+      expect(parser.errors).toHaveLength(0);
+    });
+
+    it("should parse if expression with trailing comma", () => {
+      const testCase = `let test: Number = [ if true then x, y ]`;
       const { parser } = parseInput(testCase);
       expect(parser.errors).toHaveLength(0);
     });

@@ -13,6 +13,7 @@ import type {
   ProductInstance,
   IfExpression,
   GivenExpression,
+  PropertyAccess,
   Step,
   Composition,
 } from "./ast.js";
@@ -118,6 +119,20 @@ export class SpexParserVisitor
   }
 
   instanceExpression(ctx: any): InstanceExpression {
+    let expr = this.visit(ctx.base);
+    if (ctx.property) {
+      for (const prop of ctx.property) {
+        expr = {
+          kind: "PropertyAccess",
+          object: expr,
+          property: prop.image,
+        };
+      }
+    }
+    return expr;
+  }
+
+  instancePrimary(ctx: any): InstanceExpression {
     if (ctx.evalExpression) {
       return this.visit(ctx.evalExpression);
     }
@@ -219,37 +234,25 @@ export class SpexParserVisitor
     };
   }
 
-  evalMorphism(ctx: any): InstanceExpression {
-    if (ctx.givenExpression) {
-      return this.visit(ctx.givenExpression);
-    }
-    return this.visit(ctx.instanceExpression);
-  }
-
   givenExpression(ctx: any): GivenExpression {
+    const morphism = this.visit(ctx.morphism);
+    const suffixCtx = ctx.givenExpressionSuffix[0].children;
+    let instance;
+    if (suffixCtx.instance) {
+      instance = this.visit(suffixCtx.instance[0]);
+    } else if (suffixCtx.productInstance) {
+      instance = this.visit(suffixCtx.productInstance[0]);
+    } else if (suffixCtx.literalOrNamedInstance) {
+      instance = this.visit(suffixCtx.literalOrNamedInstance[0]);
+    }
     return {
       kind: "GivenExpression",
-      morphism: this.visit(ctx.morphism),
-      instance: this.visit(ctx.givenExpressionSuffix[0]),
+      morphism,
+      instance,
     };
   }
 
-  morphismOperand(ctx: any): InstanceExpression {
-    if (ctx.ifExpression) {
-      return this.visit(ctx.ifExpression);
-    }
-    if (ctx.composition) {
-      return this.visit(ctx.composition);
-    }
-    if (ctx.productInstance) {
-      return this.visit(ctx.productInstance);
-    }
-    return this.visit(ctx.literalOrNamedInstance);
-  }
-
-  givenExpressionSuffix(ctx: any): ProductInstance {
-    return this.visit(ctx.instance[0]);
-  }
+  givenExpressionSuffix(): void {}
 
   ifExpression(ctx: any): IfExpression {
     return {

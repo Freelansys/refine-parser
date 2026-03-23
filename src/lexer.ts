@@ -45,6 +45,9 @@ export const LParen = createToken({ name: "LParen", pattern: /\(/ });
 export const RParen = createToken({ name: "RParen", pattern: /\)/ });
 export const Colon = createToken({ name: "Colon", pattern: /:/ });
 export const Comma = createToken({ name: "Comma", pattern: /,/ });
+export const LAngle = createToken({ name: "LAngle", pattern: /</ });
+export const RAngle = createToken({ name: "RAngle", pattern: />/ });
+export const Dot = createToken({ name: "Dot", pattern: /\./ });
 export const Equals = createToken({ name: "Equals", pattern: /=/ });
 
 // -----------------
@@ -103,6 +106,9 @@ export const allTokens = [
   RParen,
   Colon,
   Comma,
+  LAngle,
+  RAngle,
+  Dot,
   Equals,
 
   StringLiteral,

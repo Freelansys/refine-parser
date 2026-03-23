@@ -27,6 +27,7 @@ export type ObjectExpression =
 export type InstanceExpression =
   | Literal
   | NamedInstance
+  | PropertyAccess
   | ProductInstance
   | ExponentialInstance
   | EvalExpression;
@@ -58,6 +59,12 @@ export type Literal = StringLiteral | NumberLiteral | BoolLiteral | UnitLiteral;
 export type NamedInstance = {
   kind: "NamedInstance";
   name: string;
+};
+
+export type PropertyAccess = {
+  kind: "PropertyAccess";
+  object: InstanceExpression;
+  property: string;
 };
 
 export type ProductInstance = {

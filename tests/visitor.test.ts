@@ -817,4 +817,79 @@ describe("SpecParserVisitor", () => {
       });
     });
   });
+
+  describe("property access", () => {
+    it("should convert property access to AST", () => {
+      const testCase = "let test: String = input.arg1";
+      const ast = parseToAst(testCase);
+      const decl = ast.declarations[0] as InstanceDeclaration;
+      expect(decl).toEqual({
+        kind: "InstanceDeclaration",
+        name: "test",
+        type: { kind: "NamedObject", name: "String" },
+        instance: {
+          kind: "PropertyAccess",
+          object: { kind: "NamedInstance", name: "input" },
+          property: "arg1",
+        },
+      });
+    });
+
+    it("should convert nested property access to AST", () => {
+      const testCase = "let test: String = foo.bar.baz";
+      const ast = parseToAst(testCase);
+      const decl = ast.declarations[0] as InstanceDeclaration;
+      expect(decl.instance).toEqual({
+        kind: "PropertyAccess",
+        object: {
+          kind: "PropertyAccess",
+          object: { kind: "NamedInstance", name: "foo" },
+          property: "bar",
+        },
+        property: "baz",
+      });
+    });
+
+    it("should convert given with named instance to AST", () => {
+      const testCase = "let test: String -> Number = countAs given db";
+      const ast = parseToAst(testCase);
+      const decl = ast.declarations[0] as InstanceDeclaration;
+      expect(decl.instance).toEqual({
+        kind: "GivenExpression",
+        morphism: { kind: "NamedInstance", name: "countAs" },
+        instance: { kind: "NamedInstance", name: "db" },
+      });
+    });
+
+    it("should convert given with product instance to AST", () => {
+      const testCase =
+        "let test: String -> Number = countAs given { db: Database }";
+      const ast = parseToAst(testCase);
+      const decl = ast.declarations[0] as InstanceDeclaration;
+      expect(decl.instance).toEqual({
+        kind: "GivenExpression",
+        morphism: { kind: "NamedInstance", name: "countAs" },
+        instance: {
+          kind: "ProductInstance",
+          fields: {
+            db: { kind: "NamedInstance", name: "Database" },
+          },
+        },
+      });
+    });
+  });
+
+  describe("end-to-end", () => {
+    it("should parse todo.spex file", () => {
+      const fs = require("fs");
+      const path = require("path");
+      const code = fs.readFileSync(
+        path.join(__dirname, "props/todo.spex"),
+        "utf-8",
+      );
+      const ast = parseToAst(code);
+      expect(ast.kind).toBe("SpexFile");
+      expect(ast.declarations.length).toBe(20);
+    });
+  });
 });

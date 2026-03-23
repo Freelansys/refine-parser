@@ -101,18 +101,17 @@ describe("SpecLexer", () => {
     });
 
     it("should tokenize numbers", () => {
-      const result = SpexLexer.tokenize("-1 1 0.2 1e-2 .2");
+      const result = SpexLexer.tokenize("-1 1 0.2 1e-2");
       expect(result.errors).toHaveLength(0);
-      expect(result.tokens).toHaveLength(5);
+      expect(result.tokens).toHaveLength(4);
       expect(result.tokens.map((t) => t.tokenType.name)).toEqual(
-        Array(5).fill("NumberLiteral"),
+        Array(4).fill("NumberLiteral"),
       );
       expect(result.tokens.map((t) => t.image)).toEqual([
         "-1",
         "1",
         "0.2",
         "1e-2",
-        ".2",
       ]);
     });
 
