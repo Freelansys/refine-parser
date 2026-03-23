@@ -1,7 +1,3 @@
----
-todo: to simplify the AST and parset, it would be good to unify LetStep and InstanceDeclaration
----
-
 # Spex
 
 Spex is a language designed for programming with LLMs. It addresses shortcomings of the chat interface commonly used in AI coding assistant tools.
