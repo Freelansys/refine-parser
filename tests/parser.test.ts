@@ -280,5 +280,43 @@ describe("SpecParser", () => {
       const { parser } = parseInput(testCase);
       expect(parser.errors).toHaveLength(0);
     });
+
+    it("should parse given with string literal", () => {
+      const testCase = 'let test: String -> Number = f given "the input"';
+      const { parser } = parseInput(testCase);
+      expect(parser.errors).toHaveLength(0);
+    });
+
+    it("should parse given with property access", () => {
+      const testCase = "let test: String -> Number = f given config.db";
+      const { parser } = parseInput(testCase);
+      expect(parser.errors).toHaveLength(0);
+    });
+
+    it("should parse given with eval expression", () => {
+      const testCase = 'let test: String -> Number = f given eval "get value"';
+      const { parser } = parseInput(testCase);
+      expect(parser.errors).toHaveLength(0);
+    });
+
+    it("should parse given with if expression", () => {
+      const testCase =
+        "let test: String -> Number = f given if cond then a else b";
+      const { parser } = parseInput(testCase);
+      expect(parser.errors).toHaveLength(0);
+    });
+
+    it("should parse given with composition", () => {
+      const testCase =
+        'let test: String -> Number = f given [ "step 1", "step 2" ]';
+      const { parser } = parseInput(testCase);
+      expect(parser.errors).toHaveLength(0);
+    });
+
+    it("should parse chained given", () => {
+      const testCase = "let test: A -> D = f given g given h";
+      const { parser } = parseInput(testCase);
+      expect(parser.errors).toHaveLength(0);
+    });
   });
 });

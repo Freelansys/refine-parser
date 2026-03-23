@@ -877,6 +877,96 @@ describe("SpecParserVisitor", () => {
         },
       });
     });
+
+    it("should convert given with string literal to AST", () => {
+      const testCase = 'let test: String -> Number = f given "the input"';
+      const ast = parseToAst(testCase);
+      const decl = ast.declarations[0] as InstanceDeclaration;
+      expect(decl.instance).toEqual({
+        kind: "GivenExpression",
+        morphism: { kind: "NamedInstance", name: "f" },
+        instance: { kind: "Instruction", text: "the input" },
+      });
+    });
+
+    it("should convert given with property access to AST", () => {
+      const testCase = "let test: String -> Number = f given config.db";
+      const ast = parseToAst(testCase);
+      const decl = ast.declarations[0] as InstanceDeclaration;
+      expect(decl.instance).toEqual({
+        kind: "GivenExpression",
+        morphism: { kind: "NamedInstance", name: "f" },
+        instance: {
+          kind: "PropertyAccess",
+          object: { kind: "NamedInstance", name: "config" },
+          property: "db",
+        },
+      });
+    });
+
+    it("should convert given with eval expression to AST", () => {
+      const testCase = 'let test: String -> Number = f given eval "get value"';
+      const ast = parseToAst(testCase);
+      const decl = ast.declarations[0] as InstanceDeclaration;
+      expect(decl.instance).toEqual({
+        kind: "GivenExpression",
+        morphism: { kind: "NamedInstance", name: "f" },
+        instance: {
+          kind: "EvalExpression",
+          morphism: { kind: "Instruction", text: "get value" },
+        },
+      });
+    });
+
+    it("should convert given with if expression to AST", () => {
+      const testCase =
+        "let test: String -> Number = f given if cond then a else b";
+      const ast = parseToAst(testCase);
+      const decl = ast.declarations[0] as InstanceDeclaration;
+      expect(decl.instance).toEqual({
+        kind: "GivenExpression",
+        morphism: { kind: "NamedInstance", name: "f" },
+        instance: {
+          kind: "IfExpression",
+          condition: { kind: "NamedInstance", name: "cond" },
+          then: { kind: "NamedInstance", name: "a" },
+          else: { kind: "NamedInstance", name: "b" },
+        },
+      });
+    });
+
+    it("should convert given with composition to AST", () => {
+      const testCase =
+        'let test: String -> Number = f given [ "step 1", "step 2" ]';
+      const ast = parseToAst(testCase);
+      const decl = ast.declarations[0] as InstanceDeclaration;
+      expect(decl.instance).toEqual({
+        kind: "GivenExpression",
+        morphism: { kind: "NamedInstance", name: "f" },
+        instance: {
+          kind: "Composition",
+          steps: [
+            { kind: "Instruction", text: "step 1" },
+            { kind: "Instruction", text: "step 2" },
+          ],
+        },
+      });
+    });
+
+    it("should convert chained given to AST", () => {
+      const testCase = "let test: A -> D = f given g given h";
+      const ast = parseToAst(testCase);
+      const decl = ast.declarations[0] as InstanceDeclaration;
+      expect(decl.instance).toEqual({
+        kind: "GivenExpression",
+        morphism: { kind: "NamedInstance", name: "f" },
+        instance: {
+          kind: "GivenExpression",
+          morphism: { kind: "NamedInstance", name: "g" },
+          instance: { kind: "NamedInstance", name: "h" },
+        },
+      });
+    });
   });
 
   describe("end-to-end", () => {
