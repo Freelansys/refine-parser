@@ -1,6 +1,7 @@
 ---
 todo: to simplify the AST and parset, it would be good to unify LetStep and InstanceDeclaration
 ---
+
 # Spex
 
 Spex is a language designed for programming with LLMs. It addresses shortcomings of the chat interface commonly used in AI coding assistant tools.
@@ -14,7 +15,7 @@ In particular, Spex aims to solve the following problems:
 - Referencing objects in the code base requires repetitive and verbose prompts.
 - Because architecture and design are not persisted, AI agents must constantly read and reason about multiple files, leading to inefficient token usage.
 
-The idea behind chat interfaces in AI coding tools is that *everyone* should be able to code. While admirable, this approach often makes the tools inadequate for professional developers.
+The idea behind chat interfaces in AI coding tools is that _everyone_ should be able to code. While admirable, this approach often makes the tools inadequate for professional developers.
 
 Spex acknowledges that in serious software projects it is neither wise nor feasible to replace programmers with machines. Instead, Spex integrates with the mental model and ecosystem of professional programmers, enabling them to be significantly more efficient.
 
@@ -57,8 +58,8 @@ Bool
 Unit
 ```
 
-* `Unit` is the **terminal object** in the category.
-* `Bool` is the **subobject classifier**.
+- `Unit` is the **terminal object** in the category.
+- `Bool` is the **subobject classifier**.
 
 ### Products
 
@@ -127,22 +128,25 @@ select String where [
 
 Subobjects may be defined for:
 
-* base objects
-* products
-* exponentials
-* other subobjects
+- base objects
+- products
+- exponentials
+- other subobjects
 
 Subobjecting is a special feature of Spex that guides the implementation of the specification. For example, consider the following:
+
 ```spex
 object NonNegativeNumber = select Number where "the number is greater or equals zero"
 
 let sqrt: NonNegativeNumber -> NonNegativeNumber = "compute the squre root of the given number"
 ```
+
 Many programming languages does not have a corresponding type for non-negative numbers. So when the agent is implementing the `sqrt` function it should write assertions to make sure the given number and the computed square root are both non-negative.
 
 While subobjecting basic objects (and hence products) is straight forward, subobjecting exponentials is more nuanced. No programming language has a standard method to make assertions about functions as of this writing. Subobjecting exponentials as a result could only be left to judgment of the agent to some extent.
 
 Consider the follwing specification:
+
 ```spex
 object DistanceFunction = select (x: Number, y: Number) -> NonNegativeNumber where [
   let f: (x: Number, y: Number) -> NonNegativeNumber = eval "return the given morphism",
@@ -158,6 +162,7 @@ object DistanceFunction = select (x: Number, y: Number) -> NonNegativeNumber whe
 
 let abs: DistanceFunction = "compute the absolute value of subtracting ${x} from ${y}"
 ```
+
 The agent has no method of proving `abs` is indeed an instance of `DistanceFunction` using most standard programming languages. So it has to make a judgment call to decide wether the provided instructions adhere to the conditions specified in the subobject or not. Best case scenario, it can write some tests to empirically assert the implementation is correct.
 
 ## Instances
@@ -209,6 +214,7 @@ Instances of exponential objects are **morphisms**.
 Morphisms represent sequences of steps executed in order.
 
 Example:
+
 ```spex
 let trap: (f: Number -> Number) -> Number = [
   let int: Number = eval "approximate the integral of ${f} using the trapezoid rule",
@@ -223,11 +229,13 @@ Instructions represent natural-language steps. They are analogous to lambda expr
 They are written as double-quoted strings.
 
 Example:
+
 ```spex
 "print 'hello'"
 ```
 
 Named instances can be referenced using interpolation:
+
 ```spex
 [
   let hello: String = 'hello',
@@ -249,6 +257,7 @@ Composition blocks are written using square brackets:
 ```
 
 Steps inside a composition execute sequentially. It is possible to declare objects or instances in between steps which could be refrenced in the scope of the composition.
+
 #### Given Expression
 
 The `given` keyword is used to make a partial morphism from an exponential instance.
@@ -276,9 +285,11 @@ An `if` statement executes one of two branches based on a given `Bool` instance.
 ```
 
 ### Eval Expression
+
 The `eval` keyword is used to execute a morphism that has `Unit` as its domain.
 
 Example
+
 ```spex
 let hello: String = eval "return 'hello'"
 ```
@@ -286,6 +297,93 @@ let hello: String = eval "return 'hello'"
 `eval` and `given` could be chained together to execute a morphism with a domain other than `Unit`.
 
 Example
+
 ```spex
 let sum: Number = eval "add ${a} to ${b}" given { a: 1, b: 2 }
 ```
+
+### Property Access
+
+Property access allows referencing fields of product instances using dot notation.
+
+```spex
+let input: CliInput = eval "read command and arguments from cli"
+
+let config: Config = eval "load configuration"
+
+// Access properties with dot notation
+let todo: Todo = eval "get todo with id ${input.arg1} from ${config.db}"
+```
+
+Nested property access is supported:
+
+```spex
+let path: String = config.database.path
+```
+
+Property access works with:
+
+- Named instances: `input.arg1`
+- Interpolated strings: `"${input.arg1}"`
+- Product instances in `given` expressions
+
+## Grammar
+
+```
+spexFile        ::= declaration*
+
+declaration     ::= objectDeclaration | instanceDeclaration
+
+objectDeclaration
+                ::= 'object' Identifier '=' objectExpression
+
+objectExpression
+                ::= objectOperand ('->' objectExpression)?
+
+objectOperand   ::= subObject | productObject | Identifier
+
+productObject   ::= '(' (Identifier ':' objectExpression ',')* ')'
+
+subObject       ::= 'select' objectExpression 'where' instanceExpression
+
+instanceDeclaration
+                ::= 'let' Identifier ':' objectExpression '=' instanceExpression
+
+instanceExpression
+                ::= instancePrimary ('.' Identifier)*
+
+instancePrimary ::= evalExpression
+                |   givenExpression
+                |   ifExpression
+                |   composition
+                |   productInstance
+                |   literalOrNamedInstance
+
+literalOrNamedInstance
+                ::= Instruction | StringLiteral | NumberLiteral | BoolLiteral | Identifier
+
+productInstance ::= '{' (Identifier ':' instanceExpression ',')* '}'
+
+composition     ::= '[' (localDeclaration | instanceExpression ',')* ']'
+
+localDeclaration
+                ::= objectDeclaration | instanceDeclaration
+
+evalExpression  ::= 'eval' instanceExpression
+
+givenExpression ::= literalOrNamedInstance givenExpressionSuffix
+
+givenExpressionSuffix
+                ::= 'given' (productInstance | literalOrNamedInstance)
+
+ifExpression    ::= 'if' instanceExpression 'then' instanceExpression ('else' instanceExpression)? ','?
+```
+
+### Token Reference
+
+| Token      | Pattern                                                                   | Description                    |
+| ---------- | ------------------------------------------------------------------------- | ------------------------------ |
+| Keywords   | `object`, `let`, `select`, `where`, `if`, `then`, `else`, `eval`, `given` | Language keywords              |
+| Symbols    | `->`, `{}`, `[]`, `()`, `:`, `,`, `.`, `=`                                | Syntax delimiters              |
+| Literals   | `"..."`, `'...'`, numbers, `true`/`false`                                 | String, number, boolean values |
+| Identifier | `[a-zA-Z_][a-zA-Z0-9_]*`                                                  | Variable and type names        |
