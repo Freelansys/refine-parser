@@ -119,7 +119,11 @@ export class SpexParser extends CstParser {
     this.SUBRULE(this.instancePrimary, { LABEL: "base" });
     this.MANY(() => {
       this.CONSUME(Dot);
-      this.CONSUME2(Identifier, { LABEL: "property" });
+      this.CONSUME(Identifier, { LABEL: "property" });
+    });
+    this.MANY2(() => {
+      this.CONSUME(GivenTok);
+      this.SUBRULE(this.instanceExpression, { LABEL: "givenInstance" });
     });
   });
 
@@ -128,10 +132,6 @@ export class SpexParser extends CstParser {
       {
         GATE: this.BACKTRACK(this.evalExpression),
         ALT: () => this.SUBRULE(this.evalExpression),
-      },
-      {
-        GATE: this.BACKTRACK(this.givenExpression),
-        ALT: () => this.SUBRULE(this.givenExpression),
       },
       {
         GATE: this.BACKTRACK(this.ifExpression),
@@ -224,25 +224,6 @@ export class SpexParser extends CstParser {
   private evalExpression = this.RULE("evalExpression", () => {
     this.CONSUME(EvalTok);
     this.SUBRULE(this.instanceExpression, { LABEL: "morphism" });
-  });
-
-  private givenExpression = this.RULE("givenExpression", () => {
-    this.SUBRULE(this.literalOrNamedInstance, { LABEL: "morphism" });
-    this.SUBRULE(this.givenExpressionSuffix);
-  });
-
-  private givenExpressionSuffix = this.RULE("givenExpressionSuffix", () => {
-    this.CONSUME(GivenTok);
-    this.OR([
-      {
-        GATE: this.BACKTRACK(this.productInstance),
-        ALT: () => this.SUBRULE(this.productInstance, { LABEL: "instance" }),
-      },
-      {
-        ALT: () =>
-          this.SUBRULE(this.literalOrNamedInstance, { LABEL: "instance" }),
-      },
-    ]);
   });
 
   private ifExpression = this.RULE("ifExpression", () => {

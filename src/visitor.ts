@@ -120,6 +120,16 @@ export class SpexParserVisitor
 
   instanceExpression(ctx: any): InstanceExpression {
     let expr = this.visit(ctx.base);
+    if (ctx.GivenTok) {
+      for (let i = 0; i < ctx.GivenTok.length; i++) {
+        const givenInstance = this.visit(ctx.givenInstance[i]);
+        expr = {
+          kind: "GivenExpression",
+          morphism: expr,
+          instance: givenInstance,
+        };
+      }
+    }
     if (ctx.property) {
       for (const prop of ctx.property) {
         expr = {
@@ -135,9 +145,6 @@ export class SpexParserVisitor
   instancePrimary(ctx: any): InstanceExpression {
     if (ctx.evalExpression) {
       return this.visit(ctx.evalExpression);
-    }
-    if (ctx.givenExpression) {
-      return this.visit(ctx.givenExpression);
     }
     if (ctx.ifExpression) {
       return this.visit(ctx.ifExpression);
@@ -233,26 +240,6 @@ export class SpexParserVisitor
       morphism,
     };
   }
-
-  givenExpression(ctx: any): GivenExpression {
-    const morphism = this.visit(ctx.morphism);
-    const suffixCtx = ctx.givenExpressionSuffix[0].children;
-    let instance;
-    if (suffixCtx.instance) {
-      instance = this.visit(suffixCtx.instance[0]);
-    } else if (suffixCtx.productInstance) {
-      instance = this.visit(suffixCtx.productInstance[0]);
-    } else if (suffixCtx.literalOrNamedInstance) {
-      instance = this.visit(suffixCtx.literalOrNamedInstance[0]);
-    }
-    return {
-      kind: "GivenExpression",
-      morphism,
-      instance,
-    };
-  }
-
-  givenExpressionSuffix(): void {}
 
   ifExpression(ctx: any): IfExpression {
     return {

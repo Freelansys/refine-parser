@@ -350,10 +350,9 @@ instanceDeclaration
                 ::= 'let' Identifier ':' objectExpression '=' instanceExpression
 
 instanceExpression
-                ::= instancePrimary ('.' Identifier)*
+                ::= instancePrimary ('.' Identifier | 'given' instanceExpression)*
 
 instancePrimary ::= evalExpression
-                |   givenExpression
                 |   ifExpression
                 |   composition
                 |   productInstance
@@ -371,13 +370,16 @@ localDeclaration
 
 evalExpression  ::= 'eval' instanceExpression
 
-givenExpression ::= literalOrNamedInstance givenExpressionSuffix
-
-givenExpressionSuffix
-                ::= 'given' (productInstance | literalOrNamedInstance)
-
 ifExpression    ::= 'if' instanceExpression 'then' instanceExpression ('else' instanceExpression)? ','?
 ```
+
+Note: `given` is a suffix that accepts any `instanceExpression`, enabling:
+
+- Property access: `f given input.arg1`
+- Eval expressions: `f given eval "..."`
+- Nested given: `f given g given h`
+- If expressions: `f given if x then y else z`
+- Compositions: `f given [ ... ]`
 
 ### Token Reference
 
