@@ -383,5 +383,5 @@ Note: `given` is a suffix that accepts any `instanceExpression`, enabling:
 | ---------- | ------------------------------------------------------------------------- | ------------------------------ |
 | Keywords   | `object`, `let`, `select`, `where`, `if`, `then`, `else`, `eval`, `given` | Language keywords              |
 | Symbols    | `->`, `{}`, `[]`, `()`, `:`, `,`, `.`, `=`                                | Syntax delimiters              |
-| Literals   | `"..."`, `'...'`, numbers, `true`/`false`                                 | String, number, boolean values |
+| Literals   | `'...'`, numbers, `true`/`false`                                          | String, number, boolean values |
 | Identifier | `[a-zA-Z_][a-zA-Z0-9_]*`                                                  | Variable and type names        |
