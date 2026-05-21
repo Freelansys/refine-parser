@@ -1,6 +1,7 @@
 {
   "name": "spex-parser",
-  "version": "1.0.0",
+  "repository": "github:Freelansys/spex-parser",
+  "version": "0.1.0",
   "description": "A parser for Spex, a language designed for programming with LLMs",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
