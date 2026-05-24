@@ -8,6 +8,9 @@ import {
   GenerateTok,
   ImportTok,
   ExportTok,
+  PackageTok,
+  ExecutableTok,
+  ModuleTok,
   ArrowTok,
   SelectBlock,
   LBracket,
@@ -40,6 +43,10 @@ export class SpexParser extends CstParser {
 
   private declaration = this.RULE('declaration', () => {
     this.OR([
+      {
+        GATE: this.BACKTRACK(this.packageDeclaration),
+        ALT: () => this.SUBRULE(this.packageDeclaration),
+      },
       {
         GATE: this.BACKTRACK(this.objectDeclaration),
         ALT: () => this.SUBRULE(this.objectDeclaration),
@@ -165,6 +172,15 @@ export class SpexParser extends CstParser {
   private generateDeclaration = this.RULE('generateDeclaration', () => {
     this.CONSUME(GenerateTok)
     this.CONSUME(Identifier)
+    this.CONSUME(Semicolon)
+  })
+
+  private packageDeclaration = this.RULE('packageDeclaration', () => {
+    this.CONSUME(PackageTok)
+    this.OR([{ ALT: () => this.CONSUME(ExecutableTok) }, { ALT: () => this.CONSUME(ModuleTok) }])
+    this.CONSUME(Identifier)
+    this.CONSUME(AsTok)
+    this.SUBRULE(this.objectExpression)
     this.CONSUME(Semicolon)
   })
 }

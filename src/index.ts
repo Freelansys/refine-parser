@@ -10,6 +10,8 @@ export type {
   ProductObject,
   ExponentialObject,
   SubObject,
+  PackageDeclaration,
+  PackageKind,
   Constraint,
   ConstraintPart,
   ConstraintReference,

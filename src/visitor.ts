@@ -6,6 +6,7 @@ import type {
   ImportDeclaration,
   ExportDeclaration,
   GenerateDeclaration,
+  PackageDeclaration,
   ObjectExpression,
   NamedObject,
   ProductObject,
@@ -55,6 +56,9 @@ export class SpexParserVisitor extends BaseSpexVisitor implements ICstVisitor<an
   }
 
   declaration(ctx: any): Declaration {
+    if (ctx.packageDeclaration) {
+      return this.visit(ctx.packageDeclaration)
+    }
     if (ctx.objectDeclaration) {
       return this.visit(ctx.objectDeclaration)
     }
@@ -179,6 +183,16 @@ export class SpexParserVisitor extends BaseSpexVisitor implements ICstVisitor<an
     return {
       kind: 'ExportDeclaration',
       name: ctx.Identifier[0].image,
+    }
+  }
+
+  packageDeclaration(ctx: any): PackageDeclaration {
+    const packageType = ctx.ExecutableTok ? ('EXECUTABLE' as const) : ('MODULE' as const)
+    return {
+      kind: 'PackageDeclaration',
+      packageType,
+      name: ctx.Identifier[0].image,
+      objectName: this.visit(ctx.objectExpression),
     }
   }
 

@@ -8,6 +8,16 @@ export type Declaration =
   | ImportDeclaration
   | ExportDeclaration
   | GenerateDeclaration
+  | PackageDeclaration
+
+export type PackageKind = 'EXECUTABLE' | 'MODULE'
+
+export type PackageDeclaration = {
+  kind: 'PackageDeclaration'
+  packageType: PackageKind
+  name: string
+  objectName: ObjectExpression
+}
 
 export type ObjectDeclaration = {
   kind: 'ObjectDeclaration'

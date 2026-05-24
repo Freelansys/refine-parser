@@ -4,7 +4,9 @@ import { SpexLexer } from '../src/lexer.js'
 describe('SpexLexer', () => {
   describe('tokenization', () => {
     it('should tokenize keywords', () => {
-      const result = SpexLexer.tokenize('create as from select generate import export')
+      const result = SpexLexer.tokenize(
+        'create as from select generate import export package executable module'
+      )
       expect(result.errors).toHaveLength(0)
       expect(result.tokens.map((t) => t.tokenType.name)).toEqual([
         'CreateTok',
@@ -14,11 +16,16 @@ describe('SpexLexer', () => {
         'GenerateTok',
         'ImportTok',
         'ExportTok',
+        'PackageTok',
+        'ExecutableTok',
+        'ModuleTok',
       ])
     })
 
     it('should tokenize keywords case-insensitively', () => {
-      const result = SpexLexer.tokenize('CREATE AS FROM SELECT GENERATE IMPORT EXPORT')
+      const result = SpexLexer.tokenize(
+        'CREATE AS FROM SELECT GENERATE IMPORT EXPORT PACKAGE EXECUTABLE MODULE'
+      )
       expect(result.errors).toHaveLength(0)
       expect(result.tokens.map((t) => t.tokenType.name)).toEqual([
         'CreateTok',
@@ -28,6 +35,9 @@ describe('SpexLexer', () => {
         'GenerateTok',
         'ImportTok',
         'ExportTok',
+        'PackageTok',
+        'ExecutableTok',
+        'ModuleTok',
       ])
     })
 
@@ -79,10 +89,10 @@ describe('SpexLexer', () => {
 
     it('should handle keywords with word boundary', () => {
       const result = SpexLexer.tokenize(
-        'createfoo foocreate asfoo fooas fooselect selectfoo foofrom fromfoo generatefoo foogenerate importfoo fooimport exportfoo fooexport'
+        'createfoo foocreate asfoo fooas fooselect selectfoo foofrom fromfoo generatefoo foogenerate importfoo fooimport exportfoo fooexport packagefoo fopackage executablefoo foexecutable modulefoo fomodule'
       )
       expect(result.errors).toHaveLength(0)
-      expect(result.tokens.map((t) => t.tokenType.name)).toEqual(Array(14).fill('Identifier'))
+      expect(result.tokens.map((t) => t.tokenType.name)).toEqual(Array(20).fill('Identifier'))
     })
 
     it('should tokenize the text between braces', () => {

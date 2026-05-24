@@ -12,6 +12,6 @@ describe('end-to-end', () => {
     const code = readFileSync(join(__dirname, 'props/todo.spex'), 'utf-8')
     const ast = parseToAst(code)
     expect(ast.kind).toBe('SpexFile')
-    expect(ast.declarations.length).toBe(14)
+    expect(ast.declarations.length).toBe(15)
   })
 })
