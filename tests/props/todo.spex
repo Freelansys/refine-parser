@@ -80,4 +80,6 @@ create Main as from string[] -> unit select {
   6. print user-friendly error messages for exceptions
 };
 
-generate Main;
+generate TodoTitle;
+
+package executable MyTodo as Main;

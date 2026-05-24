@@ -35,6 +35,18 @@ export const ExportTok = createToken({
   name: 'ExportTok',
   pattern: /export\b/i,
 })
+export const PackageTok = createToken({
+  name: 'PackageTok',
+  pattern: /package\b/i,
+})
+export const ExecutableTok = createToken({
+  name: 'ExecutableTok',
+  pattern: /executable\b/i,
+})
+export const ModuleTok = createToken({
+  name: 'ModuleTok',
+  pattern: /module\b/i,
+})
 
 // Symbols
 export const ArrowTok = createToken({ name: 'ArrowTok', pattern: /->/ })
@@ -95,6 +107,9 @@ export const allTokens = [
   GenerateTok,
   ImportTok,
   ExportTok,
+  PackageTok,
+  ExecutableTok,
+  ModuleTok,
 
   ArrowTok,
   SelectBlock,

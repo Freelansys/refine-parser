@@ -10,18 +10,18 @@ In particular, Spex aims to solve the following problems:
 - Chat interfaces do not integrate well with existing software engineering tools such as version control systems.
 - Referencing objects in the code base requires repetitive and verbose prompts.
 - Because architecture and design are not persisted, AI agents must constantly read and reason about multiple files, leading to inefficient token usage.
-- Reusability in chat interfaces is extremely limited and abstraction is arbitrary. 
+- Reusability in chat interfaces is extremely limited and abstraction is arbitrary.
 
 The idea behind chat interfaces in AI coding tools is that _everyone_ should be able to code. While admirable, this approach often makes the tools inadequate for professional developers.
 
 Spex acknowledges that in serious software projects it is neither wise nor feasible to replace programmers with machines. Instead, Spex integrates with the mental model and ecosystem of professional programmers, enabling them to be significantly more efficient. For this reason, Spex is probably not suited to someone that is not familiar with programming. This is a conscious decision made to cater to the needs of professional programmers and not the general public.
 
-For this reason, Spex syntax is intentionally close to common languages such as TypeScript and SQL. Instead of manually implementing software, developers describe *spaces of valid implementations* using familiar programming abstractions such as:
+For this reason, Spex syntax is intentionally close to common languages such as TypeScript and SQL. Instead of manually implementing software, developers describe _spaces of valid implementations_ using familiar programming abstractions such as:
 
-* objects
-* functions
-* dependencies
-* constraints
+- objects
+- functions
+- dependencies
+- constraints
 
 The Spex runtime synthesizes concrete implementations based on these specifications.
 
@@ -31,9 +31,9 @@ The Spex runtime synthesizes concrete implementations based on these specificati
 
 In Spex:
 
-* a type represents a space of possible implementations
-* constraints refine that space
-* reusable abstractions are represented as subtypes
+- a type represents a space of possible implementations
+- constraints refine that space
+- reusable abstractions are represented as subtypes
 
 For example:
 
@@ -56,10 +56,10 @@ Developers can build on top of these abstractions instead of repeatedly specifyi
 
 Spex is designed to:
 
-* feel familiar to software developers
-* resemble SQL-style declarative programming
-* support compositional software synthesis
-* enable reusable architectural abstractions
+- feel familiar to software developers
+- resemble SQL-style declarative programming
+- support compositional software synthesis
+- enable reusable architectural abstractions
 
 ---
 
@@ -124,6 +124,7 @@ string -> number
 string -> unit
 unit -> string
 ```
+
 `string -> unit` represents all functions that take a string as input and do not return anything. `unit -> string` on the other hand, is a function that takes nothing as input, but returns a string.
 
 ## Subobjects
@@ -142,7 +143,7 @@ SELECT {
 }
 ```
 
-Subobjects are themselves objects so they could be subobjected as well. A good heuristic for writing constraints is to make the expression read as: 
+Subobjects are themselves objects so they could be subobjected as well. A good heuristic for writing constraints is to make the expression read as:
 
 > "from `object` select those that `{constraint}`".
 
@@ -203,6 +204,13 @@ SELECT {
 ```
 
 This forms an explicit software dependency graph between objects.
+
+The parser automatically extracts references from constraints into structured AST nodes, making it easy to analyze dependencies programmatically. Each constraint is parsed into a sequence of text segments and reference nodes:
+
+```spex
+"call @LoadTodos using @path"
+→ [text: "call ", ref: LoadTodos, text: " using ", ref: path]
+```
 
 Use `.` to reference a member of a product object:
 
@@ -296,15 +304,40 @@ Generation of some object naturally triggers generation of it's dependencies as 
 
 ---
 
+# Packaging Code
+
+To specify how generated code should be packaged, use the `PACKAGE` declaration:
+
+```spex
+PACKAGE EXECUTABLE <name> AS <object>
+PACKAGE MODULE <name> AS <object>
+```
+
+`EXECUTABLE` packages the object as a standalone application entry point. `MODULE` packages it as a library or module that can be imported by other code.
+
+```spex
+PACKAGE EXECUTABLE myapp AS Main;
+PACKAGE MODULE mylib AS utils;
+```
+
+The object can be any valid Spex expression:
+
+```spex
+PACKAGE EXECUTABLE cli AS (path: string) -> unit;
+PACKAGE MODULE mylib AS app.handlers;
+```
+
+---
+
 # Why SQL?
 
 Spex uses SQL-inspired syntax because developers already understand:
 
-* schemas
-* views
-* refinement through selection
-* declarative programming
-* dependency relationships
+- schemas
+- views
+- refinement through selection
+- declarative programming
+- dependency relationships
 
 This dramatically reduces the learning curve.
 
@@ -314,10 +347,10 @@ This dramatically reduces the learning curve.
 
 Spex aims to provide:
 
-* reusable semantic software abstractions
-* compositional AI-assisted programming
-* declarative architecture specification
-* implementation synthesis guided by constraints
+- reusable semantic software abstractions
+- compositional AI-assisted programming
+- declarative architecture specification
+- implementation synthesis guided by constraints
 
 Instead of prompting LLMs directly, developers work with structured software semantics that can be analyzed, refined, verified, and synthesized.
 
@@ -507,7 +540,7 @@ SELECT {
 ## Code Generation
 
 ```spex
-GENERATE Main
+package executable MyTodo as Main;
 ```
 
 This triggers generation of the complete CLI application and all required dependencies.

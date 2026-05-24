@@ -5,6 +5,7 @@ import type {
   ImportDeclaration,
   ExportDeclaration,
   GenerateDeclaration,
+  PackageDeclaration,
   Constraint,
 } from '../src/ast.js'
 
@@ -592,6 +593,94 @@ describe('SpexParserVisitor', () => {
     it('should preserve raw text exactly', () => {
       const result = parseConstraint('  @foo  ')
       expect(result.raw).toBe('  @foo  ')
+    })
+  })
+
+  describe('package declaration', () => {
+    it('should convert package executable declaration to AST', () => {
+      const testCase = 'package executable myapp as Main;'
+      const ast = parseToAst(testCase)
+      const decl = ast.declarations[0] as PackageDeclaration
+      expect(decl).toEqual({
+        kind: 'PackageDeclaration',
+        packageType: 'EXECUTABLE',
+        name: 'myapp',
+        objectName: { kind: 'NamedObject', name: 'Main' },
+      })
+    })
+
+    it('should convert package module declaration to AST', () => {
+      const testCase = 'package module mylib as utils;'
+      const ast = parseToAst(testCase)
+      const decl = ast.declarations[0] as PackageDeclaration
+      expect(decl).toEqual({
+        kind: 'PackageDeclaration',
+        packageType: 'MODULE',
+        name: 'mylib',
+        objectName: { kind: 'NamedObject', name: 'utils' },
+      })
+    })
+
+    it('should convert package executable with complex object to AST', () => {
+      const testCase = 'package executable cli as (path: string) -> unit;'
+      const ast = parseToAst(testCase)
+      const decl = ast.declarations[0] as PackageDeclaration
+      expect(decl).toEqual({
+        kind: 'PackageDeclaration',
+        packageType: 'EXECUTABLE',
+        name: 'cli',
+        objectName: {
+          kind: 'ExponentialObject',
+          exponent: {
+            kind: 'ProductObject',
+            fields: { path: { kind: 'NamedObject', name: 'string' } },
+          },
+          base: { kind: 'NamedObject', name: 'unit' },
+        },
+      })
+    })
+
+    it('should convert package executable with dotted name to AST', () => {
+      const testCase = 'package executable myapp as app.Main;'
+      const ast = parseToAst(testCase)
+      const decl = ast.declarations[0] as PackageDeclaration
+      expect(decl).toEqual({
+        kind: 'PackageDeclaration',
+        packageType: 'EXECUTABLE',
+        name: 'myapp',
+        objectName: { kind: 'NamedObject', name: 'app.Main' },
+      })
+    })
+
+    it('should convert package executable with array type to AST', () => {
+      const testCase = 'package module mylib as string[];'
+      const ast = parseToAst(testCase)
+      const decl = ast.declarations[0] as PackageDeclaration
+      expect(decl).toEqual({
+        kind: 'PackageDeclaration',
+        packageType: 'MODULE',
+        name: 'mylib',
+        objectName: { kind: 'ArrayObject', base: { kind: 'NamedObject', name: 'string' } },
+      })
+    })
+
+    it('should convert mixed declarations with package to AST', () => {
+      const testCase = 'create Main as Number;\npackage executable myapp as Main;'
+      const ast = parseToAst(testCase)
+      expect(ast.declarations).toHaveLength(2)
+      const createDecl = ast.declarations[0] as ObjectDeclaration
+      expect(createDecl).toEqual({
+        kind: 'ObjectDeclaration',
+        name: 'Main',
+        object: { kind: 'NamedObject', name: 'Number' },
+      })
+      const packageDecl = ast.declarations[1] as PackageDeclaration
+      expect(packageDecl).toEqual({
+        kind: 'PackageDeclaration',
+        packageType: 'EXECUTABLE',
+        name: 'myapp',
+        objectName: { kind: 'NamedObject', name: 'Main' },
+      })
     })
   })
 })

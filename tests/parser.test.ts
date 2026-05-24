@@ -212,6 +212,69 @@ describe('SpexParser', () => {
     })
   })
 
+  describe('package declaration', () => {
+    it('should parse package executable declaration', () => {
+      const testCase = 'package executable myapp as Main;'
+      const { parser } = parseInput(testCase)
+      expect(parser.errors).toHaveLength(0)
+    })
+
+    it('should parse package module declaration', () => {
+      const testCase = 'package module mylib as utils;'
+      const { parser } = parseInput(testCase)
+      expect(parser.errors).toHaveLength(0)
+    })
+
+    it('should parse package executable with exponential object', () => {
+      const testCase = 'package executable cli as (path: string) -> unit;'
+      const { parser } = parseInput(testCase)
+      expect(parser.errors).toHaveLength(0)
+    })
+
+    it('should parse package executable with dotted name', () => {
+      const testCase = 'package executable myapp as app.Main;'
+      const { parser } = parseInput(testCase)
+      expect(parser.errors).toHaveLength(0)
+    })
+
+    it('should parse package module with array type', () => {
+      const testCase = 'package module mylib as string[];'
+      const { parser } = parseInput(testCase)
+      expect(parser.errors).toHaveLength(0)
+    })
+
+    it('should parse package executable with product type', () => {
+      const testCase = 'package module mylib as (name: string, count: number);'
+      const { parser } = parseInput(testCase)
+      expect(parser.errors).toHaveLength(0)
+    })
+
+    it('should parse package executable with subobject', () => {
+      const testCase = 'package executable myapp as from string select { is a valid command };'
+      const { parser } = parseInput(testCase)
+      expect(parser.errors).toHaveLength(0)
+    })
+
+    it('should parse package declaration case-insensitively', () => {
+      const testCase = 'PACKAGE EXECUTABLE myapp AS Main;'
+      const { parser } = parseInput(testCase)
+      expect(parser.errors).toHaveLength(0)
+    })
+
+    it('should parse mixed package and generate declarations', () => {
+      const testCase = 'package executable myapp as Main;\ngenerate Main;'
+      const { parser } = parseInput(testCase)
+      expect(parser.errors).toHaveLength(0)
+    })
+
+    it('should parse package declaration with complex nested type', () => {
+      const testCase =
+        'package module mylib as from (x: number, y: number) -> number select { computes distance };'
+      const { parser } = parseInput(testCase)
+      expect(parser.errors).toHaveLength(0)
+    })
+  })
+
   describe('multiple declarations', () => {
     it('should parse multiple declarations', () => {
       const testCase = `
