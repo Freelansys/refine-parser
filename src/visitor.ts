@@ -11,12 +11,37 @@ import type {
   ProductObject,
   SubObject,
   ArrayObject,
+  Constraint,
+  ConstraintPart,
+  ConstraintReference,
 } from './ast.js'
 import { SpexLexer } from './lexer.js'
 import { SpexParser } from './parser.js'
 
 const parserInstance = new SpexParser()
 const BaseSpexVisitor = parserInstance.getBaseCstVisitorConstructor()
+
+export const REFERENCE_PATTERN = /@([a-zA-Z_][\w]*(?:\.[a-zA-Z_][\w]*)*)/g
+
+export function parseConstraint(raw: string): Constraint {
+  const parts: ConstraintPart[] = []
+  let lastIndex = 0
+  let match: RegExpExecArray | null
+
+  while ((match = REFERENCE_PATTERN.exec(raw)) !== null) {
+    if (match.index > lastIndex) {
+      parts.push({ kind: 'ConstraintText', text: raw.slice(lastIndex, match.index) })
+    }
+    parts.push({ kind: 'ConstraintReference', name: match[1]! })
+    lastIndex = match.index + match[0].length
+  }
+
+  if (lastIndex < raw.length) {
+    parts.push({ kind: 'ConstraintText', text: raw.slice(lastIndex) })
+  }
+
+  return { raw, parts }
+}
 
 export class SpexParserVisitor extends BaseSpexVisitor implements ICstVisitor<any, any> {
   constructor() {
@@ -112,11 +137,11 @@ export class SpexParserVisitor extends BaseSpexVisitor implements ICstVisitor<an
 
   subObject(ctx: any): SubObject {
     const rawText: string = ctx.SelectBlock[0].image
-    const constraint = rawText.slice(1, -1).trim()
+    const rawConstraint = rawText.slice(1, -1).trim()
     return {
       kind: 'SubObject',
       base: this.visit(ctx.base),
-      constraint,
+      constraint: parseConstraint(rawConstraint),
     }
   }
 
