@@ -10,4 +10,8 @@ export type {
   ProductObject,
   ExponentialObject,
   SubObject,
+  Constraint,
+  ConstraintPart,
+  ConstraintReference,
+  ConstraintText,
 } from './ast.js'

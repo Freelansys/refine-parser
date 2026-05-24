@@ -55,10 +55,27 @@ export type ExponentialObject = {
   exponent: ObjectExpression
 }
 
+export type ConstraintReference = {
+  kind: 'ConstraintReference'
+  name: string
+}
+
+export type ConstraintText = {
+  kind: 'ConstraintText'
+  text: string
+}
+
+export type ConstraintPart = ConstraintReference | ConstraintText
+
+export type Constraint = {
+  raw: string
+  parts: ConstraintPart[]
+}
+
 export type SubObject = {
   kind: 'SubObject'
   base: ObjectExpression
-  constraint: string
+  constraint: Constraint
 }
 
 export type ArrayObject = {

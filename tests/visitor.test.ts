@@ -1,10 +1,11 @@
 import { describe, it, expect } from 'vitest'
-import { parseToAst } from '../src/visitor.js'
+import { parseToAst, parseConstraint } from '../src/visitor.js'
 import type {
   ObjectDeclaration,
   ImportDeclaration,
   ExportDeclaration,
   GenerateDeclaration,
+  Constraint,
 } from '../src/ast.js'
 
 describe('SpexParserVisitor', () => {
@@ -92,7 +93,10 @@ describe('SpexParserVisitor', () => {
             p: {
               kind: 'SubObject',
               base: { kind: 'NamedObject', name: 'Number' },
-              constraint: 'value is positive',
+              constraint: {
+                raw: 'value is positive',
+                parts: [{ kind: 'ConstraintText', text: 'value is positive' }],
+              },
             },
             n: { kind: 'NamedObject', name: 'Number' },
           },
@@ -178,12 +182,18 @@ describe('SpexParserVisitor', () => {
           exponent: {
             kind: 'SubObject',
             base: { kind: 'NamedObject', name: 'Number' },
-            constraint: 'value is positive',
+            constraint: {
+              raw: 'value is positive',
+              parts: [{ kind: 'ConstraintText', text: 'value is positive' }],
+            },
           },
           base: {
             kind: 'SubObject',
             base: { kind: 'NamedObject', name: 'Number' },
-            constraint: 'value is positive',
+            constraint: {
+              raw: 'value is positive',
+              parts: [{ kind: 'ConstraintText', text: 'value is positive' }],
+            },
           },
         },
       })
@@ -199,7 +209,10 @@ describe('SpexParserVisitor', () => {
         object: {
           kind: 'SubObject',
           base: { kind: 'NamedObject', name: 'Number' },
-          constraint: 'isPositive',
+          constraint: {
+            raw: 'isPositive',
+            parts: [{ kind: 'ConstraintText', text: 'isPositive' }],
+          },
         },
       })
     })
@@ -214,7 +227,10 @@ describe('SpexParserVisitor', () => {
         object: {
           kind: 'SubObject',
           base: { kind: 'NamedObject', name: 'Number' },
-          constraint: 'the number is positive',
+          constraint: {
+            raw: 'the number is positive',
+            parts: [{ kind: 'ConstraintText', text: 'the number is positive' }],
+          },
         },
       })
     })
@@ -236,7 +252,13 @@ describe('SpexParserVisitor', () => {
               s: { kind: 'NamedObject', name: 'String' },
             },
           },
-          constraint: '@n is positive',
+          constraint: {
+            raw: '@n is positive',
+            parts: [
+              { kind: 'ConstraintReference', name: 'n' },
+              { kind: 'ConstraintText', text: ' is positive' },
+            ],
+          },
         },
       })
     })
@@ -262,7 +284,10 @@ describe('SpexParserVisitor', () => {
             },
             base: { kind: 'NamedObject', name: 'Bool' },
           },
-          constraint: 'logs the given input',
+          constraint: {
+            raw: 'logs the given input',
+            parts: [{ kind: 'ConstraintText', text: 'logs the given input' }],
+          },
         },
       })
     })
@@ -280,9 +305,15 @@ describe('SpexParserVisitor', () => {
           base: {
             kind: 'SubObject',
             base: { kind: 'NamedObject', name: 'Number' },
-            constraint: 'value is positive',
+            constraint: {
+              raw: 'value is positive',
+              parts: [{ kind: 'ConstraintText', text: 'value is positive' }],
+            },
           },
-          constraint: 'value is odd',
+          constraint: {
+            raw: 'value is odd',
+            parts: [{ kind: 'ConstraintText', text: 'value is odd' }],
+          },
         },
       })
     })
@@ -458,6 +489,109 @@ describe('SpexParserVisitor', () => {
         kind: 'GenerateDeclaration',
         name: 'Main',
       })
+    })
+  })
+
+  describe('parseConstraint', () => {
+    it('should parse plain text constraint with no references', () => {
+      const result = parseConstraint('value is positive')
+      expect(result).toEqual<Constraint>({
+        raw: 'value is positive',
+        parts: [{ kind: 'ConstraintText', text: 'value is positive' }],
+      })
+    })
+
+    it('should parse constraint with single reference', () => {
+      const result = parseConstraint('@n is positive')
+      expect(result).toEqual<Constraint>({
+        raw: '@n is positive',
+        parts: [
+          { kind: 'ConstraintReference', name: 'n' },
+          { kind: 'ConstraintText', text: ' is positive' },
+        ],
+      })
+    })
+
+    it('should parse constraint with reference in the middle', () => {
+      const result = parseConstraint('use @path for storage')
+      expect(result).toEqual<Constraint>({
+        raw: 'use @path for storage',
+        parts: [
+          { kind: 'ConstraintText', text: 'use ' },
+          { kind: 'ConstraintReference', name: 'path' },
+          { kind: 'ConstraintText', text: ' for storage' },
+        ],
+      })
+    })
+
+    it('should parse constraint with dotted references', () => {
+      const result = parseConstraint('return @z.real^2 + @z.imag^2')
+      expect(result).toEqual<Constraint>({
+        raw: 'return @z.real^2 + @z.imag^2',
+        parts: [
+          { kind: 'ConstraintText', text: 'return ' },
+          { kind: 'ConstraintReference', name: 'z.real' },
+          { kind: 'ConstraintText', text: '^2 + ' },
+          { kind: 'ConstraintReference', name: 'z.imag' },
+          { kind: 'ConstraintText', text: '^2' },
+        ],
+      })
+    })
+
+    it('should parse constraint with multiple references', () => {
+      const result = parseConstraint('call @LoadTodos using @path')
+      expect(result).toEqual<Constraint>({
+        raw: 'call @LoadTodos using @path',
+        parts: [
+          { kind: 'ConstraintText', text: 'call ' },
+          { kind: 'ConstraintReference', name: 'LoadTodos' },
+          { kind: 'ConstraintText', text: ' using ' },
+          { kind: 'ConstraintReference', name: 'path' },
+        ],
+      })
+    })
+
+    it('should parse constraint with reference at start', () => {
+      const result = parseConstraint('@validate the input')
+      expect(result).toEqual<Constraint>({
+        raw: '@validate the input',
+        parts: [
+          { kind: 'ConstraintReference', name: 'validate' },
+          { kind: 'ConstraintText', text: ' the input' },
+        ],
+      })
+    })
+
+    it('should parse constraint with no @ symbols', () => {
+      const result = parseConstraint('the user is authenticated')
+      expect(result).toEqual<Constraint>({
+        raw: 'the user is authenticated',
+        parts: [{ kind: 'ConstraintText', text: 'the user is authenticated' }],
+      })
+    })
+
+    it('should parse constraint with underscore in reference', () => {
+      const result = parseConstraint('@todo_item is valid')
+      expect(result).toEqual<Constraint>({
+        raw: '@todo_item is valid',
+        parts: [
+          { kind: 'ConstraintReference', name: 'todo_item' },
+          { kind: 'ConstraintText', text: ' is valid' },
+        ],
+      })
+    })
+
+    it('should parse empty constraint', () => {
+      const result = parseConstraint('')
+      expect(result).toEqual<Constraint>({
+        raw: '',
+        parts: [],
+      })
+    })
+
+    it('should preserve raw text exactly', () => {
+      const result = parseConstraint('  @foo  ')
+      expect(result.raw).toBe('  @foo  ')
     })
   })
 })
