@@ -596,6 +596,39 @@ describe('SpexParserVisitor', () => {
     })
   })
 
+  describe('comments inside select constraints', () => {
+    it('should keep comment markers in the constraint raw text', () => {
+      const testCase = 'create Foo as from string select { are valid -- like emails };'
+      const ast = parseToAst(testCase)
+      const decl = ast.declarations[0] as ObjectDeclaration
+      expect(decl.object).toEqual({
+        kind: 'SubObject',
+        base: { kind: 'NamedObject', name: 'string' },
+        constraint: {
+          raw: 'are valid -- like emails',
+          parts: [{ kind: 'ConstraintText', text: 'are valid -- like emails' }],
+        },
+      })
+    })
+
+    it('should extract references alongside comment markers', () => {
+      const testCase = 'create Foo as from string select { match /* strict */ @pattern };'
+      const ast = parseToAst(testCase)
+      const decl = ast.declarations[0] as ObjectDeclaration
+      expect(decl.object).toEqual({
+        kind: 'SubObject',
+        base: { kind: 'NamedObject', name: 'string' },
+        constraint: {
+          raw: 'match /* strict */ @pattern',
+          parts: [
+            { kind: 'ConstraintText', text: 'match /* strict */ ' },
+            { kind: 'ConstraintReference', name: 'pattern' },
+          ],
+        },
+      })
+    })
+  })
+
   describe('package declaration', () => {
     it('should convert package executable declaration to AST', () => {
       const testCase = 'package executable myapp as Main;'

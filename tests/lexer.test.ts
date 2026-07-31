@@ -182,6 +182,28 @@ describe('SpexLexer', () => {
       const result = SpexLexer.tokenize('create Foo as string; /* unclosed')
       expect(result.errors).not.toHaveLength(0)
     })
+
+    it('should not strip comment markers inside a select block', () => {
+      const result = SpexLexer.tokenize('select { are valid -- like emails };')
+      expect(result.errors).toHaveLength(0)
+      expect(result.tokens.map((t) => t.tokenType.name)).toEqual([
+        'SelectTok',
+        'SelectBlock',
+        'Semicolon',
+      ])
+      expect(result.tokens[1]?.image).toBe('{ are valid -- like emails }')
+    })
+
+    it('should preserve block comment markers inside a select block', () => {
+      const result = SpexLexer.tokenize('select { match /* strict */ pattern };')
+      expect(result.errors).toHaveLength(0)
+      expect(result.tokens.map((t) => t.tokenType.name)).toEqual([
+        'SelectTok',
+        'SelectBlock',
+        'Semicolon',
+      ])
+      expect(result.tokens[1]?.image).toBe('{ match /* strict */ pattern }')
+    })
   })
 
   describe('error handling', () => {
