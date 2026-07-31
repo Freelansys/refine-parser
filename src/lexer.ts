@@ -6,6 +6,18 @@ export const WhiteSpace = createToken({
   group: Lexer.SKIPPED,
 })
 
+// Comments (SQL-style)
+export const LineComment = createToken({
+  name: 'LineComment',
+  pattern: /--[^\r\n]*/,
+  group: Lexer.SKIPPED,
+})
+export const BlockComment = createToken({
+  name: 'BlockComment',
+  pattern: /\/\*[\s\S]*?\*\//,
+  group: Lexer.SKIPPED,
+})
+
 // Keywords (case-insensitive)
 export const CreateTok = createToken({
   name: 'CreateTok',
@@ -99,6 +111,8 @@ export const Identifier = createToken({
 
 export const allTokens = [
   WhiteSpace,
+  LineComment,
+  BlockComment,
 
   CreateTok,
   AsTok,

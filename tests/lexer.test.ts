@@ -123,6 +123,67 @@ describe('SpexLexer', () => {
     })
   })
 
+  describe('comments', () => {
+    it('should skip single-line comments', () => {
+      const result = SpexLexer.tokenize('create Foo as string; -- a comment')
+      expect(result.errors).toHaveLength(0)
+      expect(result.tokens.map((t) => t.tokenType.name)).toEqual([
+        'CreateTok',
+        'Identifier',
+        'AsTok',
+        'StringTok',
+        'Semicolon',
+      ])
+    })
+
+    it('should skip single-line comment with no trailing newline', () => {
+      const result = SpexLexer.tokenize('-- a comment')
+      expect(result.errors).toHaveLength(0)
+      expect(result.tokens).toHaveLength(0)
+    })
+
+    it('should skip inline block comments', () => {
+      const result = SpexLexer.tokenize('create /* inline */ Foo as string;')
+      expect(result.errors).toHaveLength(0)
+      expect(result.tokens.map((t) => t.tokenType.name)).toEqual([
+        'CreateTok',
+        'Identifier',
+        'AsTok',
+        'StringTok',
+        'Semicolon',
+      ])
+    })
+
+    it('should skip multi-line block comments', () => {
+      const result = SpexLexer.tokenize('/* line 1\nline 2 */ create Foo as string;')
+      expect(result.errors).toHaveLength(0)
+      expect(result.tokens.map((t) => t.tokenType.name)).toEqual([
+        'CreateTok',
+        'Identifier',
+        'AsTok',
+        'StringTok',
+        'Semicolon',
+      ])
+    })
+
+    it('should skip block comments containing token-like content', () => {
+      const result = SpexLexer.tokenize('/* create Bar as Number; */ create Foo as string;')
+      expect(result.errors).toHaveLength(0)
+      expect(result.tokens.map((t) => t.tokenType.name)).toEqual([
+        'CreateTok',
+        'Identifier',
+        'AsTok',
+        'StringTok',
+        'Semicolon',
+      ])
+    })
+
+    it('should produce an error for an unclosed block comment', () => {
+      const result = SpexLexer.tokenize('create Foo as string; /* unclosed')
+      expect(result.errors).not.toHaveLength(0)
+    })
+  })
+
   describe('error handling', () => {
     it('should return empty tokens for empty input', () => {
       const result = SpexLexer.tokenize('')

@@ -1,3 +1,6 @@
+-- A Todo CLI application written in Spex.
+
+/* The domain model: */
 create Todo as (
   id: string,
   title: string,
@@ -18,11 +21,13 @@ create TodoId as from string select {
   are valid UUIDs
 };
 
+/* The CLI argument structure. */
 create CliArgs as (
   command: string,
   arguments: string[]
 );
 
+-- Storage layer:
 create LoadTodos as from (path: TodoFilePath) -> Todo[] select {
   1. read the JSON file at @path
   2. return an empty list if the file does not exist
@@ -35,12 +40,14 @@ create SaveTodos as from (path: TodoFilePath, todos: Todo[]) -> unit select {
   2. write the JSON to @path
 };
 
+-- Todo creation:
 create CreateTodo as from (title: TodoTitle) -> Todo select {
   1. generate a UUID for the todo id
   2. create a todo with completed set to false
   3. return the created todo
 };
 
+-- Commands:
 create AddTodo as from (path: TodoFilePath, title: TodoTitle) -> Todo select {
   1. call @LoadTodos using @path
   2. call @CreateTodo using @title
@@ -71,6 +78,7 @@ create ParseCliArgs as from string[] -> CliArgs select {
   3. extract the command arguments
 };
 
+/* Entry point. */
 create Main as from string[] -> unit select {
   1. parse process arguments using @ParseCliArgs
   2. if the command is "add": call @AddTodo
@@ -80,6 +88,7 @@ create Main as from string[] -> unit select {
   6. print user-friendly error messages for exceptions
 };
 
+-- Code generation:
 generate TodoTitle;
 
 package executable MyTodo as Main;

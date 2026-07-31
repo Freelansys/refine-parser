@@ -275,6 +275,57 @@ describe('SpexParser', () => {
     })
   })
 
+  describe('comments', () => {
+    it('should parse declarations separated by single-line comments', () => {
+      const testCase = `
+        -- domain model
+        create Todo as (id: string, title: string);
+        -- create a new todo
+        create CreateTodo as (title: string) -> Todo;
+      `
+      const { parser } = parseInput(testCase)
+      expect(parser.errors).toHaveLength(0)
+    })
+
+    it('should parse declarations separated by block comments', () => {
+      const testCase = `
+        /* storage layer */
+        create LoadTodos as (path: string) -> Todo[];
+        /* entry point */
+        create Main as string[] -> unit;
+      `
+      const { parser } = parseInput(testCase)
+      expect(parser.errors).toHaveLength(0)
+    })
+
+    it('should parse inline block comments within a product declaration', () => {
+      const testCase = 'create Config as (name: string /* the name */, count: number);'
+      const { parser } = parseInput(testCase)
+      expect(parser.errors).toHaveLength(0)
+    })
+
+    it('should parse a file containing only comments', () => {
+      const testCase = `
+        -- this file is intentionally empty
+        /* apart from these comments */
+      `
+      const { parser } = parseInput(testCase)
+      expect(parser.errors).toHaveLength(0)
+    })
+
+    it('should parse a block comment spanning a single-line comment', () => {
+      const testCase = `
+        create Foo as string;
+        /* comment one
+        -- not a real comment, still part of the block
+        comment two */
+        generate Main;
+      `
+      const { parser } = parseInput(testCase)
+      expect(parser.errors).toHaveLength(0)
+    })
+  })
+
   describe('multiple declarations', () => {
     it('should parse multiple declarations', () => {
       const testCase = `
