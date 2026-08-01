@@ -158,6 +158,47 @@ describe('SpexLexer', () => {
       expect(result.tokens[0]?.image).toBe('"a\\\\b"')
     })
 
+    it('should tokenize number literals', () => {
+      const result = SpexLexer.tokenize('42 3.14')
+      expect(result.errors).toHaveLength(0)
+      expect(result.tokens.map((t) => t.tokenType.name)).toEqual([
+        'NumberLiteral',
+        'NumberLiteral',
+      ])
+      expect(result.tokens.map((t) => t.image)).toEqual(['42', '3.14'])
+    })
+
+    it('should tokenize bool literals', () => {
+      const result = SpexLexer.tokenize('true false TRUE FALSE')
+      expect(result.errors).toHaveLength(0)
+      expect(result.tokens.map((t) => t.tokenType.name)).toEqual([
+        'TrueTok',
+        'FalseTok',
+        'TrueTok',
+        'FalseTok',
+      ])
+    })
+
+    it('should tokenize literal object declarations', () => {
+      const result = SpexLexer.tokenize("create Foo as (name: \"John\", age: 42);")
+      expect(result.errors).toHaveLength(0)
+      expect(result.tokens.map((t) => t.tokenType.name)).toEqual([
+        'CreateTok',
+        'Identifier',
+        'AsTok',
+        'LParen',
+        'Identifier',
+        'Colon',
+        'StringLiteral',
+        'Comma',
+        'Identifier',
+        'Colon',
+        'NumberLiteral',
+        'RParen',
+        'Semicolon',
+      ])
+    })
+
     it('should tokenize array brackets', () => {
       const result = SpexLexer.tokenize('string[]')
       expect(result.errors).toHaveLength(0)

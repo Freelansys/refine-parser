@@ -49,6 +49,7 @@ export type ObjectExpression =
   | SubObject
   | ArrayObject
   | EnumObject
+  | LiteralObject
 
 export type NamedObject = {
   kind: 'NamedObject'
@@ -97,4 +98,21 @@ export type ArrayObject = {
 export type EnumObject = {
   kind: 'EnumObject'
   values: string[]
+}
+
+export type LiteralObject = StringLiteralObject | NumberLiteralObject | BoolLiteralObject
+
+export type StringLiteralObject = {
+  kind: 'StringLiteralObject'
+  value: string
+}
+
+export type NumberLiteralObject = {
+  kind: 'NumberLiteralObject'
+  value: string
+}
+
+export type BoolLiteralObject = {
+  kind: 'BoolLiteralObject'
+  value: boolean
 }

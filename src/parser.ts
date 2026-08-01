@@ -24,6 +24,9 @@ import {
   Dot,
   Identifier,
   StringLiteral,
+  NumberLiteral,
+  TrueTok,
+  FalseTok,
   StringTok,
   NumberTok,
   BoolTok,
@@ -85,6 +88,15 @@ export class SpexParser extends CstParser {
     this.CONSUME(RParen)
   })
 
+  private literalObject = this.RULE('literalObject', () => {
+    this.OR([
+      { ALT: () => this.CONSUME(StringLiteral) },
+      { ALT: () => this.CONSUME(NumberLiteral) },
+      { ALT: () => this.CONSUME(TrueTok) },
+      { ALT: () => this.CONSUME(FalseTok) },
+    ])
+  })
+
   private objectExpression = this.RULE('objectExpression', () => {
     this.SUBRULE(this.objectOperand, { LABEL: 'base' })
     this.OPTION(() => {
@@ -95,6 +107,9 @@ export class SpexParser extends CstParser {
 
   private objectOperand = this.RULE('objectOperand', () => {
     this.OR([
+      {
+        ALT: () => this.SUBRULE(this.literalObject),
+      },
       {
         ALT: () => this.SUBRULE(this.enumObject),
       },

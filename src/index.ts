@@ -1,6 +1,8 @@
 export { SpexLexer } from './lexer.js'
 export { SpexParser } from './parser.js'
-export { SpexParserVisitor, parseToAst } from './visitor.js'
+export { SpexParserVisitor, parseToAst, parseConstraint } from './visitor.js'
+export { constantOf } from './constants.js'
+export type { Constant } from './constants.js'
 export type {
   SpexFile,
   Declaration,
@@ -16,6 +18,10 @@ export type {
   ExponentialObject,
   SubObject,
   ArrayObject,
+  LiteralObject,
+  StringLiteralObject,
+  NumberLiteralObject,
+  BoolLiteralObject,
   PackageKind,
   Constraint,
   ConstraintPart,

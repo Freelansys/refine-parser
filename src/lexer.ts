@@ -102,6 +102,18 @@ export const StringLiteral = createToken({
   name: 'StringLiteral',
   pattern: /'([^'\\]|\\.)*'|"([^"\\]|\\.)*"/,
 })
+export const NumberLiteral = createToken({
+  name: 'NumberLiteral',
+  pattern: /\d+(\.\d+)?/,
+})
+export const TrueTok = createToken({
+  name: 'TrueTok',
+  pattern: /true\b/i,
+})
+export const FalseTok = createToken({
+  name: 'FalseTok',
+  pattern: /false\b/i,
+})
 
 // Basic objects (native types)
 export const StringTok = createToken({
@@ -157,6 +169,9 @@ export const allTokens = [
   Semicolon,
   Dot,
   StringLiteral,
+  NumberLiteral,
+  TrueTok,
+  FalseTok,
 
   StringTok,
   NumberTok,

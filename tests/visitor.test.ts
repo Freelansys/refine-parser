@@ -599,6 +599,64 @@ describe('SpexParserVisitor', () => {
     })
   })
 
+  describe('literal object', () => {
+    it('should convert string literal object to AST', () => {
+      const testCase = 'create Foo as "SpexFile";'
+      const ast = parseToAst(testCase)
+      const decl = ast.declarations[0] as ObjectDeclaration
+      expect(decl).toEqual({
+        kind: 'ObjectDeclaration',
+        name: 'Foo',
+        object: {
+          kind: 'StringLiteralObject',
+          value: 'SpexFile',
+        },
+      })
+    })
+
+    it('should convert number literal object to AST', () => {
+      const testCase = 'create Foo as 42;'
+      const ast = parseToAst(testCase)
+      const decl = ast.declarations[0] as ObjectDeclaration
+      expect(decl.object).toEqual({
+        kind: 'NumberLiteralObject',
+        value: '42',
+      })
+    })
+
+    it('should convert bool literal object to AST', () => {
+      const ast = parseToAst('create Foo as true;')
+      const decl = ast.declarations[0] as ObjectDeclaration
+      expect(decl.object).toEqual({
+        kind: 'BoolLiteralObject',
+        value: true,
+      })
+    })
+
+    it('should convert product of literal objects to AST', () => {
+      const testCase = "create Foo as (name: \"John\", age: 42);"
+      const ast = parseToAst(testCase)
+      const decl = ast.declarations[0] as ObjectDeclaration
+      expect(decl.object).toEqual({
+        kind: 'ProductObject',
+        fields: {
+          name: { kind: 'StringLiteralObject', value: 'John' },
+          age: { kind: 'NumberLiteralObject', value: '42' },
+        },
+      })
+    })
+
+    it('should unescape string literal object values', () => {
+      const testCase = "create Foo as 'it\\'s';"
+      const ast = parseToAst(testCase)
+      const decl = ast.declarations[0] as ObjectDeclaration
+      expect(decl.object).toEqual({
+        kind: 'StringLiteralObject',
+        value: "it's",
+      })
+    })
+  })
+
   describe('parseConstraint', () => {
     it('should parse plain text constraint with no references', () => {
       const result = parseConstraint('value is positive')

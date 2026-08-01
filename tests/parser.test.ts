@@ -280,6 +280,44 @@ describe('SpexParser', () => {
     })
   })
 
+  describe('literal object', () => {
+    it('should parse string literal object', () => {
+      const testCase = 'create Foo as "SpexFile";'
+      const { parser } = parseInput(testCase)
+      expect(parser.errors).toHaveLength(0)
+    })
+
+    it('should parse number literal object', () => {
+      const testCase = 'create Foo as 42;'
+      const { parser } = parseInput(testCase)
+      expect(parser.errors).toHaveLength(0)
+    })
+
+    it('should parse bool literal object', () => {
+      const testCase = 'create Foo as true;'
+      const { parser } = parseInput(testCase)
+      expect(parser.errors).toHaveLength(0)
+    })
+
+    it('should parse product of literal objects', () => {
+      const testCase = "create Foo as (name: \"John\", age: 42);"
+      const { parser } = parseInput(testCase)
+      expect(parser.errors).toHaveLength(0)
+    })
+
+    it('should parse exponential of literal objects', () => {
+      const testCase = 'create Foo as "a" -> "b";'
+      const { parser } = parseInput(testCase)
+      expect(parser.errors).toHaveLength(0)
+    })
+
+    it('should not parse literal with member suffix', () => {
+      const testCase = 'create Foo as "a".b;'
+      const { parser } = parseInput(testCase)
+      expect(parser.errors).not.toHaveLength(0)
+    })
+  })
+
   describe('package declaration', () => {
     it('should parse package executable declaration', () => {
       const testCase = 'package executable myapp as Main;'

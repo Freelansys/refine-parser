@@ -8,6 +8,7 @@ import type {
   GenerateDeclaration,
   PackageDeclaration,
   EnumObject,
+  LiteralObject,
   ObjectExpression,
   NamedObject,
   ProductObject,
@@ -87,6 +88,19 @@ export class SpexParserVisitor extends BaseSpexVisitor implements ICstVisitor<an
     }
   }
 
+  literalObject(ctx: any): LiteralObject {
+    if (ctx.StringLiteral) {
+      return {
+        kind: 'StringLiteralObject',
+        value: stringLiteralValue(ctx.StringLiteral[0].image),
+      }
+    }
+    if (ctx.NumberLiteral) {
+      return { kind: 'NumberLiteralObject', value: ctx.NumberLiteral[0].image }
+    }
+    return { kind: 'BoolLiteralObject', value: ctx.TrueTok ? true : false }
+  }
+
   objectDeclaration(ctx: any): ObjectDeclaration {
     return {
       kind: 'ObjectDeclaration',
@@ -118,6 +132,8 @@ export class SpexParserVisitor extends BaseSpexVisitor implements ICstVisitor<an
       expr = this.visit(ctx.productObject)
     } else if (ctx.enumObject) {
       expr = this.visit(ctx.enumObject)
+    } else if (ctx.literalObject) {
+      expr = this.visit(ctx.literalObject)
     } else {
       expr = this.visit(ctx.namedObject)
     }
