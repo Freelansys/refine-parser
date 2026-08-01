@@ -341,6 +341,57 @@ describe('SpexLexer', () => {
     })
   })
 
+  describe('pattern literal', () => {
+    it('should tokenize a pattern literal with flags', () => {
+      const result = SpexLexer.tokenize('/create\\b/i')
+      expect(result.errors).toHaveLength(0)
+      expect(result.tokens.map((t) => t.tokenType.name)).toEqual(['PatternLiteral'])
+      expect(result.tokens[0]?.image).toBe('/create\\b/i')
+    })
+
+    it('should tokenize a pattern literal with an escaped slash', () => {
+      const result = SpexLexer.tokenize('/\\/\\*[\\s\\S]*?\\*\\//')
+      expect(result.errors).toHaveLength(0)
+      expect(result.tokens.map((t) => t.tokenType.name)).toEqual(['PatternLiteral'])
+      expect(result.tokens[0]?.image).toBe('/\\/\\*[\\s\\S]*?\\*\\//')
+    })
+
+    it('should tokenize a pattern literal with quotes in char classes', () => {
+      const result = SpexLexer.tokenize("/'([^'\\\\]|\\\\.)*'|\"([^\"\\\\]|\\\\.)*\"/")
+      expect(result.errors).toHaveLength(0)
+      expect(result.tokens.map((t) => t.tokenType.name)).toEqual(['PatternLiteral'])
+      expect(result.tokens[0]?.image).toBe("/'([^'\\\\]|\\\\.)*'|\"([^\"\\\\]|\\\\.)*\"/")
+    })
+
+    it('should tokenize an empty pattern', () => {
+      const result = SpexLexer.tokenize('//')
+      expect(result.errors).toHaveLength(0)
+      expect(result.tokens.map((t) => t.tokenType.name)).toEqual(['PatternLiteral'])
+      expect(result.tokens[0]?.image).toBe('//')
+    })
+
+    it('should tokenize a pattern before following tokens', () => {
+      const result = SpexLexer.tokenize('/\\d+/ foo;')
+      expect(result.errors).toHaveLength(0)
+      expect(result.tokens.map((t) => t.tokenType.name)).toEqual([
+        'PatternLiteral',
+        'Identifier',
+        'Semicolon',
+      ])
+    })
+
+    it('should not tokenize an unterminated pattern', () => {
+      const result = SpexLexer.tokenize('/foo')
+      expect(result.errors).not.toHaveLength(0)
+    })
+
+    it('should prefer a block comment over a pattern literal', () => {
+      const result = SpexLexer.tokenize('/* comment */')
+      expect(result.errors).toHaveLength(0)
+      expect(result.tokens).toHaveLength(0)
+    })
+  })
+
   describe('error handling', () => {
     it('should return empty tokens for empty input', () => {
       const result = SpexLexer.tokenize('')

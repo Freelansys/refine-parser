@@ -11,6 +11,7 @@ import type {
   LiteralObject,
   SetObject,
   CoproductObject,
+  PatternLiteralObject,
   ObjectExpression,
   NamedObject,
   ProductObject,
@@ -161,6 +162,8 @@ export class SpexParserVisitor extends BaseSpexVisitor implements ICstVisitor<an
       expr = this.visit(ctx.productObject)
     } else if (ctx.enumObject) {
       expr = this.visit(ctx.enumObject)
+    } else if (ctx.patternObject) {
+      expr = this.visit(ctx.patternObject)
     } else if (ctx.literalObject) {
       expr = this.visit(ctx.literalObject)
     } else {
@@ -176,6 +179,16 @@ export class SpexParserVisitor extends BaseSpexVisitor implements ICstVisitor<an
 
   parenthesizedObject(ctx: any): ObjectExpression {
     return this.visit(ctx.setObject)
+  }
+
+  patternObject(ctx: any): PatternLiteralObject {
+    const image: string = ctx.PatternLiteral[0].image
+    const lastSlash = image.lastIndexOf('/')
+    return {
+      kind: 'PatternLiteralObject',
+      source: image.slice(1, lastSlash),
+      flags: image.slice(lastSlash + 1),
+    }
   }
 
   namedObject(ctx: any): NamedObject {

@@ -52,6 +52,7 @@ export type ObjectExpression =
   | LiteralObject
   | SetObject
   | CoproductObject
+  | PatternLiteralObject
 
 export type NamedObject = {
   kind: 'NamedObject'
@@ -143,4 +144,12 @@ export type CoproductObject = {
   kind: 'CoproductObject'
   left: ObjectExpression
   right: ObjectExpression
+}
+
+// A pattern is a subobject of the string base object: the set of
+// strings it matches.
+export type PatternLiteralObject = {
+  kind: 'PatternLiteralObject'
+  source: string
+  flags: string
 }

@@ -458,6 +458,32 @@ describe('SpexParser', () => {
     })
   })
 
+  describe('pattern object', () => {
+    it('should parse a pattern object', () => {
+      const testCase = 'create X as /\\d+/;'
+      const { parser } = parseInput(testCase)
+      expect(parser.errors).toHaveLength(0)
+    })
+
+    it('should parse a pattern object with flags', () => {
+      const testCase = 'create X as /create\\b/i;'
+      const { parser } = parseInput(testCase)
+      expect(parser.errors).toHaveLength(0)
+    })
+
+    it('should parse patterns in product fields', () => {
+      const testCase = 'create X as (name: string, pattern: /[a-z]+/i);'
+      const { parser } = parseInput(testCase)
+      expect(parser.errors).toHaveLength(0)
+    })
+
+    it('should parse patterns in set operations', () => {
+      const testCase = 'create X as /\\d+/ UNION /\\w+/;'
+      const { parser } = parseInput(testCase)
+      expect(parser.errors).toHaveLength(0)
+    })
+  })
+
   describe('package declaration', () => {
     it('should parse package executable declaration', () => {
       const testCase = 'package executable myapp as Main;'

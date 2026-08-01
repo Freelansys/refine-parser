@@ -247,6 +247,25 @@ ENUM ('red', 'green', 'blue');
 
 An enum constrains a value to one of the listed strings.
 
+## Patterns
+
+A pattern literal denotes the subobject of `string` containing exactly the strings that match it:
+
+```spex
+/\d+/
+/create\b/i
+/'([^'\\]|\\.)*'|"([^"\\]|\\.)*"/
+```
+
+The source is kept verbatim and flags such as `i` (case-insensitive) follow the closing slash. Because a pattern is a subobject of the string base object, it participates in set operations and coproducts like any other object:
+
+```spex
+CREATE Digits AS /\d+/;
+CREATE Word AS /\w+/;
+
+CREATE DigitOrWord AS Digits UNION Word;
+```
+
 # Named Objects
 
 To name an object for reuse:

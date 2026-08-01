@@ -27,6 +27,7 @@ export type {
   SetIntersectionObject,
   SetDifferenceObject,
   CoproductObject,
+  PatternLiteralObject,
   PackageKind,
   Constraint,
   ConstraintPart,

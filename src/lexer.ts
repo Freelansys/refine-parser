@@ -110,6 +110,35 @@ export const SelectBlock = createToken({
   },
 })
 
+// Regex literal (JS-style): /pattern/flags
+export const PatternLiteral = createToken({
+  name: 'PatternLiteral',
+  line_breaks: true,
+  pattern: (text: string, startOffset: number): CustomPatternMatcherReturn | null => {
+    if (text[startOffset] !== '/') return null
+    let inClass = false
+    let i = startOffset + 1
+    while (i < text.length) {
+      const ch = text[i]
+      if (ch === '\\') {
+        i += 2
+        continue
+      }
+      if (inClass) {
+        if (ch === ']') inClass = false
+      } else if (ch === '[') {
+        inClass = true
+      } else if (ch === '/') {
+        let j = i + 1
+        while (j < text.length && /[a-z]/.test(text[j] ?? '')) j++
+        return [text.slice(startOffset, j)]
+      }
+      i++
+    }
+    return null
+  },
+})
+
 // Literals
 export const StringLiteral = createToken({
   name: 'StringLiteral',
@@ -189,6 +218,7 @@ export const allTokens = [
   NumberLiteral,
   TrueTok,
   FalseTok,
+  PatternLiteral,
 
   StringTok,
   NumberTok,

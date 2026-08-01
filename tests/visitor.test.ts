@@ -966,6 +966,54 @@ describe('SpexParserVisitor', () => {
     })
   })
 
+  describe('pattern object', () => {
+    it('should convert a pattern object to AST', () => {
+      const testCase = 'create X as /\\d+/i;'
+      const ast = parseToAst(testCase)
+      const decl = ast.declarations[0] as ObjectDeclaration
+      expect(decl.object).toEqual({
+        kind: 'PatternLiteralObject',
+        source: '\\d+',
+        flags: 'i',
+      })
+    })
+
+    it('should keep the pattern source verbatim', () => {
+      const testCase = 'create X as /\\/\\*[\\s\\S]*?\\*\\//;'
+      const ast = parseToAst(testCase)
+      const decl = ast.declarations[0] as ObjectDeclaration
+      expect(decl.object).toEqual({
+        kind: 'PatternLiteralObject',
+        source: '\\/\\*[\\s\\S]*?\\*\\/',
+        flags: '',
+      })
+    })
+
+    it('should record empty flags', () => {
+      const testCase = 'create X as /[a-zA-Z_][a-zA-Z0-9_]*/;'
+      const ast = parseToAst(testCase)
+      const decl = ast.declarations[0] as ObjectDeclaration
+      expect(decl.object).toEqual({
+        kind: 'PatternLiteralObject',
+        source: '[a-zA-Z_][a-zA-Z0-9_]*',
+        flags: '',
+      })
+    })
+
+    it('should convert patterns in product fields to AST', () => {
+      const testCase = 'create X as (name: string, pattern: /[a-z]+/i);'
+      const ast = parseToAst(testCase)
+      const decl = ast.declarations[0] as ObjectDeclaration
+      expect(decl.object).toEqual({
+        kind: 'ProductObject',
+        fields: {
+          name: { kind: 'NamedObject', name: 'string' },
+          pattern: { kind: 'PatternLiteralObject', source: '[a-z]+', flags: 'i' },
+        },
+      })
+    })
+  })
+
   describe('parseConstraint', () => {
     it('should parse plain text constraint with no references', () => {
       const result = parseConstraint('value is positive')

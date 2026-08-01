@@ -31,6 +31,7 @@ import {
   NumberLiteral,
   TrueTok,
   FalseTok,
+  PatternLiteral,
   StringTok,
   NumberTok,
   BoolTok,
@@ -138,6 +139,9 @@ export class SpexParser extends CstParser {
         ALT: () => this.SUBRULE(this.enumObject),
       },
       {
+        ALT: () => this.SUBRULE(this.patternObject),
+      },
+      {
         GATE: this.BACKTRACK(this.subObject),
         ALT: () => this.SUBRULE(this.subObject),
       },
@@ -163,6 +167,10 @@ export class SpexParser extends CstParser {
     this.CONSUME(LParen)
     this.SUBRULE(this.setObject)
     this.CONSUME(RParen)
+  })
+
+  private patternObject = this.RULE('patternObject', () => {
+    this.CONSUME(PatternLiteral)
   })
 
   private namedObject = this.RULE('namedObject', () => {

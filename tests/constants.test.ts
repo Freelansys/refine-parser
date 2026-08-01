@@ -92,6 +92,10 @@ describe('constantOf', () => {
     expect(constantOf(firstObject('create K as unit;'))).toBeNull()
   })
 
+  it('should reject patterns', () => {
+    expect(constantOf(firstObject('create K as /\\d+/;'))).toBeNull()
+  })
+
   it('should reject coproducts', () => {
     expect(constantOf(firstObject('create K as "a" | "b";'))).toBeNull()
   })
