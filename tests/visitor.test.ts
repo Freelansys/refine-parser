@@ -850,6 +850,122 @@ describe('SpexParserVisitor', () => {
     })
   })
 
+  describe('parenthesized object', () => {
+    it('should strip grouping parentheses from the AST', () => {
+      const testCase = 'create X as (A | B);'
+      const ast = parseToAst(testCase)
+      const decl = ast.declarations[0] as ObjectDeclaration
+      expect(decl.object).toEqual({
+        kind: 'CoproductObject',
+        left: { kind: 'NamedObject', name: 'A' },
+        right: { kind: 'NamedObject', name: 'B' },
+      })
+    })
+
+    it('should override arrow precedence with parentheses', () => {
+      const testCase = 'create X as A -> (B | C);'
+      const ast = parseToAst(testCase)
+      const decl = ast.declarations[0] as ObjectDeclaration
+      expect(decl.object).toEqual({
+        kind: 'ExponentialObject',
+        base: {
+          kind: 'CoproductObject',
+          left: { kind: 'NamedObject', name: 'B' },
+          right: { kind: 'NamedObject', name: 'C' },
+        },
+        exponent: { kind: 'NamedObject', name: 'A' },
+      })
+    })
+
+    it('should group set operations with parentheses', () => {
+      const testCase = 'create X as (A UNION B) EXCEPT C;'
+      const ast = parseToAst(testCase)
+      const decl = ast.declarations[0] as ObjectDeclaration
+      expect(decl.object).toEqual({
+        kind: 'SetDifferenceObject',
+        left: {
+          kind: 'SetUnionObject',
+          left: { kind: 'NamedObject', name: 'A' },
+          right: { kind: 'NamedObject', name: 'B' },
+        },
+        right: { kind: 'NamedObject', name: 'C' },
+      })
+    })
+
+    it('should apply array brackets to the whole group', () => {
+      const testCase = 'create X as (A | B)[];'
+      const ast = parseToAst(testCase)
+      const decl = ast.declarations[0] as ObjectDeclaration
+      expect(decl.object).toEqual({
+        kind: 'ArrayObject',
+        base: {
+          kind: 'CoproductObject',
+          left: { kind: 'NamedObject', name: 'A' },
+          right: { kind: 'NamedObject', name: 'B' },
+        },
+      })
+    })
+
+    it('should convert the empty product to the unit object', () => {
+      const testCase = 'create X as ();'
+      const ast = parseToAst(testCase)
+      const decl = ast.declarations[0] as ObjectDeclaration
+      expect(decl.object).toEqual({ kind: 'NamedObject', name: 'unit' })
+      expect(parseToAst('create X as unit;').declarations[0]).toEqual(decl)
+    })
+  })
+
+  describe('unit elision', () => {
+    it('should drop unit fields from a product', () => {
+      const testCase = 'create X as (id: string, foo: unit);'
+      const ast = parseToAst(testCase)
+      const decl = ast.declarations[0] as ObjectDeclaration
+      expect(decl.object).toEqual({
+        kind: 'ProductObject',
+        fields: {
+          id: { kind: 'NamedObject', name: 'string' },
+        },
+      })
+    })
+
+    it('should collapse a product of only unit fields to the unit object', () => {
+      const testCase = 'create X as (foo: unit, bar: unit);'
+      const ast = parseToAst(testCase)
+      const decl = ast.declarations[0] as ObjectDeclaration
+      expect(decl.object).toEqual({ kind: 'NamedObject', name: 'unit' })
+    })
+
+    it('should drop fields whose value is an empty product', () => {
+      const testCase = 'create X as (id: string, foo: ());'
+      const ast = parseToAst(testCase)
+      const decl = ast.declarations[0] as ObjectDeclaration
+      expect(decl.object).toEqual({
+        kind: 'ProductObject',
+        fields: {
+          id: { kind: 'NamedObject', name: 'string' },
+        },
+      })
+    })
+
+    it('should keep fields that are not the unit object', () => {
+      const testCase = 'create X as (id: string, nothing: (a: unit, b: bool));'
+      const ast = parseToAst(testCase)
+      const decl = ast.declarations[0] as ObjectDeclaration
+      expect(decl.object).toEqual({
+        kind: 'ProductObject',
+        fields: {
+          id: { kind: 'NamedObject', name: 'string' },
+          nothing: {
+            kind: 'ProductObject',
+            fields: {
+              b: { kind: 'NamedObject', name: 'bool' },
+            },
+          },
+        },
+      })
+    })
+  })
+
   describe('parseConstraint', () => {
     it('should parse plain text constraint with no references', () => {
       const result = parseConstraint('value is positive')

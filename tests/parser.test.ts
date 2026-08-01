@@ -420,6 +420,44 @@ describe('SpexParser', () => {
     })
   })
 
+  describe('parenthesized object', () => {
+    it('should parse a parenthesized coproduct', () => {
+      const testCase = 'create X as (A | B);'
+      const { parser } = parseInput(testCase)
+      expect(parser.errors).toHaveLength(0)
+    })
+
+    it('should override precedence with parentheses', () => {
+      const testCase = 'create X as A -> (B | C);'
+      const { parser } = parseInput(testCase)
+      expect(parser.errors).toHaveLength(0)
+    })
+
+    it('should group set operations with parentheses', () => {
+      const testCase = 'create X as (A UNION B) EXCEPT C;'
+      const { parser } = parseInput(testCase)
+      expect(parser.errors).toHaveLength(0)
+    })
+
+    it('should parse nested parentheses', () => {
+      const testCase = 'create X as ((A | B));'
+      const { parser } = parseInput(testCase)
+      expect(parser.errors).toHaveLength(0)
+    })
+
+    it('should parse arrays of parenthesized objects', () => {
+      const testCase = 'create X as (A | B)[];'
+      const { parser } = parseInput(testCase)
+      expect(parser.errors).toHaveLength(0)
+    })
+
+    it('should still parse products inside parentheses', () => {
+      const testCase = 'create X as (a: (B | C));'
+      const { parser } = parseInput(testCase)
+      expect(parser.errors).toHaveLength(0)
+    })
+  })
+
   describe('package declaration', () => {
     it('should parse package executable declaration', () => {
       const testCase = 'package executable myapp as Main;'

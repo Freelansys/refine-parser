@@ -87,6 +87,11 @@ describe('constantOf', () => {
     expect(constantOf(firstObject('create K as string EXCEPT "root";'))).toBeNull()
   })
 
+  it('should treat the empty product the same as unit', () => {
+    expect(constantOf(firstObject('create K as ();'))).toBeNull()
+    expect(constantOf(firstObject('create K as unit;'))).toBeNull()
+  })
+
   it('should reject coproducts', () => {
     expect(constantOf(firstObject('create K as "a" | "b";'))).toBeNull()
   })

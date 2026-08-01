@@ -142,6 +142,10 @@ export class SpexParser extends CstParser {
         ALT: () => this.SUBRULE(this.subObject),
       },
       {
+        GATE: this.BACKTRACK(this.parenthesizedObject),
+        ALT: () => this.SUBRULE(this.parenthesizedObject),
+      },
+      {
         GATE: this.BACKTRACK(this.productObject),
         ALT: () => this.SUBRULE(this.productObject),
       },
@@ -153,6 +157,12 @@ export class SpexParser extends CstParser {
       this.CONSUME(LBracket)
       this.CONSUME(RBracket)
     })
+  })
+
+  private parenthesizedObject = this.RULE('parenthesizedObject', () => {
+    this.CONSUME(LParen)
+    this.SUBRULE(this.setObject)
+    this.CONSUME(RParen)
   })
 
   private namedObject = this.RULE('namedObject', () => {

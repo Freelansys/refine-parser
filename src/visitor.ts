@@ -155,6 +155,8 @@ export class SpexParserVisitor extends BaseSpexVisitor implements ICstVisitor<an
     let expr: ObjectExpression
     if (ctx.subObject) {
       expr = this.visit(ctx.subObject)
+    } else if (ctx.parenthesizedObject) {
+      expr = this.visit(ctx.parenthesizedObject)
     } else if (ctx.productObject) {
       expr = this.visit(ctx.productObject)
     } else if (ctx.enumObject) {
@@ -170,6 +172,10 @@ export class SpexParserVisitor extends BaseSpexVisitor implements ICstVisitor<an
       }
     }
     return expr
+  }
+
+  parenthesizedObject(ctx: any): ObjectExpression {
+    return this.visit(ctx.setObject)
   }
 
   namedObject(ctx: any): NamedObject {
@@ -191,11 +197,19 @@ export class SpexParserVisitor extends BaseSpexVisitor implements ICstVisitor<an
     }
   }
 
-  productObject(ctx: any): ProductObject {
+  productObject(ctx: any): ObjectExpression {
+    const names = ctx.Identifier ?? []
     const fields: Record<string, ObjectExpression> = {}
-    for (let i = 0; i < ctx.Identifier.length; i++) {
-      const name = ctx.Identifier[i].image
-      fields[name] = this.visit(ctx.setObject[i])
+    for (let i = 0; i < names.length; i++) {
+      const name = names[i].image
+      const value = this.visit(ctx.setObject[i])
+      if (value.kind === 'NamedObject' && value.name === 'unit') {
+        continue
+      }
+      fields[name] = value
+    }
+    if (Object.keys(fields).length === 0) {
+      return { kind: 'NamedObject', name: 'unit' }
     }
     return { kind: 'ProductObject', fields }
   }

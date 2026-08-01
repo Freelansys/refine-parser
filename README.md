@@ -145,6 +145,16 @@ CREATE Y AS
 A UNION B | C;   -- A UNION (B | C)
 ```
 
+Use parentheses to group any expression and override the default precedence. A `(` opens a group unless it is followed by a field name and a colon, in which case it opens a product:
+
+```spex
+CREATE X AS
+A -> (B | C);
+
+CREATE Y AS
+(A UNION B) EXCEPT C;
+```
+
 ## Exponentials
 
 Spex support function types as well which are refered to as exponential objects. An exponential is defined by its domain and codomain which have to be objects themselves:
