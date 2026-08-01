@@ -25,7 +25,7 @@ describe('SpexLexer', () => {
 
     it('should tokenize keywords case-insensitively', () => {
       const result = SpexLexer.tokenize(
-        'CREATE AS FROM SELECT GENERATE IMPORT EXPORT PACKAGE EXECUTABLE MODULE ENUM'
+        'CREATE AS FROM SELECT GENERATE IMPORT EXPORT PACKAGE EXECUTABLE MODULE ENUM UNION INTERSECT EXCEPT'
       )
       expect(result.errors).toHaveLength(0)
       expect(result.tokens.map((t) => t.tokenType.name)).toEqual([
@@ -40,6 +40,9 @@ describe('SpexLexer', () => {
         'ExecutableTok',
         'ModuleTok',
         'EnumTok',
+        'UnionTok',
+        'IntersectTok',
+        'ExceptTok',
       ])
     })
 
@@ -61,7 +64,7 @@ describe('SpexLexer', () => {
     })
 
     it('should tokenize symbols', () => {
-      const result = SpexLexer.tokenize('->[]():;,.')
+      const result = SpexLexer.tokenize('->[]():;,.|')
       expect(result.errors).toHaveLength(0)
       expect(result.tokens.map((t) => t.tokenType.name)).toEqual([
         'ArrowTok',
@@ -73,6 +76,7 @@ describe('SpexLexer', () => {
         'Semicolon',
         'Comma',
         'Dot',
+        'PipeTok',
       ])
     })
 

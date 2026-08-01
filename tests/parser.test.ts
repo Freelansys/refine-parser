@@ -318,6 +318,108 @@ describe('SpexParser', () => {
     })
   })
 
+  describe('set object', () => {
+    it('should parse union object', () => {
+      const testCase = 'create X as A UNION B;'
+      const { parser } = parseInput(testCase)
+      expect(parser.errors).toHaveLength(0)
+    })
+
+    it('should parse intersect object', () => {
+      const testCase = 'create X as A INTERSECT B;'
+      const { parser } = parseInput(testCase)
+      expect(parser.errors).toHaveLength(0)
+    })
+
+    it('should parse except object', () => {
+      const testCase = 'create X as A EXCEPT B;'
+      const { parser } = parseInput(testCase)
+      expect(parser.errors).toHaveLength(0)
+    })
+
+    it('should parse chained set operations', () => {
+      const testCase = 'create X as A UNION B INTERSECT C;'
+      const { parser } = parseInput(testCase)
+      expect(parser.errors).toHaveLength(0)
+    })
+
+    it('should parse set operations on subobjects', () => {
+      const testCase =
+        'create X as from int select { are even } UNION from int select { are positive };'
+      const { parser } = parseInput(testCase)
+      expect(parser.errors).toHaveLength(0)
+    })
+
+    it('should parse set operations with literals', () => {
+      const testCase = 'create X as string EXCEPT "root";'
+      const { parser } = parseInput(testCase)
+      expect(parser.errors).toHaveLength(0)
+    })
+
+    it('should parse set operations in product fields', () => {
+      const testCase = 'create X as (a: A UNION B);'
+      const { parser } = parseInput(testCase)
+      expect(parser.errors).toHaveLength(0)
+    })
+
+    it('should parse case-insensitively', () => {
+      const testCase = 'CREATE X AS A union B;'
+      const { parser } = parseInput(testCase)
+      expect(parser.errors).toHaveLength(0)
+    })
+
+    it('should bind arrow tighter than set operations', () => {
+      const testCase = 'create X as A -> B UNION C;'
+      const { parser } = parseInput(testCase)
+      expect(parser.errors).toHaveLength(0)
+    })
+  })
+
+  describe('coproduct object', () => {
+    it('should parse a pipe object', () => {
+      const testCase = 'create Shape as Point | Circle;'
+      const { parser } = parseInput(testCase)
+      expect(parser.errors).toHaveLength(0)
+    })
+
+    it('should parse chained pipes left-associatively', () => {
+      const testCase = 'create X as A | B | C;'
+      const { parser } = parseInput(testCase)
+      expect(parser.errors).toHaveLength(0)
+    })
+
+    it('should bind arrow tighter than pipe', () => {
+      const testCase = 'create X as A -> B | C;'
+      const { parser } = parseInput(testCase)
+      expect(parser.errors).toHaveLength(0)
+    })
+
+    it('should bind pipe tighter than set operations', () => {
+      const testCase = 'create X as A UNION B | C;'
+      const { parser } = parseInput(testCase)
+      expect(parser.errors).toHaveLength(0)
+    })
+
+    it('should parse pipes in product fields', () => {
+      const testCase = 'create X as (a: A | B, b: C);'
+      const { parser } = parseInput(testCase)
+      expect(parser.errors).toHaveLength(0)
+    })
+
+    it('should parse pipes on subobjects', () => {
+      const testCase =
+        'create X as from int select { are even } | from int select { are odd };'
+      const { parser } = parseInput(testCase)
+      expect(parser.errors).toHaveLength(0)
+    })
+
+    it('should parse pipes with literals', () => {
+      const testCase = 'create X as string | "number";'
+      const { parser } = parseInput(testCase)
+      expect(parser.errors).toHaveLength(0)
+    })
+  })
+
   describe('package declaration', () => {
     it('should parse package executable declaration', () => {
       const testCase = 'package executable myapp as Main;'

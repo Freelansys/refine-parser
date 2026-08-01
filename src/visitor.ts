@@ -9,6 +9,8 @@ import type {
   PackageDeclaration,
   EnumObject,
   LiteralObject,
+  SetObject,
+  CoproductObject,
   ObjectExpression,
   NamedObject,
   ProductObject,
@@ -105,8 +107,33 @@ export class SpexParserVisitor extends BaseSpexVisitor implements ICstVisitor<an
     return {
       kind: 'ObjectDeclaration',
       name: ctx.Identifier[0].image,
-      object: this.visit(ctx.objectExpression),
+      object: this.visit(ctx.setObject),
     }
+  }
+
+  setObject(ctx: any): SetObject {
+    const operands = ctx.coproductObject.map((expr: any) => this.visit(expr))
+    let result: ObjectExpression = operands[0]
+    for (let i = 1; i < operands.length; i++) {
+      const op = ctx.op[i - 1].tokenType.name
+      if (op === 'UnionTok') {
+        result = { kind: 'SetUnionObject', left: result, right: operands[i] }
+      } else if (op === 'IntersectTok') {
+        result = { kind: 'SetIntersectionObject', left: result, right: operands[i] }
+      } else {
+        result = { kind: 'SetDifferenceObject', left: result, right: operands[i] }
+      }
+    }
+    return result as SetObject
+  }
+
+  coproductObject(ctx: any): CoproductObject {
+    const operands = ctx.objectExpression.map((expr: any) => this.visit(expr))
+    let result: ObjectExpression = operands[0]
+    for (let i = 1; i < operands.length; i++) {
+      result = { kind: 'CoproductObject', left: result, right: operands[i] }
+    }
+    return result as CoproductObject
   }
 
   objectExpression(ctx: any): ObjectExpression {
@@ -168,7 +195,7 @@ export class SpexParserVisitor extends BaseSpexVisitor implements ICstVisitor<an
     const fields: Record<string, ObjectExpression> = {}
     for (let i = 0; i < ctx.Identifier.length; i++) {
       const name = ctx.Identifier[i].image
-      fields[name] = this.visit(ctx.objectExpression[i])
+      fields[name] = this.visit(ctx.setObject[i])
     }
     return { kind: 'ProductObject', fields }
   }
@@ -226,7 +253,7 @@ export class SpexParserVisitor extends BaseSpexVisitor implements ICstVisitor<an
       kind: 'PackageDeclaration',
       packageType,
       name: ctx.Identifier[0].image,
-      objectName: this.visit(ctx.objectExpression),
+      objectName: this.visit(ctx.setObject),
     }
   }
 

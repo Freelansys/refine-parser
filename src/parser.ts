@@ -12,7 +12,11 @@ import {
   ExecutableTok,
   ModuleTok,
   EnumTok,
+  UnionTok,
+  IntersectTok,
+  ExceptTok,
   ArrowTok,
+  PipeTok,
   SelectBlock,
   LBracket,
   RBracket,
@@ -73,8 +77,28 @@ export class SpexParser extends CstParser {
     this.CONSUME(CreateTok)
     this.CONSUME(Identifier)
     this.CONSUME(AsTok)
-    this.SUBRULE(this.objectExpression)
+    this.SUBRULE(this.setObject)
     this.CONSUME(Semicolon)
+  })
+
+  private setObject = this.RULE('setObject', () => {
+    this.SUBRULE(this.coproductObject)
+    this.MANY(() => {
+      this.OR([
+        { ALT: () => this.CONSUME(UnionTok, { LABEL: 'op' }) },
+        { ALT: () => this.CONSUME(IntersectTok, { LABEL: 'op' }) },
+        { ALT: () => this.CONSUME(ExceptTok, { LABEL: 'op' }) },
+      ])
+      this.SUBRULE2(this.coproductObject)
+    })
+  })
+
+  private coproductObject = this.RULE('coproductObject', () => {
+    this.SUBRULE(this.objectExpression)
+    this.MANY(() => {
+      this.CONSUME(PipeTok, { LABEL: 'op' })
+      this.SUBRULE2(this.objectExpression)
+    })
   })
 
   private enumObject = this.RULE('enumObject', () => {
@@ -150,7 +174,7 @@ export class SpexParser extends CstParser {
     this.MANY(() => {
       this.CONSUME(Identifier)
       this.CONSUME(Colon)
-      this.SUBRULE(this.objectExpression)
+      this.SUBRULE(this.setObject)
       this.OPTION(() => this.CONSUME(Comma))
     })
     this.CONSUME(RParen)
@@ -210,7 +234,7 @@ export class SpexParser extends CstParser {
     this.OR([{ ALT: () => this.CONSUME(ExecutableTok) }, { ALT: () => this.CONSUME(ModuleTok) }])
     this.CONSUME(Identifier)
     this.CONSUME(AsTok)
-    this.SUBRULE(this.objectExpression)
+    this.SUBRULE(this.setObject)
     this.CONSUME(Semicolon)
   })
 }

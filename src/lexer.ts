@@ -63,9 +63,22 @@ export const EnumTok = createToken({
   name: 'EnumTok',
   pattern: /enum\b/i,
 })
+export const UnionTok = createToken({
+  name: 'UnionTok',
+  pattern: /union\b/i,
+})
+export const IntersectTok = createToken({
+  name: 'IntersectTok',
+  pattern: /intersect\b/i,
+})
+export const ExceptTok = createToken({
+  name: 'ExceptTok',
+  pattern: /except\b/i,
+})
 
 // Symbols
 export const ArrowTok = createToken({ name: 'ArrowTok', pattern: /->/ })
+export const PipeTok = createToken({ name: 'PipeTok', pattern: /\|/ })
 export const LCurly = createToken({ name: 'LCurly', pattern: /{/ })
 export const RCurly = createToken({ name: 'RCurly', pattern: /}/ })
 export const LBracket = createToken({ name: 'LBracket', pattern: /\[/ })
@@ -155,8 +168,12 @@ export const allTokens = [
   ExecutableTok,
   ModuleTok,
   EnumTok,
+  UnionTok,
+  IntersectTok,
+  ExceptTok,
 
   ArrowTok,
+  PipeTok,
   SelectBlock,
   LCurly,
   RCurly,

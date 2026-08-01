@@ -657,6 +657,184 @@ describe('SpexParserVisitor', () => {
     })
   })
 
+  describe('set object', () => {
+    it('should convert union object to AST', () => {
+      const testCase = 'create X as A UNION B;'
+      const ast = parseToAst(testCase)
+      const decl = ast.declarations[0] as ObjectDeclaration
+      expect(decl.object).toEqual({
+        kind: 'SetUnionObject',
+        left: { kind: 'NamedObject', name: 'A' },
+        right: { kind: 'NamedObject', name: 'B' },
+      })
+    })
+
+    it('should convert intersect object to AST', () => {
+      const testCase = 'create X as A INTERSECT B;'
+      const ast = parseToAst(testCase)
+      const decl = ast.declarations[0] as ObjectDeclaration
+      expect(decl.object).toEqual({
+        kind: 'SetIntersectionObject',
+        left: { kind: 'NamedObject', name: 'A' },
+        right: { kind: 'NamedObject', name: 'B' },
+      })
+    })
+
+    it('should convert except object to AST', () => {
+      const testCase = 'create X as A EXCEPT B;'
+      const ast = parseToAst(testCase)
+      const decl = ast.declarations[0] as ObjectDeclaration
+      expect(decl.object).toEqual({
+        kind: 'SetDifferenceObject',
+        left: { kind: 'NamedObject', name: 'A' },
+        right: { kind: 'NamedObject', name: 'B' },
+      })
+    })
+
+    it('should convert chained set operations left-associatively', () => {
+      const testCase = 'create X as A UNION B EXCEPT C;'
+      const ast = parseToAst(testCase)
+      const decl = ast.declarations[0] as ObjectDeclaration
+      expect(decl.object).toEqual({
+        kind: 'SetDifferenceObject',
+        left: {
+          kind: 'SetUnionObject',
+          left: { kind: 'NamedObject', name: 'A' },
+          right: { kind: 'NamedObject', name: 'B' },
+        },
+        right: { kind: 'NamedObject', name: 'C' },
+      })
+    })
+
+    it('should preserve mixed operation order', () => {
+      const testCase = 'create X as A EXCEPT B UNION C;'
+      const ast = parseToAst(testCase)
+      const decl = ast.declarations[0] as ObjectDeclaration
+      expect(decl.object).toEqual({
+        kind: 'SetUnionObject',
+        left: {
+          kind: 'SetDifferenceObject',
+          left: { kind: 'NamedObject', name: 'A' },
+          right: { kind: 'NamedObject', name: 'B' },
+        },
+        right: { kind: 'NamedObject', name: 'C' },
+      })
+    })
+
+    it('should convert set operations with literals to AST', () => {
+      const testCase = 'create X as string EXCEPT "root";'
+      const ast = parseToAst(testCase)
+      const decl = ast.declarations[0] as ObjectDeclaration
+      expect(decl.object).toEqual({
+        kind: 'SetDifferenceObject',
+        left: { kind: 'NamedObject', name: 'string' },
+        right: { kind: 'StringLiteralObject', value: 'root' },
+      })
+    })
+
+    it('should convert set operations in product fields to AST', () => {
+      const testCase = 'create X as (a: A UNION B);'
+      const ast = parseToAst(testCase)
+      const decl = ast.declarations[0] as ObjectDeclaration
+      expect(decl.object).toEqual({
+        kind: 'ProductObject',
+        fields: {
+          a: {
+            kind: 'SetUnionObject',
+            left: { kind: 'NamedObject', name: 'A' },
+            right: { kind: 'NamedObject', name: 'B' },
+          },
+        },
+      })
+    })
+  })
+
+  describe('coproduct object', () => {
+    it('should convert pipe object to AST', () => {
+      const testCase = 'create Shape as Point | Circle;'
+      const ast = parseToAst(testCase)
+      const decl = ast.declarations[0] as ObjectDeclaration
+      expect(decl.object).toEqual({
+        kind: 'CoproductObject',
+        left: { kind: 'NamedObject', name: 'Point' },
+        right: { kind: 'NamedObject', name: 'Circle' },
+      })
+    })
+
+    it('should convert chained pipes left-associatively', () => {
+      const testCase = 'create X as A | B | C;'
+      const ast = parseToAst(testCase)
+      const decl = ast.declarations[0] as ObjectDeclaration
+      expect(decl.object).toEqual({
+        kind: 'CoproductObject',
+        left: {
+          kind: 'CoproductObject',
+          left: { kind: 'NamedObject', name: 'A' },
+          right: { kind: 'NamedObject', name: 'B' },
+        },
+        right: { kind: 'NamedObject', name: 'C' },
+      })
+    })
+
+    it('should bind arrow tighter than pipe', () => {
+      const testCase = 'create X as A -> B | C;'
+      const ast = parseToAst(testCase)
+      const decl = ast.declarations[0] as ObjectDeclaration
+      expect(decl.object).toEqual({
+        kind: 'CoproductObject',
+        left: {
+          kind: 'ExponentialObject',
+          base: { kind: 'NamedObject', name: 'B' },
+          exponent: { kind: 'NamedObject', name: 'A' },
+        },
+        right: { kind: 'NamedObject', name: 'C' },
+      })
+    })
+
+    it('should bind pipe tighter than set operations', () => {
+      const testCase = 'create X as A UNION B | C;'
+      const ast = parseToAst(testCase)
+      const decl = ast.declarations[0] as ObjectDeclaration
+      expect(decl.object).toEqual({
+        kind: 'SetUnionObject',
+        left: { kind: 'NamedObject', name: 'A' },
+        right: {
+          kind: 'CoproductObject',
+          left: { kind: 'NamedObject', name: 'B' },
+          right: { kind: 'NamedObject', name: 'C' },
+        },
+      })
+    })
+
+    it('should convert pipes in product fields to AST', () => {
+      const testCase = 'create X as (a: A | B, b: C);'
+      const ast = parseToAst(testCase)
+      const decl = ast.declarations[0] as ObjectDeclaration
+      expect(decl.object).toEqual({
+        kind: 'ProductObject',
+        fields: {
+          a: {
+            kind: 'CoproductObject',
+            left: { kind: 'NamedObject', name: 'A' },
+            right: { kind: 'NamedObject', name: 'B' },
+          },
+          b: { kind: 'NamedObject', name: 'C' },
+        },
+      })
+    })
+
+    it('should convert pipes with literals to AST', () => {
+      const testCase = 'create X as string | "number";'
+      const ast = parseToAst(testCase)
+      const decl = ast.declarations[0] as ObjectDeclaration
+      expect(decl.object).toEqual({
+        kind: 'CoproductObject',
+        left: { kind: 'NamedObject', name: 'string' },
+        right: { kind: 'StringLiteralObject', value: 'number' },
+      })
+    })
+  })
+
   describe('parseConstraint', () => {
     it('should parse plain text constraint with no references', () => {
       const result = parseConstraint('value is positive')

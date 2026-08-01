@@ -50,6 +50,8 @@ export type ObjectExpression =
   | ArrayObject
   | EnumObject
   | LiteralObject
+  | SetObject
+  | CoproductObject
 
 export type NamedObject = {
   kind: 'NamedObject'
@@ -115,4 +117,30 @@ export type NumberLiteralObject = {
 export type BoolLiteralObject = {
   kind: 'BoolLiteralObject'
   value: boolean
+}
+
+export type SetObject = SetUnionObject | SetIntersectionObject | SetDifferenceObject
+
+export type SetUnionObject = {
+  kind: 'SetUnionObject'
+  left: ObjectExpression
+  right: ObjectExpression
+}
+
+export type SetIntersectionObject = {
+  kind: 'SetIntersectionObject'
+  left: ObjectExpression
+  right: ObjectExpression
+}
+
+export type SetDifferenceObject = {
+  kind: 'SetDifferenceObject'
+  left: ObjectExpression
+  right: ObjectExpression
+}
+
+export type CoproductObject = {
+  kind: 'CoproductObject'
+  left: ObjectExpression
+  right: ObjectExpression
 }

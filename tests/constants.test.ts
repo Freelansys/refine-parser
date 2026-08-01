@@ -81,4 +81,13 @@ describe('constantOf', () => {
   it('should reject arrays', () => {
     expect(constantOf(firstObject('create K as string[];'))).toBeNull()
   })
+
+  it('should reject set objects', () => {
+    expect(constantOf(firstObject('create K as "a" UNION "b";'))).toBeNull()
+    expect(constantOf(firstObject('create K as string EXCEPT "root";'))).toBeNull()
+  })
+
+  it('should reject coproducts', () => {
+    expect(constantOf(firstObject('create K as "a" | "b";'))).toBeNull()
+  })
 })
