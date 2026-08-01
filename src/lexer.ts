@@ -59,6 +59,10 @@ export const ModuleTok = createToken({
   name: 'ModuleTok',
   pattern: /module\b/i,
 })
+export const EnumTok = createToken({
+  name: 'EnumTok',
+  pattern: /enum\b/i,
+})
 
 // Symbols
 export const ArrowTok = createToken({ name: 'ArrowTok', pattern: /->/ })
@@ -94,9 +98,9 @@ export const SelectBlock = createToken({
 })
 
 // Literals
-export const PathLiteral = createToken({
-  name: 'PathLiteral',
-  pattern: /"([^"\\]|\\.)*"/,
+export const StringLiteral = createToken({
+  name: 'StringLiteral',
+  pattern: /'([^'\\]|\\.)*'|"([^"\\]|\\.)*"/,
 })
 
 // Basic objects (native types)
@@ -138,6 +142,7 @@ export const allTokens = [
   PackageTok,
   ExecutableTok,
   ModuleTok,
+  EnumTok,
 
   ArrowTok,
   SelectBlock,
@@ -151,7 +156,7 @@ export const allTokens = [
   Comma,
   Semicolon,
   Dot,
-  PathLiteral,
+  StringLiteral,
 
   StringTok,
   NumberTok,

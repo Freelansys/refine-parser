@@ -5,7 +5,7 @@ describe('SpexLexer', () => {
   describe('tokenization', () => {
     it('should tokenize keywords', () => {
       const result = SpexLexer.tokenize(
-        'create as from select generate import export package executable module'
+        'create as from select generate import export package executable module enum'
       )
       expect(result.errors).toHaveLength(0)
       expect(result.tokens.map((t) => t.tokenType.name)).toEqual([
@@ -19,12 +19,13 @@ describe('SpexLexer', () => {
         'PackageTok',
         'ExecutableTok',
         'ModuleTok',
+        'EnumTok',
       ])
     })
 
     it('should tokenize keywords case-insensitively', () => {
       const result = SpexLexer.tokenize(
-        'CREATE AS FROM SELECT GENERATE IMPORT EXPORT PACKAGE EXECUTABLE MODULE'
+        'CREATE AS FROM SELECT GENERATE IMPORT EXPORT PACKAGE EXECUTABLE MODULE ENUM'
       )
       expect(result.errors).toHaveLength(0)
       expect(result.tokens.map((t) => t.tokenType.name)).toEqual([
@@ -38,6 +39,24 @@ describe('SpexLexer', () => {
         'PackageTok',
         'ExecutableTok',
         'ModuleTok',
+        'EnumTok',
+      ])
+    })
+
+    it('should tokenize enum object declarations', () => {
+      const result = SpexLexer.tokenize("create myEnum as enum ('v1', 'v2');")
+      expect(result.errors).toHaveLength(0)
+      expect(result.tokens.map((t) => t.tokenType.name)).toEqual([
+        'CreateTok',
+        'Identifier',
+        'AsTok',
+        'EnumTok',
+        'LParen',
+        'StringLiteral',
+        'Comma',
+        'StringLiteral',
+        'RParen',
+        'Semicolon',
       ])
     })
 
@@ -107,12 +126,36 @@ describe('SpexLexer', () => {
       expect(result.tokens[0]?.image).toBe('{hello\nworld}')
     })
 
-    it('should tokenize path literals', () => {
+    it('should tokenize double quoted string literals', () => {
       const result = SpexLexer.tokenize('"types.spex"')
       expect(result.errors).toHaveLength(0)
       expect(result.tokens).toHaveLength(1)
-      expect(result.tokens[0]?.tokenType.name).toBe('PathLiteral')
+      expect(result.tokens[0]?.tokenType.name).toBe('StringLiteral')
       expect(result.tokens[0]?.image).toBe('"types.spex"')
+    })
+
+    it('should tokenize single quoted string literals', () => {
+      const result = SpexLexer.tokenize("'types.spex'")
+      expect(result.errors).toHaveLength(0)
+      expect(result.tokens).toHaveLength(1)
+      expect(result.tokens[0]?.tokenType.name).toBe('StringLiteral')
+      expect(result.tokens[0]?.image).toBe("'types.spex'")
+    })
+
+    it('should tokenize string literals with escaped quotes', () => {
+      const result = SpexLexer.tokenize("'it\\'s a \"quote\"'")
+      expect(result.errors).toHaveLength(0)
+      expect(result.tokens).toHaveLength(1)
+      expect(result.tokens[0]?.tokenType.name).toBe('StringLiteral')
+      expect(result.tokens[0]?.image).toBe("'it\\'s a \"quote\"'")
+    })
+
+    it('should tokenize string literals with escaped backslashes', () => {
+      const result = SpexLexer.tokenize('"a\\\\b"')
+      expect(result.errors).toHaveLength(0)
+      expect(result.tokens).toHaveLength(1)
+      expect(result.tokens[0]?.tokenType.name).toBe('StringLiteral')
+      expect(result.tokens[0]?.image).toBe('"a\\\\b"')
     })
 
     it('should tokenize array brackets', () => {

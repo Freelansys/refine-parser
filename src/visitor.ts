@@ -7,6 +7,7 @@ import type {
   ExportDeclaration,
   GenerateDeclaration,
   PackageDeclaration,
+  EnumObject,
   ObjectExpression,
   NamedObject,
   ProductObject,
@@ -25,6 +26,11 @@ export const REFERENCE_PATTERN = /@([a-zA-Z_][\w]*(?:\.[a-zA-Z_][\w]*)*)/g
 
 function unescapeConstraint(text: string): string {
   return text.replace(/\\([\\{}])/g, '$1')
+}
+
+function stringLiteralValue(image: string): string {
+  const inner = image.slice(1, -1)
+  return inner.replace(/\\([\\'"])/g, '$1')
 }
 
 export function parseConstraint(raw: string): Constraint {
@@ -74,6 +80,13 @@ export class SpexParserVisitor extends BaseSpexVisitor implements ICstVisitor<an
     return this.visit(ctx.generateDeclaration)
   }
 
+  enumObject(ctx: any): EnumObject {
+    return {
+      kind: 'EnumObject',
+      values: ctx.StringLiteral.map((s: any) => stringLiteralValue(s.image)),
+    }
+  }
+
   objectDeclaration(ctx: any): ObjectDeclaration {
     return {
       kind: 'ObjectDeclaration',
@@ -103,6 +116,8 @@ export class SpexParserVisitor extends BaseSpexVisitor implements ICstVisitor<an
       expr = this.visit(ctx.subObject)
     } else if (ctx.productObject) {
       expr = this.visit(ctx.productObject)
+    } else if (ctx.enumObject) {
+      expr = this.visit(ctx.enumObject)
     } else {
       expr = this.visit(ctx.namedObject)
     }
@@ -161,7 +176,7 @@ export class SpexParserVisitor extends BaseSpexVisitor implements ICstVisitor<an
 
   namedImport(ctx: any): ImportDeclaration {
     const name = ctx.Identifier[0].image
-    const source = ctx.PathLiteral[0].image.slice(1, -1)
+    const source = stringLiteralValue(ctx.StringLiteral[0].image)
     const alias = ctx.Identifier[1] ? ctx.Identifier[1].image : null
     return {
       kind: 'ImportDeclaration',
@@ -172,7 +187,7 @@ export class SpexParserVisitor extends BaseSpexVisitor implements ICstVisitor<an
   }
 
   moduleImport(ctx: any): ImportDeclaration {
-    const source = ctx.PathLiteral[0].image.slice(1, -1)
+    const source = stringLiteralValue(ctx.StringLiteral[0].image)
     const alias = ctx.Identifier[0].image
     return {
       kind: 'ImportDeclaration',

@@ -212,6 +212,74 @@ describe('SpexParser', () => {
     })
   })
 
+  describe('enum object', () => {
+    it('should parse enum object declaration', () => {
+      const testCase = "create myEnum as enum ('v1', 'v2');"
+      const { parser } = parseInput(testCase)
+      expect(parser.errors).toHaveLength(0)
+    })
+
+    it('should parse enum object declaration case-insensitively', () => {
+      const testCase = "CREATE myEnum AS ENUM ('v1', 'v2');"
+      const { parser } = parseInput(testCase)
+      expect(parser.errors).toHaveLength(0)
+    })
+
+    it('should parse single-value enum object', () => {
+      const testCase = "create Status as enum ('ACTIVE');"
+      const { parser } = parseInput(testCase)
+      expect(parser.errors).toHaveLength(0)
+    })
+
+    it('should parse enum object with double quoted values', () => {
+      const testCase = 'create myEnum as enum ("v1", "v2");'
+      const { parser } = parseInput(testCase)
+      expect(parser.errors).toHaveLength(0)
+    })
+
+    it('should parse enum object with mixed quote values', () => {
+      const testCase = "create myEnum as enum (\"v1\", 'v2');"
+      const { parser } = parseInput(testCase)
+      expect(parser.errors).toHaveLength(0)
+    })
+
+    it('should parse enum object with escaped values', () => {
+      const testCase = "create myEnum as enum ('it\\'s');"
+      const { parser } = parseInput(testCase)
+      expect(parser.errors).toHaveLength(0)
+    })
+
+    it('should parse enum object inside a product object', () => {
+      const testCase = "create Config as (kind: enum ('a', 'b'));"
+      const { parser } = parseInput(testCase)
+      expect(parser.errors).toHaveLength(0)
+    })
+
+    it('should parse array of enum object', () => {
+      const testCase = "create myEnum as enum ('a', 'b')[];"
+      const { parser } = parseInput(testCase)
+      expect(parser.errors).toHaveLength(0)
+    })
+
+    it('should not parse enum object without values', () => {
+      const testCase = 'create myEnum as enum ();'
+      const { parser } = parseInput(testCase)
+      expect(parser.errors).not.toHaveLength(0)
+    })
+
+    it('should not parse enum object with a trailing comma', () => {
+      const testCase = "create myEnum as enum ('v1',);"
+      const { parser } = parseInput(testCase)
+      expect(parser.errors).not.toHaveLength(0)
+    })
+
+    it('should not parse enum object without parentheses', () => {
+      const testCase = 'create myEnum as enum;'
+      const { parser } = parseInput(testCase)
+      expect(parser.errors).not.toHaveLength(0)
+    })
+  })
+
   describe('package declaration', () => {
     it('should parse package executable declaration', () => {
       const testCase = 'package executable myapp as Main;'

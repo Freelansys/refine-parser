@@ -6,6 +6,7 @@ import type {
   ExportDeclaration,
   GenerateDeclaration,
   PackageDeclaration,
+  EnumObject,
   Constraint,
 } from '../src/ast.js'
 
@@ -483,6 +484,25 @@ describe('SpexParserVisitor', () => {
         alias: 'types',
       })
     })
+
+    it('should convert named import with single quoted source to AST', () => {
+      const testCase = "import EmailAddress from 'types.spex' as Username;"
+      const ast = parseToAst(testCase)
+      const decl = ast.declarations[0] as ImportDeclaration
+      expect(decl).toEqual({
+        kind: 'ImportDeclaration',
+        name: 'EmailAddress',
+        source: 'types.spex',
+        alias: 'Username',
+      })
+    })
+
+    it('should unescape escaped characters in import sources', () => {
+      const testCase = "import EmailAddress from 'dir\\\\types.spex';"
+      const ast = parseToAst(testCase)
+      const decl = ast.declarations[0] as ImportDeclaration
+      expect(decl.source).toBe('dir\\types.spex')
+    })
   })
 
   describe('export declaration', () => {
@@ -505,6 +525,76 @@ describe('SpexParserVisitor', () => {
       expect(decl).toEqual({
         kind: 'GenerateDeclaration',
         name: 'Main',
+      })
+    })
+  })
+
+  describe('enum object', () => {
+    it('should convert enum object declaration to AST', () => {
+      const testCase = "create myEnum as enum ('v1', 'v2');"
+      const ast = parseToAst(testCase)
+      const decl = ast.declarations[0] as ObjectDeclaration
+      expect(decl).toEqual({
+        kind: 'ObjectDeclaration',
+        name: 'myEnum',
+        object: {
+          kind: 'EnumObject',
+          values: ['v1', 'v2'],
+        },
+      })
+    })
+
+    it('should convert single-value enum object to AST', () => {
+      const testCase = "create Status as enum ('ACTIVE');"
+      const ast = parseToAst(testCase)
+      const decl = ast.declarations[0] as ObjectDeclaration
+      expect(decl).toEqual({
+        kind: 'ObjectDeclaration',
+        name: 'Status',
+        object: {
+          kind: 'EnumObject',
+          values: ['ACTIVE'],
+        },
+      })
+    })
+
+    it('should convert enum object with mixed quote values to AST', () => {
+      const testCase = "create myEnum as enum (\"v1\", 'v2');"
+      const ast = parseToAst(testCase)
+      const decl = ast.declarations[0] as ObjectDeclaration
+      expect(decl).toEqual({
+        kind: 'ObjectDeclaration',
+        name: 'myEnum',
+        object: {
+          kind: 'EnumObject',
+          values: ['v1', 'v2'],
+        },
+      })
+    })
+
+    it('should convert enum object with escaped values to AST', () => {
+      const testCase = "create myEnum as enum ('it\\'s', \"a \\\"b\\\"\", 'a\\\\b');"
+      const ast = parseToAst(testCase)
+      const decl = ast.declarations[0] as ObjectDeclaration
+      expect(decl).toEqual({
+        kind: 'ObjectDeclaration',
+        name: 'myEnum',
+        object: {
+          kind: 'EnumObject',
+          values: ["it's", 'a "b"', 'a\\b'],
+        },
+      })
+    })
+
+    it('should convert enum object inside a product object to AST', () => {
+      const testCase = "create Config as (kind: enum ('a', 'b'));"
+      const ast = parseToAst(testCase)
+      const decl = ast.declarations[0] as ObjectDeclaration
+      expect(decl.object).toEqual({
+        kind: 'ProductObject',
+        fields: {
+          kind: { kind: 'EnumObject', values: ['a', 'b'] },
+        },
       })
     })
   })

@@ -48,6 +48,7 @@ export type ObjectExpression =
   | ExponentialObject
   | SubObject
   | ArrayObject
+  | EnumObject
 
 export type NamedObject = {
   kind: 'NamedObject'
@@ -91,4 +92,9 @@ export type SubObject = {
 export type ArrayObject = {
   kind: 'ArrayObject'
   base: ObjectExpression
+}
+
+export type EnumObject = {
+  kind: 'EnumObject'
+  values: string[]
 }

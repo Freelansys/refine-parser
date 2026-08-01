@@ -11,6 +11,7 @@ import {
   PackageTok,
   ExecutableTok,
   ModuleTok,
+  EnumTok,
   ArrowTok,
   SelectBlock,
   LBracket,
@@ -22,7 +23,7 @@ import {
   Semicolon,
   Dot,
   Identifier,
-  PathLiteral,
+  StringLiteral,
   StringTok,
   NumberTok,
   BoolTok,
@@ -73,6 +74,17 @@ export class SpexParser extends CstParser {
     this.CONSUME(Semicolon)
   })
 
+  private enumObject = this.RULE('enumObject', () => {
+    this.CONSUME(EnumTok)
+    this.CONSUME(LParen)
+    this.CONSUME(StringLiteral)
+    this.MANY(() => {
+      this.CONSUME(Comma)
+      this.CONSUME2(StringLiteral)
+    })
+    this.CONSUME(RParen)
+  })
+
   private objectExpression = this.RULE('objectExpression', () => {
     this.SUBRULE(this.objectOperand, { LABEL: 'base' })
     this.OPTION(() => {
@@ -83,6 +95,9 @@ export class SpexParser extends CstParser {
 
   private objectOperand = this.RULE('objectOperand', () => {
     this.OR([
+      {
+        ALT: () => this.SUBRULE(this.enumObject),
+      },
       {
         GATE: this.BACKTRACK(this.subObject),
         ALT: () => this.SUBRULE(this.subObject),
@@ -150,7 +165,7 @@ export class SpexParser extends CstParser {
   private namedImport = this.RULE('namedImport', () => {
     this.CONSUME(Identifier)
     this.CONSUME(FromTok)
-    this.CONSUME(PathLiteral)
+    this.CONSUME(StringLiteral)
     this.OPTION(() => {
       this.CONSUME(AsTok)
       this.CONSUME2(Identifier)
@@ -158,7 +173,7 @@ export class SpexParser extends CstParser {
   })
 
   private moduleImport = this.RULE('moduleImport', () => {
-    this.CONSUME(PathLiteral)
+    this.CONSUME(StringLiteral)
     this.CONSUME(AsTok)
     this.CONSUME(Identifier)
   })
