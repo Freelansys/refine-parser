@@ -806,6 +806,21 @@ describe('SpexParserVisitor', () => {
       })
     })
 
+    it('should bind arrow tighter than set operations', () => {
+      const testCase = 'create X as A -> B UNION C;'
+      const ast = parseToAst(testCase)
+      const decl = ast.declarations[0] as ObjectDeclaration
+      expect(decl.object).toEqual({
+        kind: 'SetUnionObject',
+        left: {
+          kind: 'ExponentialObject',
+          base: { kind: 'NamedObject', name: 'B' },
+          exponent: { kind: 'NamedObject', name: 'A' },
+        },
+        right: { kind: 'NamedObject', name: 'C' },
+      })
+    })
+
     it('should convert pipes in product fields to AST', () => {
       const testCase = 'create X as (a: A | B, b: C);'
       const ast = parseToAst(testCase)
