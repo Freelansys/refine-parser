@@ -14,7 +14,6 @@ import type {
   ArrayObject,
   Constraint,
   ConstraintPart,
-  ConstraintReference,
 } from './ast.js'
 import { SpexLexer } from './lexer.js'
 import { SpexParser } from './parser.js'
@@ -206,6 +205,18 @@ export class SpexParserVisitor extends BaseSpexVisitor implements ICstVisitor<an
 
 export function parseToAst(text: string): SpexFile {
   const lexingResult = SpexLexer.tokenize(text)
+
+  if (lexingResult.errors.length > 0) {
+    const details = lexingResult.errors
+      .map((e) => {
+        const where =
+          e.line !== undefined && e.column !== undefined ? ` (line ${e.line}, column ${e.column})` : ''
+        return e.message + where
+      })
+      .join('; ')
+    throw new Error(`Lexing errors: ${details}`)
+  }
+
   parserInstance.input = lexingResult.tokens
   const cst = parserInstance.spexFile()
 

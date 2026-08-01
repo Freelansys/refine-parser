@@ -10,6 +10,22 @@ import type {
 } from '../src/ast.js'
 
 describe('SpexParserVisitor', () => {
+  describe('lexing errors', () => {
+    it('should throw on unexpected characters', () => {
+      expect(() => parseToAst('package module spex-parser as Main;')).toThrow(
+        'Lexing errors: unexpected character: ->-<'
+      )
+    })
+
+    it('should throw on unclosed block comments', () => {
+      expect(() => parseToAst('create Foo as string; /* unclosed')).toThrow(/Lexing errors:/)
+    })
+
+    it('should not throw when the input lexes cleanly', () => {
+      expect(() => parseToAst('create Foo as string;')).not.toThrow()
+    })
+  })
+
   describe('object declaration', () => {
     it('should convert named object declaration to AST', () => {
       const testCase = 'create MyObject as Number;'
