@@ -114,6 +114,37 @@ Product objects are created by combining other objects:
 
 Consequently, `()` and `unit` are the same object.
 
+## Coproducts
+
+Coproduct objects represent a choice between alternatives. Where a product means "both", a coproduct means "either". A value of a coproduct holds exactly one of the alternatives and records which one. Coproducts are also called sum types or tagged unions:
+
+```spex
+CREATE Shape AS
+Point | Circle;
+
+CREATE Command AS
+AddTodo | ListTodos | CompleteTodo;
+```
+
+Coproducts combine with any other object form:
+
+```spex
+CREATE Result AS
+string | (error: string) | unit;
+```
+
+Because the alternatives are disjoint, a coproduct needs no common universe: `A | B` simply says "an A or a B". This is what distinguishes a coproduct from a set union, which requires both sides to live in a common universe.
+
+Operator precedence, from loosest to tightest, is: set operations, then `|`, then `->`:
+
+```spex
+CREATE X AS
+A -> B | C;   -- (A -> B) | C
+
+CREATE Y AS
+A UNION B | C;   -- A UNION (B | C)
+```
+
 ## Exponentials
 
 Spex support function types as well which are refered to as exponential objects. An exponential is defined by its domain and codomain which have to be objects themselves:
@@ -146,6 +177,65 @@ SELECT {
 Subobjects are themselves objects so they could be subobjected as well. A good heuristic for writing constraints is to make the expression read as:
 
 > "from `object` select those that `{constraint}`".
+
+## Set Operations
+
+Objects that live in a common universe can be combined with the set operations `UNION`, `INTERSECT`, and `EXCEPT`:
+
+```spex
+CREATE EvenInt AS
+FROM int
+SELECT { are even };
+
+CREATE PositiveInt AS
+FROM int
+SELECT { are positive };
+
+CREATE EvenPositiveInt AS
+EvenInt INTERSECT PositiveInt;
+CREATE EvenOrPositive AS EvenInt UNION PositiveInt;
+CREATE EvenNotPositive AS EvenInt EXCEPT PositiveInt;
+```
+
+`UNION` keeps members that satisfy either side, `INTERSECT` keeps members that satisfy both sides, and `EXCEPT` removes the members of the right side from the left side.
+
+Set operations bind loosest of all object operators and chain left-to-right:
+
+```spex
+CREATE X AS
+A UNION B EXCEPT C;   -- (A UNION B) EXCEPT C
+```
+
+## Literals
+
+A literal object denotes a single value, and therefore represents the set containing exactly that value:
+
+```spex
+"root"   -- the string root
+42       -- the number 42
+true     -- the boolean true
+```
+
+Literals can refine other objects or serve as alternatives in a coproduct:
+
+```spex
+CREATE UserName AS
+string EXCEPT "root";
+
+CREATE Handedness AS
+"left" | "right";
+```
+
+## Enums
+
+An enum object declares a named set of allowed string values:
+
+```spex
+CREATE Color AS
+ENUM ('red', 'green', 'blue');
+```
+
+An enum constrains a value to one of the listed strings.
 
 # Named Objects
 
