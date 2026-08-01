@@ -14,7 +14,6 @@ import type {
   PatternLiteralObject,
   ObjectExpression,
   NamedObject,
-  ProductObject,
   SubObject,
   ArrayObject,
   Constraint,
@@ -299,7 +298,9 @@ export function parseToAst(text: string): SpexFile {
     const details = lexingResult.errors
       .map((e) => {
         const where =
-          e.line !== undefined && e.column !== undefined ? ` (line ${e.line}, column ${e.column})` : ''
+          e.line !== undefined && e.column !== undefined
+            ? ` (line ${e.line}, column ${e.column})`
+            : ''
         return e.message + where
       })
       .join('; ')
