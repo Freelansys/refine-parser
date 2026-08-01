@@ -23,6 +23,10 @@ const BaseSpexVisitor = parserInstance.getBaseCstVisitorConstructor()
 
 export const REFERENCE_PATTERN = /@([a-zA-Z_][\w]*(?:\.[a-zA-Z_][\w]*)*)/g
 
+function unescapeConstraint(text: string): string {
+  return text.replace(/\\([\\{}])/g, '$1')
+}
+
 export function parseConstraint(raw: string): Constraint {
   const parts: ConstraintPart[] = []
   let lastIndex = 0
@@ -140,7 +144,7 @@ export class SpexParserVisitor extends BaseSpexVisitor implements ICstVisitor<an
 
   subObject(ctx: any): SubObject {
     const rawText: string = ctx.SelectBlock[0].image
-    const rawConstraint = rawText.slice(1, -1).trim()
+    const rawConstraint = unescapeConstraint(rawText.slice(1, -1).trim())
     return {
       kind: 'SubObject',
       base: this.visit(ctx.base),

@@ -1,4 +1,4 @@
-import { createToken, Lexer } from 'chevrotain'
+import { createToken, Lexer, type CustomPatternMatcherReturn } from 'chevrotain'
 
 export const WhiteSpace = createToken({
   name: 'WhiteSpace',
@@ -76,7 +76,21 @@ export const Dot = createToken({ name: 'Dot', pattern: /\./ })
 // Brace text block (for SELECT { ... })
 export const SelectBlock = createToken({
   name: 'SelectBlock',
-  pattern: /\{[^}]+\}/,
+  line_breaks: true,
+  pattern: (text: string, startOffset: number): CustomPatternMatcherReturn | null => {
+    let i = startOffset
+    if (text[i] !== '{') return null
+    for (i++; i < text.length; i++) {
+      if (text[i] === '\\') {
+        i++
+        continue
+      }
+      if (text[i] === '}') {
+        return [text.slice(startOffset, i + 1)]
+      }
+    }
+    return null
+  },
 })
 
 // Literals

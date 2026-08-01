@@ -645,6 +645,68 @@ describe('SpexParserVisitor', () => {
     })
   })
 
+  describe('escaped braces in select constraints', () => {
+    it('should unescape an escaped close brace', () => {
+      const testCase = 'create Foo as from string select { end with \\} };'
+      const ast = parseToAst(testCase)
+      const decl = ast.declarations[0] as ObjectDeclaration
+      expect(decl.object).toEqual({
+        kind: 'SubObject',
+        base: { kind: 'NamedObject', name: 'string' },
+        constraint: {
+          raw: 'end with }',
+          parts: [{ kind: 'ConstraintText', text: 'end with }' }],
+        },
+      })
+    })
+
+    it('should unescape escaped open and close braces', () => {
+      const testCase = 'create Foo as from string select { match \\{a\\} };'
+      const ast = parseToAst(testCase)
+      const decl = ast.declarations[0] as ObjectDeclaration
+      expect(decl.object).toEqual({
+        kind: 'SubObject',
+        base: { kind: 'NamedObject', name: 'string' },
+        constraint: {
+          raw: 'match {a}',
+          parts: [{ kind: 'ConstraintText', text: 'match {a}' }],
+        },
+      })
+    })
+
+    it('should unescape escaped backslashes', () => {
+      const testCase = 'create Foo as from string select { paths use \\\\ };'
+      const ast = parseToAst(testCase)
+      const decl = ast.declarations[0] as ObjectDeclaration
+      expect(decl.object).toEqual({
+        kind: 'SubObject',
+        base: { kind: 'NamedObject', name: 'string' },
+        constraint: {
+          raw: 'paths use \\',
+          parts: [{ kind: 'ConstraintText', text: 'paths use \\' }],
+        },
+      })
+    })
+
+    it('should extract references next to escaped braces', () => {
+      const testCase = 'create Foo as from string select { call @foo with \\} };'
+      const ast = parseToAst(testCase)
+      const decl = ast.declarations[0] as ObjectDeclaration
+      expect(decl.object).toEqual({
+        kind: 'SubObject',
+        base: { kind: 'NamedObject', name: 'string' },
+        constraint: {
+          raw: 'call @foo with }',
+          parts: [
+            { kind: 'ConstraintText', text: 'call ' },
+            { kind: 'ConstraintReference', name: 'foo' },
+            { kind: 'ConstraintText', text: ' with }' },
+          ],
+        },
+      })
+    })
+  })
+
   describe('package declaration', () => {
     it('should convert package executable declaration to AST', () => {
       const testCase = 'package executable myapp as Main;'

@@ -42,12 +42,10 @@ describe('SpexLexer', () => {
     })
 
     it('should tokenize symbols', () => {
-      const result = SpexLexer.tokenize('->{}[]():;,.')
+      const result = SpexLexer.tokenize('->[]():;,.')
       expect(result.errors).toHaveLength(0)
       expect(result.tokens.map((t) => t.tokenType.name)).toEqual([
         'ArrowTok',
-        'LCurly',
-        'RCurly',
         'LBracket',
         'RBracket',
         'LParen',
@@ -57,6 +55,12 @@ describe('SpexLexer', () => {
         'Comma',
         'Dot',
       ])
+    })
+
+    it('should tokenize braces as separate symbols when not forming a block', () => {
+      const result = SpexLexer.tokenize('}{')
+      expect(result.errors).toHaveLength(0)
+      expect(result.tokens.map((t) => t.tokenType.name)).toEqual(['RCurly', 'LCurly'])
     })
 
     it('should tokenize identifiers', () => {
@@ -120,6 +124,49 @@ describe('SpexLexer', () => {
         'RBracket',
       ])
       expect(result.tokens.map((t) => t.image)).toEqual(['string', '[', ']'])
+    })
+  })
+
+  describe('select block escaping', () => {
+    it('should tokenize an empty select block', () => {
+      const result = SpexLexer.tokenize('{}')
+      expect(result.errors).toHaveLength(0)
+      expect(result.tokens.map((t) => t.tokenType.name)).toEqual(['SelectBlock'])
+      expect(result.tokens[0]?.image).toBe('{}')
+    })
+
+    it('should tokenize a select block with an escaped close brace', () => {
+      const result = SpexLexer.tokenize('{end with \\} }')
+      expect(result.errors).toHaveLength(0)
+      expect(result.tokens.map((t) => t.tokenType.name)).toEqual(['SelectBlock'])
+      expect(result.tokens[0]?.image).toBe('{end with \\} }')
+    })
+
+    it('should tokenize a select block with escaped open and close braces', () => {
+      const result = SpexLexer.tokenize('{match \\{a\\} }')
+      expect(result.errors).toHaveLength(0)
+      expect(result.tokens.map((t) => t.tokenType.name)).toEqual(['SelectBlock'])
+      expect(result.tokens[0]?.image).toBe('{match \\{a\\} }')
+    })
+
+    it('should tokenize a select block with escaped backslashes', () => {
+      const result = SpexLexer.tokenize('{a \\\\ b}')
+      expect(result.errors).toHaveLength(0)
+      expect(result.tokens.map((t) => t.tokenType.name)).toEqual(['SelectBlock'])
+      expect(result.tokens[0]?.image).toBe('{a \\\\ b}')
+    })
+
+    it('should keep backslashes before ordinary characters', () => {
+      const result = SpexLexer.tokenize('{\\d matches}')
+      expect(result.errors).toHaveLength(0)
+      expect(result.tokens.map((t) => t.tokenType.name)).toEqual(['SelectBlock'])
+      expect(result.tokens[0]?.image).toBe('{\\d matches}')
+    })
+
+    it('should fall back to individual symbols when a select block is unterminated', () => {
+      const result = SpexLexer.tokenize('{foo')
+      expect(result.errors).toHaveLength(0)
+      expect(result.tokens.map((t) => t.tokenType.name)).toEqual(['LCurly', 'Identifier'])
     })
   })
 
