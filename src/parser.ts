@@ -36,7 +36,7 @@ import {
   NumberTok,
   BoolTok,
   UnitTok,
-  SpecificationTok,
+  ConceptTok,
   EnvironmentTok,
 } from './lexer.js'
 
@@ -182,7 +182,7 @@ export class SpexParser extends CstParser {
       { ALT: () => this.CONSUME(NumberTok) },
       { ALT: () => this.CONSUME(BoolTok) },
       { ALT: () => this.CONSUME(UnitTok) },
-      { ALT: () => this.CONSUME(SpecificationTok) },
+      { ALT: () => this.CONSUME(ConceptTok) },
       { ALT: () => this.CONSUME(EnvironmentTok) },
     ])
     this.MANY(() => {

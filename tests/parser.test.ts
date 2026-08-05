@@ -145,8 +145,8 @@ describe('SpexParser', () => {
       expect(parser.errors).toHaveLength(0)
     })
 
-    it('should parse basic object specification', () => {
-      const testCase = 'create MyObject as specification;'
+    it('should parse basic object concept', () => {
+      const testCase = 'create MyObject as concept;'
       const { parser } = parseInput(testCase)
       expect(parser.errors).toHaveLength(0)
     })
@@ -187,8 +187,8 @@ describe('SpexParser', () => {
       expect(parser.errors).not.toHaveLength(0)
     })
 
-    it('should not allow overriding basic object specification', () => {
-      const testCase = 'create specification as Number;'
+    it('should not allow overriding basic object concept', () => {
+      const testCase = 'create concept as Number;'
       const { parser } = parseInput(testCase)
       expect(parser.errors).not.toHaveLength(0)
     })

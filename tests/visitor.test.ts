@@ -392,8 +392,8 @@ describe('SpexParserVisitor', () => {
       })
     })
 
-    it('should convert basic object specification to AST', () => {
-      const testCase = 'create MyObject as specification;'
+    it('should convert basic object concept to AST', () => {
+      const testCase = 'create MyObject as concept;'
       const ast = parseToAst(testCase)
       const decl = ast.declarations[0] as ObjectDeclaration
       expect(decl).toEqual({
@@ -401,7 +401,7 @@ describe('SpexParserVisitor', () => {
         name: 'MyObject',
         object: {
           kind: 'NamedObject',
-          name: 'specification',
+          name: 'concept',
         },
       })
     })
