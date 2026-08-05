@@ -75,6 +75,14 @@ export const ExceptTok = createToken({
   name: 'ExceptTok',
   pattern: /except\b/i,
 })
+export const RealizeTok = createToken({
+  name: 'RealizeTok',
+  pattern: /realize\b/i,
+})
+export const InTok = createToken({
+  name: 'InTok',
+  pattern: /in\b/i,
+})
 
 // Symbols
 export const ArrowTok = createToken({ name: 'ArrowTok', pattern: /->/ })
@@ -208,6 +216,8 @@ export const allTokens = [
   UnionTok,
   IntersectTok,
   ExceptTok,
+  RealizeTok,
+  InTok,
 
   ArrowTok,
   PipeTok,

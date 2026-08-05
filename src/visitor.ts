@@ -7,6 +7,7 @@ import type {
   ExportDeclaration,
   GenerateDeclaration,
   PackageDeclaration,
+  RealizeDeclaration,
   EnumObject,
   LiteralObject,
   SetObject,
@@ -68,6 +69,9 @@ export class SpexParserVisitor extends BaseSpexVisitor implements ICstVisitor<an
   }
 
   declaration(ctx: any): Declaration {
+    if (ctx.realizeDeclaration) {
+      return this.visit(ctx.realizeDeclaration)
+    }
     if (ctx.packageDeclaration) {
       return this.visit(ctx.packageDeclaration)
     }
@@ -297,6 +301,17 @@ export class SpexParserVisitor extends BaseSpexVisitor implements ICstVisitor<an
     return {
       kind: 'GenerateDeclaration',
       name: ctx.Identifier[0].image,
+    }
+  }
+
+  realizeDeclaration(ctx: any): RealizeDeclaration {
+    return {
+      kind: 'RealizeDeclaration',
+      object: this.visit(ctx.object),
+      target: this.visit(ctx.target),
+      environment: ctx.environment
+        ? this.visit(ctx.environment)
+        : { kind: 'NamedObject', name: 'environment' },
     }
   }
 }

@@ -9,6 +9,7 @@ export type Declaration =
   | ExportDeclaration
   | GenerateDeclaration
   | PackageDeclaration
+  | RealizeDeclaration
 
 export type PackageKind = 'EXECUTABLE' | 'MODULE'
 
@@ -40,6 +41,13 @@ export type ExportDeclaration = {
 export type GenerateDeclaration = {
   kind: 'GenerateDeclaration'
   name: string
+}
+
+export type RealizeDeclaration = {
+  kind: 'RealizeDeclaration'
+  object: ObjectExpression
+  target: ObjectExpression
+  environment: ObjectExpression
 }
 
 export type ObjectExpression =

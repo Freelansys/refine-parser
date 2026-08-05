@@ -634,4 +634,48 @@ describe('SpexParser', () => {
       expect(parser.errors).toHaveLength(0)
     })
   })
+
+  describe('realize declaration', () => {
+    it('should parse a realize declaration', () => {
+      const testCase = 'realize Shape as Circle in environment;'
+      const { parser } = parseInput(testCase)
+      expect(parser.errors).toHaveLength(0)
+    })
+
+    it('should parse a realize declaration case-insensitively', () => {
+      const testCase = 'REALIZE Shape AS Circle IN environment;'
+      const { parser } = parseInput(testCase)
+      expect(parser.errors).toHaveLength(0)
+    })
+
+    it('should parse a realize declaration with product objects', () => {
+      const testCase = 'realize (x: number) as (y: string) in environment;'
+      const { parser } = parseInput(testCase)
+      expect(parser.errors).toHaveLength(0)
+    })
+
+    it('should parse a realize declaration with exponential objects', () => {
+      const testCase = 'realize string -> number as string -> string in environment;'
+      const { parser } = parseInput(testCase)
+      expect(parser.errors).toHaveLength(0)
+    })
+
+    it('should parse a realize declaration with a named environment', () => {
+      const testCase = 'realize A as B in MyEnv;'
+      const { parser } = parseInput(testCase)
+      expect(parser.errors).toHaveLength(0)
+    })
+
+    it('should parse a realize declaration without an environment', () => {
+      const testCase = 'realize A as B;'
+      const { parser } = parseInput(testCase)
+      expect(parser.errors).toHaveLength(0)
+    })
+
+    it('should parse a realize declaration mixed with other declarations', () => {
+      const testCase = 'create A as string;\nrealize A as B in MyEnv;\ngenerate A;'
+      const { parser } = parseInput(testCase)
+      expect(parser.errors).toHaveLength(0)
+    })
+  })
 })
