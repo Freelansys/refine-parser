@@ -116,10 +116,19 @@ describe('SpexLexer', () => {
 
     it('should handle keywords with word boundary', () => {
       const result = SpexLexer.tokenize(
-        'createfoo foocreate asfoo fooas fooselect selectfoo foofrom fromfoo generatefoo foogenerate importfoo fooimport exportfoo fooexport packagefoo fopackage executablefoo foexecutable modulefoo fomodule'
+        'createfoo foocreate asfoo fooas fooselect selectfoo foofrom fromfoo generatefoo foogenerate importfoo fooimport exportfoo fooexport packagefoo fopackage executablefoo foexecutable modulefoo fomodule specificationfoo foospecification environmentfoo fooenvironment'
       )
       expect(result.errors).toHaveLength(0)
-      expect(result.tokens.map((t) => t.tokenType.name)).toEqual(Array(20).fill('Identifier'))
+      expect(result.tokens.map((t) => t.tokenType.name)).toEqual(Array(24).fill('Identifier'))
+    })
+
+    it('should tokenize the specification and environment base types', () => {
+      const result = SpexLexer.tokenize('specification environment')
+      expect(result.errors).toHaveLength(0)
+      expect(result.tokens.map((t) => t.tokenType.name)).toEqual([
+        'SpecificationTok',
+        'EnvironmentTok',
+      ])
     })
 
     it('should tokenize the text between braces', () => {

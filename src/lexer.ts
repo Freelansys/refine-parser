@@ -174,6 +174,14 @@ export const UnitTok = createToken({
   name: 'UnitTok',
   pattern: /unit\b/i,
 })
+export const SpecificationTok = createToken({
+  name: 'SpecificationTok',
+  pattern: /specification\b/i,
+})
+export const EnvironmentTok = createToken({
+  name: 'EnvironmentTok',
+  pattern: /environment\b/i,
+})
 
 // Identifiers
 export const Identifier = createToken({
@@ -224,6 +232,8 @@ export const allTokens = [
   NumberTok,
   BoolTok,
   UnitTok,
+  SpecificationTok,
+  EnvironmentTok,
 
   Identifier,
 ]

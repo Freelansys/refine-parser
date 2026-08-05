@@ -145,6 +145,18 @@ describe('SpexParser', () => {
       expect(parser.errors).toHaveLength(0)
     })
 
+    it('should parse basic object specification', () => {
+      const testCase = 'create MyObject as specification;'
+      const { parser } = parseInput(testCase)
+      expect(parser.errors).toHaveLength(0)
+    })
+
+    it('should parse basic object environment', () => {
+      const testCase = 'create MyObject as environment;'
+      const { parser } = parseInput(testCase)
+      expect(parser.errors).toHaveLength(0)
+    })
+
     it('should parse basic objects in product fields', () => {
       const testCase = 'create Config as (name: string, count: number, active: bool);'
       const { parser } = parseInput(testCase)
@@ -171,6 +183,18 @@ describe('SpexParser', () => {
 
     it('should not allow overriding basic object unit', () => {
       const testCase = 'create unit as Number;'
+      const { parser } = parseInput(testCase)
+      expect(parser.errors).not.toHaveLength(0)
+    })
+
+    it('should not allow overriding basic object specification', () => {
+      const testCase = 'create specification as Number;'
+      const { parser } = parseInput(testCase)
+      expect(parser.errors).not.toHaveLength(0)
+    })
+
+    it('should not allow overriding basic object environment', () => {
+      const testCase = 'create environment as Number;'
       const { parser } = parseInput(testCase)
       expect(parser.errors).not.toHaveLength(0)
     })

@@ -200,6 +200,16 @@ export class SpexParserVisitor extends BaseSpexVisitor implements ICstVisitor<an
       parts = [ctx.BoolTok[0].image, ...(ctx.Identifier ?? []).map((id: any) => id.image)]
     } else if (ctx.UnitTok) {
       parts = [ctx.UnitTok[0].image, ...(ctx.Identifier ?? []).map((id: any) => id.image)]
+    } else if (ctx.SpecificationTok) {
+      parts = [
+        ctx.SpecificationTok[0].image,
+        ...(ctx.Identifier ?? []).map((id: any) => id.image),
+      ]
+    } else if (ctx.EnvironmentTok) {
+      parts = [
+        ctx.EnvironmentTok[0].image,
+        ...(ctx.Identifier ?? []).map((id: any) => id.image),
+      ]
     } else {
       parts = ctx.Identifier.map((id: any) => id.image)
     }
