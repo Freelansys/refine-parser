@@ -1,0 +1,16 @@
+-- The TypeScript CLI environment.
+--
+-- A subobject of the shared Cli environment intersected with the shared
+-- TypeScript environment.
+
+import Cli from "todo.spex";
+import TypeScript from "todo.spex";
+
+create TypeScriptCliEnv as
+from Cli intersect TypeScript
+select {
+  dependencies: Node.js standard library,
+  storage: JSON file
+};
+
+export TypeScriptCliEnv;

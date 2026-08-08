@@ -1,0 +1,108 @@
+-- The Express realization of the Todo Web app.
+--
+-- Imports the shared TodoWeb representation, the todo operations, and the
+-- Express environment. PostgreSQL storage, the route handlers, and the main
+-- exponential are defined as separate objects, and the concept is realized
+-- as a product of them in the realize statement. Express handlers receive a
+-- request and a response and write to the response.
+
+import TodoWeb from "todo.spex";
+import Todo from "todo.spex";
+import TodoId from "todo.spex";
+import TodoTitle from "todo.spex";
+import AddTodo from "todo.spex";
+import ListTodos from "todo.spex";
+import CompleteTodo from "todo.spex";
+import HttpRequest from "todo.spex";
+import HttpResponse from "todo.spex";
+import ExpressWebEnv from "express_web_env.spex";
+
+-- TODO: realize the shared HttpRequest and HttpResponse objects using the
+-- types provided by the express dependency in ExpressWebEnv.
+
+/* PostgreSQL storage. */
+create PgPool as (
+  connectionString: string
+);
+
+create ConnectPostgres as
+from (connectionString: string) -> PgPool
+select {
+  1. create a connection pool to the PostgreSQL database
+  2. create the todos table if it does not exist
+};
+
+create SelectTodos as
+from (pool: PgPool) -> Todo[]
+select {
+  1. query the id, title, and completed columns from the todos table
+  2. map each row to a @Todo
+};
+
+create InsertTodo as
+from (pool: PgPool, todo: Todo) -> unit
+select {
+  1. insert the id, title, and completed values of @todo into the todos table
+};
+
+create UpdateTodo as
+from (pool: PgPool, todo: Todo) -> unit
+select {
+  1. update the completed value of the row matching the id of @todo
+};
+
+/* Route handlers. */
+create ListTodosHandler as
+from (request: HttpRequest, response: HttpResponse) -> unit
+select {
+  1. query the todos with @SelectTodos
+  2. write the todos serialized as JSON to @response with status 200
+};
+
+create AddTodoHandler as
+from (request: HttpRequest, response: HttpResponse) -> unit
+select {
+  1. parse the JSON body of @request into a @TodoTitle
+  2. create the todo with @AddTodo
+  3. persist the todo with @InsertTodo
+  4. write the created todo serialized as JSON to @response with status 201
+};
+
+create CompleteTodoHandler as
+from (request: HttpRequest, response: HttpResponse) -> unit
+select {
+  1. extract the todo id from the path of @request
+  2. load the todos with @SelectTodos
+  3. find the matching @Todo and complete it with @CompleteTodo
+  4. persist it with @UpdateTodo
+  5. write the updated todo serialized as JSON to @response with status 200
+};
+
+/* The main entry exponential. */
+create ExpressTodoWeb as
+from unit -> unit
+select {
+  1. create the express app object
+  2. add the JSON body parser middleware
+  3. mount @ListTodosHandler on the GET /todos route
+  4. mount @AddTodoHandler on the POST /todos route
+  5. mount @CompleteTodoHandler on the PATCH /todos/:id route
+  6. connect to PostgreSQL
+  7. listen on the configured port
+};
+
+realize TodoWeb as (
+  list: ListTodosHandler,
+  add: AddTodoHandler,
+  complete: CompleteTodoHandler,
+  storage: (
+    connect: ConnectPostgres,
+    query: SelectTodos,
+    insert: InsertTodo,
+    update: UpdateTodo
+  ),
+  main: ExpressTodoWeb
+) in ExpressWebEnv;
+
+generate ExpressTodoWeb;
+package executable expresstodo as ExpressTodoWeb;

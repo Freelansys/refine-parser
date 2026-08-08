@@ -1,94 +1,125 @@
--- A Todo CLI application written in Spex.
+-- The shared abstract model of a Todo application written in Spex.
+--
+-- This file defines the domain model, the todo operations, the application
+-- concept, its CLI and Web representations, and the base environments that
+-- are shared between multiple realizations. Concrete environments and
+-- realizations live in separate files and import what they need from here.
 
-/* The domain model: */
-create Todo as (
-  id: string,
-  title: string,
-  description: string,
-  completed: bool,
-  createdAt: string
-);
-
-create TodoTitle as from string select {
-  are not empty and are shorter than 120 characters
-};
-
-create TodoFilePath as from string select {
-  represent a valid path to a JSON file storing todos
-};
-
-create TodoId as from string select {
+/* The domain model. */
+create TodoId as
+from string
+select {
   are valid UUIDs
 };
 
-/* The CLI argument structure. */
-create CliArgs as (
-  command: string,
-  arguments: string[]
+create TodoTitle as
+from string
+select {
+  are not empty and are shorter than 120 characters
+};
+
+create Todo as (
+  id: TodoId,
+  title: TodoTitle,
+  completed: bool
 );
 
--- Storage layer:
-create LoadTodos as from (path: TodoFilePath) -> Todo[] select {
-  1. read the JSON file at @path
-  2. return an empty list if the file does not exist
-  3. parse the JSON content into todos
-  4. throw an exception if the JSON is invalid
-};
+create HttpRequest as (
+  method: string,
+  path: string,
+  body: string
+);
 
-create SaveTodos as from (path: TodoFilePath, todos: Todo[]) -> unit select {
-  1. serialize @todos as formatted JSON
-  2. write the JSON to @path
-};
+create HttpResponse as (
+  status: number,
+  body: string
+);
 
--- Todo creation:
-create CreateTodo as from (title: TodoTitle) -> Todo select {
+/* The todo operations, defined once and reused by every realization. */
+create AddTodo as
+from (title: TodoTitle) -> Todo
+select {
   1. generate a UUID for the todo id
   2. create a todo with completed set to false
   3. return the created todo
 };
 
--- Commands:
-create AddTodo as from (path: TodoFilePath, title: TodoTitle) -> Todo select {
-  1. call @LoadTodos using @path
-  2. call @CreateTodo using @title
-  3. append the new todo to the loaded todos
-  4. call @SaveTodos to persist the updated todos
-  5. return the created todo
+create ListTodos as
+from unit -> Todo[]
+select {
+  return all the todos
 };
 
-create ListTodos as from (path: TodoFilePath) -> string select {
-  1. load todos using @LoadTodos
-  2. return a formatted string representation of all todos
-  3. show completed todos with a checkmark
-  4. show incomplete todos with an empty checkbox
+create CompleteTodo as
+from (id: TodoId) -> Todo
+select {
+  1. mark the todo with the given id as completed
+  2. return the updated todo
 };
 
-create CompleteTodo as from (path: TodoFilePath, id: TodoId) -> Todo select {
-  1. load todos using @LoadTodos
-  2. search for the todo matching @id
-  3. throw an exception if the todo does not exist
-  4. set the todo completed status to true
-  5. persist the updated todo list using @SaveTodos
-  6. return the updated todo
+/* The application, specified as an abstract concept. */
+create TodoApp as
+from concept
+select {
+  provide adding, listing, and completing todos by composing @AddTodo, @ListTodos, and @CompleteTodo
 };
 
-create ParseCliArgs as from string[] -> CliArgs select {
-  1. parse the command line arguments
-  2. extract the command name
-  3. extract the command arguments
+/* The concept realized into a CLI and a Web representation. */
+create TodoCli as
+from TodoApp
+select {
+  expose the todo operations through a command-line interface
 };
 
-/* Entry point. */
-create Main as from string[] -> unit select {
-  1. parse process arguments using @ParseCliArgs
-  2. if the command is "add": call @AddTodo
-  3. if the command is "list": call @ListTodos and print the result to stdout
-  4. if the command is "complete": call @CompleteTodo
-  5. print a help message if the command is invalid
-  6. print user-friendly error messages for exceptions
+create TodoWeb as
+from TodoApp
+select {
+  expose the todo operations through HTTP endpoints
 };
 
--- Code generation:
-generate TodoTitle;
+realize TodoApp as TodoCli in Cli;
+realize TodoApp as TodoWeb in Web;
 
-package executable MyTodo as Main;
+/* The base environments shared between realizations. */
+create Cli as
+from environment
+select {
+  interact with the user through a terminal
+};
+
+create Web as
+from environment
+select {
+  serve HTTP requests and produce HTTP responses
+};
+
+create Python as
+from environment
+select {
+  language: Python,
+  runtime: CPython 3.12
+};
+
+create TypeScript as
+from environment
+select {
+  language: TypeScript,
+  runtime: Node.js 20
+};
+
+/* Exports for the concrete realizations. */
+export TodoId;
+export TodoTitle;
+export Todo;
+export HttpRequest;
+export HttpResponse;
+export AddTodo;
+export ListTodos;
+export CompleteTodo;
+export TodoApp;
+export TodoCli;
+export TodoWeb;
+export Cli;
+export Web;
+export Python;
+export TypeScript;
