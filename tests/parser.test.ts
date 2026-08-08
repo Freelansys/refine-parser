@@ -96,6 +96,13 @@ describe('SpexParser', () => {
       expect(parser.errors).toHaveLength(0)
     })
 
+    it('should parse subobject declaration with a set operation base', () => {
+      const testCase =
+        'create MySubobject as from Web intersect TypeScript select { is an express app };'
+      const { parser } = parseInput(testCase)
+      expect(parser.errors).toHaveLength(0)
+    })
+
     it('should parse array type declaration', () => {
       const testCase = 'create MyArray as string[];'
       const { parser } = parseInput(testCase)

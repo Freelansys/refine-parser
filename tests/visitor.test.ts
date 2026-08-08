@@ -236,6 +236,29 @@ describe('SpexParserVisitor', () => {
       })
     })
 
+    it('should convert subobject declaration with a set operation base to AST', () => {
+      const testCase =
+        'create ExpressWebEnv as from Web intersect TypeScript select { is an express app };'
+      const ast = parseToAst(testCase)
+      const decl = ast.declarations[0] as ObjectDeclaration
+      expect(decl).toEqual({
+        kind: 'ObjectDeclaration',
+        name: 'ExpressWebEnv',
+        object: {
+          kind: 'SubObject',
+          base: {
+            kind: 'SetIntersectionObject',
+            left: { kind: 'NamedObject', name: 'Web' },
+            right: { kind: 'NamedObject', name: 'TypeScript' },
+          },
+          constraint: {
+            raw: 'is an express app',
+            parts: [{ kind: 'ConstraintText', text: 'is an express app' }],
+          },
+        },
+      })
+    })
+
     it('should convert subobject declaration with text constraint to AST', () => {
       const testCase = 'create PositiveNumber as from Number select { the number is positive };'
       const ast = parseToAst(testCase)

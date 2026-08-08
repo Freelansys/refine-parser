@@ -210,7 +210,7 @@ export class SpexParser extends CstParser {
 
   private subObject = this.RULE('subObject', () => {
     this.CONSUME(FromTok)
-    this.SUBRULE(this.objectExpression, { LABEL: 'base' })
+    this.SUBRULE(this.setObject, { LABEL: 'base' })
     this.CONSUME(SelectTok)
     this.CONSUME(SelectBlock)
   })
