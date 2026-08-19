@@ -1,0 +1,70 @@
+-- The TypeScript realization of the Todo CLI.
+--
+-- Imports the shared TodoCli representation, the todo operations, and the
+-- TypeScript CLI environment. The argument parsing and JSON file storage
+-- are defined as separate objects, and the concept is realized as a product
+-- of them in the realize statement.
+
+import TodoCli from "todo.spex";
+import Todo from "todo.spex";
+import TodoId from "todo.spex";
+import TodoTitle from "todo.spex";
+import AddTodo from "todo.spex";
+import ListTodos from "todo.spex";
+import CompleteTodo from "todo.spex";
+import TypeScriptCliEnv from "typescript_cli_env.spex";
+
+/* Argument parsing. */
+create CliCommand as (
+  command: string,
+  arguments: string[]
+);
+
+create ParseArgs as
+from (args: string[]) -> CliCommand
+select {
+  1. read the command and its arguments from @args
+  2. map the command to the add, list, or complete command
+  3. return the parsed command
+};
+
+/* JSON file storage. */
+create LoadTodosFile as
+from (path: string) -> Todo[]
+select {
+  1. check whether the file at @path exists with the filesystem module
+  2. read the file at @path
+  3. parse the JSON content into todos
+  4. return an empty list if the file does not exist
+  5. throw an exception if the JSON is invalid
+};
+
+create SaveTodosFile as
+from (path: string, todos: Todo[]) -> unit
+select {
+  1. serialize @todos as formatted JSON
+  2. write the JSON to @path
+};
+
+/* The main entry exponential. */
+create TypeScriptTodoCli as
+from (args: string[]) -> unit
+select {
+  1. parse the command with @ParseArgs
+  2. load the todos from the JSON file with @LoadTodosFile
+  3. dispatch the command:
+     - add: call @AddTodo with the given @TodoTitle, then persist with @SaveTodosFile
+     - list: call @ListTodos and print the result to stdout
+     - complete: call @CompleteTodo with the given @TodoId, then persist with @SaveTodosFile
+  4. print user-friendly error messages for exceptions
+};
+
+realize TodoCli as (
+  parse: ParseArgs,
+  load: LoadTodosFile,
+  save: SaveTodosFile,
+  main: TypeScriptTodoCli
+) in TypeScriptCliEnv;
+
+generate TypeScriptTodoCli;
+package executable mytotscli as TypeScriptTodoCli;

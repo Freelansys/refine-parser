@@ -7,11 +7,23 @@ import { parseToAst } from '../src/visitor.js'
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 
+const fixtures: [string, number][] = [
+  ['todo.spex', 32],
+  ['python_cli_env.spex', 4],
+  ['typescript_cli_env.spex', 4],
+  ['flask_web_env.spex', 4],
+  ['express_web_env.spex', 4],
+  ['python_todo_cli.spex', 16],
+  ['typescript_todo_cli.spex', 16],
+  ['flask_todo_web.spex', 22],
+  ['express_todo_web.spex', 22],
+]
+
 describe('end-to-end', () => {
-  it('should parse todo.spex file', () => {
-    const code = readFileSync(join(__dirname, 'props/todo.spex'), 'utf-8')
+  it.each(fixtures)('should parse %s', (file, expectedDeclarations) => {
+    const code = readFileSync(join(__dirname, 'props', file), 'utf-8')
     const ast = parseToAst(code)
     expect(ast.kind).toBe('SpexFile')
-    expect(ast.declarations.length).toBe(15)
+    expect(ast.declarations.length).toBe(expectedDeclarations)
   })
 })

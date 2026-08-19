@@ -15,6 +15,8 @@ import {
   UnionTok,
   IntersectTok,
   ExceptTok,
+  RealizeTok,
+  InTok,
   ArrowTok,
   PipeTok,
   SelectBlock,
@@ -36,6 +38,8 @@ import {
   NumberTok,
   BoolTok,
   UnitTok,
+  ConceptTok,
+  EnvironmentTok,
 } from './lexer.js'
 
 export class SpexParser extends CstParser {
@@ -52,6 +56,10 @@ export class SpexParser extends CstParser {
 
   private declaration = this.RULE('declaration', () => {
     this.OR([
+      {
+        GATE: this.BACKTRACK(this.realizeDeclaration),
+        ALT: () => this.SUBRULE(this.realizeDeclaration),
+      },
       {
         GATE: this.BACKTRACK(this.packageDeclaration),
         ALT: () => this.SUBRULE(this.packageDeclaration),
@@ -180,6 +188,8 @@ export class SpexParser extends CstParser {
       { ALT: () => this.CONSUME(NumberTok) },
       { ALT: () => this.CONSUME(BoolTok) },
       { ALT: () => this.CONSUME(UnitTok) },
+      { ALT: () => this.CONSUME(ConceptTok) },
+      { ALT: () => this.CONSUME(EnvironmentTok) },
     ])
     this.MANY(() => {
       this.CONSUME(Dot)
@@ -200,7 +210,7 @@ export class SpexParser extends CstParser {
 
   private subObject = this.RULE('subObject', () => {
     this.CONSUME(FromTok)
-    this.SUBRULE(this.objectExpression, { LABEL: 'base' })
+    this.SUBRULE(this.setObject, { LABEL: 'base' })
     this.CONSUME(SelectTok)
     this.CONSUME(SelectBlock)
   })
@@ -253,6 +263,18 @@ export class SpexParser extends CstParser {
     this.CONSUME(Identifier)
     this.CONSUME(AsTok)
     this.SUBRULE(this.setObject)
+    this.CONSUME(Semicolon)
+  })
+
+  private realizeDeclaration = this.RULE('realizeDeclaration', () => {
+    this.CONSUME(RealizeTok)
+    this.SUBRULE(this.setObject, { LABEL: 'object' })
+    this.CONSUME(AsTok)
+    this.SUBRULE2(this.setObject, { LABEL: 'target' })
+    this.OPTION(() => {
+      this.CONSUME(InTok)
+      this.SUBRULE3(this.setObject, { LABEL: 'environment' })
+    })
     this.CONSUME(Semicolon)
   })
 }

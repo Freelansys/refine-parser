@@ -6,6 +6,7 @@ import type {
   ExportDeclaration,
   GenerateDeclaration,
   PackageDeclaration,
+  RealizeDeclaration,
   EnumObject,
   Constraint,
 } from '../src/ast.js'
@@ -235,6 +236,29 @@ describe('SpexParserVisitor', () => {
       })
     })
 
+    it('should convert subobject declaration with a set operation base to AST', () => {
+      const testCase =
+        'create ExpressWebEnv as from Web intersect TypeScript select { is an express app };'
+      const ast = parseToAst(testCase)
+      const decl = ast.declarations[0] as ObjectDeclaration
+      expect(decl).toEqual({
+        kind: 'ObjectDeclaration',
+        name: 'ExpressWebEnv',
+        object: {
+          kind: 'SubObject',
+          base: {
+            kind: 'SetIntersectionObject',
+            left: { kind: 'NamedObject', name: 'Web' },
+            right: { kind: 'NamedObject', name: 'TypeScript' },
+          },
+          constraint: {
+            raw: 'is an express app',
+            parts: [{ kind: 'ConstraintText', text: 'is an express app' }],
+          },
+        },
+      })
+    })
+
     it('should convert subobject declaration with text constraint to AST', () => {
       const testCase = 'create PositiveNumber as from Number select { the number is positive };'
       const ast = parseToAst(testCase)
@@ -388,6 +412,34 @@ describe('SpexParserVisitor', () => {
         object: {
           kind: 'NamedObject',
           name: 'unit',
+        },
+      })
+    })
+
+    it('should convert basic object concept to AST', () => {
+      const testCase = 'create MyObject as concept;'
+      const ast = parseToAst(testCase)
+      const decl = ast.declarations[0] as ObjectDeclaration
+      expect(decl).toEqual({
+        kind: 'ObjectDeclaration',
+        name: 'MyObject',
+        object: {
+          kind: 'NamedObject',
+          name: 'concept',
+        },
+      })
+    })
+
+    it('should convert basic object environment to AST', () => {
+      const testCase = 'create MyObject as environment;'
+      const ast = parseToAst(testCase)
+      const decl = ast.declarations[0] as ObjectDeclaration
+      expect(decl).toEqual({
+        kind: 'ObjectDeclaration',
+        name: 'MyObject',
+        object: {
+          kind: 'NamedObject',
+          name: 'environment',
         },
       })
     })
@@ -1296,6 +1348,64 @@ describe('SpexParserVisitor', () => {
         packageType: 'EXECUTABLE',
         name: 'myapp',
         objectName: { kind: 'NamedObject', name: 'Main' },
+      })
+    })
+  })
+
+  describe('realize declaration', () => {
+    it('should convert a realize declaration to AST', () => {
+      const testCase = 'realize Shape as Circle in environment;'
+      const ast = parseToAst(testCase)
+      const decl = ast.declarations[0] as RealizeDeclaration
+      expect(decl).toEqual({
+        kind: 'RealizeDeclaration',
+        object: { kind: 'NamedObject', name: 'Shape' },
+        target: { kind: 'NamedObject', name: 'Circle' },
+        environment: { kind: 'NamedObject', name: 'environment' },
+      })
+    })
+
+    it('should convert a realize declaration with complex objects to AST', () => {
+      const testCase = 'realize string -> number as (y: string) in MyEnv;'
+      const ast = parseToAst(testCase)
+      const decl = ast.declarations[0] as RealizeDeclaration
+      expect(decl).toEqual({
+        kind: 'RealizeDeclaration',
+        object: {
+          kind: 'ExponentialObject',
+          exponent: { kind: 'NamedObject', name: 'string' },
+          base: { kind: 'NamedObject', name: 'number' },
+        },
+        target: {
+          kind: 'ProductObject',
+          fields: { y: { kind: 'NamedObject', name: 'string' } },
+        },
+        environment: { kind: 'NamedObject', name: 'MyEnv' },
+      })
+    })
+
+    it('should fall back to the base environment when omitted', () => {
+      const testCase = 'realize A as B;'
+      const ast = parseToAst(testCase)
+      const decl = ast.declarations[0] as RealizeDeclaration
+      expect(decl).toEqual({
+        kind: 'RealizeDeclaration',
+        object: { kind: 'NamedObject', name: 'A' },
+        target: { kind: 'NamedObject', name: 'B' },
+        environment: { kind: 'NamedObject', name: 'environment' },
+      })
+    })
+
+    it('should convert mixed declarations with realize to AST', () => {
+      const testCase = 'create A as string;\nrealize A as B in MyEnv;'
+      const ast = parseToAst(testCase)
+      expect(ast.declarations).toHaveLength(2)
+      const realizeDecl = ast.declarations[1] as RealizeDeclaration
+      expect(realizeDecl).toEqual({
+        kind: 'RealizeDeclaration',
+        object: { kind: 'NamedObject', name: 'A' },
+        target: { kind: 'NamedObject', name: 'B' },
+        environment: { kind: 'NamedObject', name: 'MyEnv' },
       })
     })
   })

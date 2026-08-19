@@ -1,0 +1,111 @@
+-- The Flask realization of the Todo Web app.
+--
+-- Imports the shared TodoWeb representation, the todo operations, and the
+-- Flask environment. SQLite storage, the route handlers, and the main
+-- exponential are defined as separate objects, and the concept is realized
+-- as a product of them in the realize statement. Flask handlers receive a
+-- request and return a response.
+
+import TodoWeb from "todo.spex";
+import Todo from "todo.spex";
+import TodoId from "todo.spex";
+import TodoTitle from "todo.spex";
+import AddTodo from "todo.spex";
+import ListTodos from "todo.spex";
+import CompleteTodo from "todo.spex";
+import HttpRequest from "todo.spex";
+import HttpResponse from "todo.spex";
+import FlaskWebEnv from "flask_web_env.spex";
+
+-- TODO: realize the shared HttpRequest and HttpResponse objects using the
+-- types provided by the flask dependency in FlaskWebEnv.
+
+/* SQLite storage. */
+create SqliteConnection as (
+  path: string
+);
+
+create OpenSqlite as
+from (path: string) -> SqliteConnection
+select {
+  1. open the SQLite database at @path
+  2. create the todos table if it does not exist
+};
+
+create SelectTodos as
+from (connection: SqliteConnection) -> Todo[]
+select {
+  1. select the id, title, and completed columns from the todos table
+  2. map each row to a @Todo
+};
+
+create InsertTodo as
+from (connection: SqliteConnection, todo: Todo) -> unit
+select {
+  1. insert the id, title, and completed values of @todo into the todos table
+  2. commit the transaction
+};
+
+create UpdateTodo as
+from (connection: SqliteConnection, todo: Todo) -> unit
+select {
+  1. update the completed value of the row matching the id of @todo
+  2. commit the transaction
+};
+
+/* Route handlers. */
+create ListTodosHandler as
+from (request: HttpRequest) -> HttpResponse
+select {
+  1. open the database with @OpenSqlite
+  2. load the todos with @SelectTodos
+  3. return a 200 response with the todos serialized as JSON
+};
+
+create AddTodoHandler as
+from (request: HttpRequest) -> HttpResponse
+select {
+  1. parse the JSON body of @request into a @TodoTitle
+  2. create the todo with @AddTodo
+  3. open the database with @OpenSqlite
+  4. persist the todo with @InsertTodo
+  5. return a 201 response with the created todo serialized as JSON
+};
+
+create CompleteTodoHandler as
+from (request: HttpRequest) -> HttpResponse
+select {
+  1. extract the todo id from the path of @request
+  2. open the database with @OpenSqlite
+  3. load the todos with @SelectTodos
+  4. find the matching @Todo and complete it with @CompleteTodo
+  5. persist it with @UpdateTodo
+  6. return a 200 response with the updated todo serialized as JSON
+};
+
+/* The main entry exponential. */
+create FlaskTodoWeb as
+from unit -> unit
+select {
+  1. create the Flask application object
+  2. register @ListTodosHandler on the GET /todos route
+  3. register @AddTodoHandler on the POST /todos route
+  4. register @CompleteTodoHandler on the PATCH /todos/:id route
+  5. run the application
+};
+
+realize TodoWeb as (
+  list: ListTodosHandler,
+  add: AddTodoHandler,
+  complete: CompleteTodoHandler,
+  storage: (
+    open: OpenSqlite,
+    query: SelectTodos,
+    insert: InsertTodo,
+    update: UpdateTodo
+  ),
+  main: FlaskTodoWeb
+) in FlaskWebEnv;
+
+generate FlaskTodoWeb;
+package executable flasktodo as FlaskTodoWeb;

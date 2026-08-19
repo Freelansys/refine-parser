@@ -75,6 +75,14 @@ export const ExceptTok = createToken({
   name: 'ExceptTok',
   pattern: /except\b/i,
 })
+export const RealizeTok = createToken({
+  name: 'RealizeTok',
+  pattern: /realize\b/i,
+})
+export const InTok = createToken({
+  name: 'InTok',
+  pattern: /in\b/i,
+})
 
 // Symbols
 export const ArrowTok = createToken({ name: 'ArrowTok', pattern: /->/ })
@@ -174,6 +182,14 @@ export const UnitTok = createToken({
   name: 'UnitTok',
   pattern: /unit\b/i,
 })
+export const ConceptTok = createToken({
+  name: 'ConceptTok',
+  pattern: /concept\b/i,
+})
+export const EnvironmentTok = createToken({
+  name: 'EnvironmentTok',
+  pattern: /environment\b/i,
+})
 
 // Identifiers
 export const Identifier = createToken({
@@ -200,6 +216,8 @@ export const allTokens = [
   UnionTok,
   IntersectTok,
   ExceptTok,
+  RealizeTok,
+  InTok,
 
   ArrowTok,
   PipeTok,
@@ -224,6 +242,8 @@ export const allTokens = [
   NumberTok,
   BoolTok,
   UnitTok,
+  ConceptTok,
+  EnvironmentTok,
 
   Identifier,
 ]

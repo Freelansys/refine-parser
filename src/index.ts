@@ -12,6 +12,7 @@ export type {
   EnumObject,
   GenerateDeclaration,
   PackageDeclaration,
+  RealizeDeclaration,
   ObjectExpression,
   NamedObject,
   ProductObject,

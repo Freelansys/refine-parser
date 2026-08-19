@@ -96,6 +96,13 @@ describe('SpexParser', () => {
       expect(parser.errors).toHaveLength(0)
     })
 
+    it('should parse subobject declaration with a set operation base', () => {
+      const testCase =
+        'create MySubobject as from Web intersect TypeScript select { is an express app };'
+      const { parser } = parseInput(testCase)
+      expect(parser.errors).toHaveLength(0)
+    })
+
     it('should parse array type declaration', () => {
       const testCase = 'create MyArray as string[];'
       const { parser } = parseInput(testCase)
@@ -145,6 +152,18 @@ describe('SpexParser', () => {
       expect(parser.errors).toHaveLength(0)
     })
 
+    it('should parse basic object concept', () => {
+      const testCase = 'create MyObject as concept;'
+      const { parser } = parseInput(testCase)
+      expect(parser.errors).toHaveLength(0)
+    })
+
+    it('should parse basic object environment', () => {
+      const testCase = 'create MyObject as environment;'
+      const { parser } = parseInput(testCase)
+      expect(parser.errors).toHaveLength(0)
+    })
+
     it('should parse basic objects in product fields', () => {
       const testCase = 'create Config as (name: string, count: number, active: bool);'
       const { parser } = parseInput(testCase)
@@ -171,6 +190,18 @@ describe('SpexParser', () => {
 
     it('should not allow overriding basic object unit', () => {
       const testCase = 'create unit as Number;'
+      const { parser } = parseInput(testCase)
+      expect(parser.errors).not.toHaveLength(0)
+    })
+
+    it('should not allow overriding basic object concept', () => {
+      const testCase = 'create concept as Number;'
+      const { parser } = parseInput(testCase)
+      expect(parser.errors).not.toHaveLength(0)
+    })
+
+    it('should not allow overriding basic object environment', () => {
+      const testCase = 'create environment as Number;'
       const { parser } = parseInput(testCase)
       expect(parser.errors).not.toHaveLength(0)
     })
@@ -606,6 +637,50 @@ describe('SpexParser', () => {
         export EmailAddress;
         generate Main;
       `
+      const { parser } = parseInput(testCase)
+      expect(parser.errors).toHaveLength(0)
+    })
+  })
+
+  describe('realize declaration', () => {
+    it('should parse a realize declaration', () => {
+      const testCase = 'realize Shape as Circle in environment;'
+      const { parser } = parseInput(testCase)
+      expect(parser.errors).toHaveLength(0)
+    })
+
+    it('should parse a realize declaration case-insensitively', () => {
+      const testCase = 'REALIZE Shape AS Circle IN environment;'
+      const { parser } = parseInput(testCase)
+      expect(parser.errors).toHaveLength(0)
+    })
+
+    it('should parse a realize declaration with product objects', () => {
+      const testCase = 'realize (x: number) as (y: string) in environment;'
+      const { parser } = parseInput(testCase)
+      expect(parser.errors).toHaveLength(0)
+    })
+
+    it('should parse a realize declaration with exponential objects', () => {
+      const testCase = 'realize string -> number as string -> string in environment;'
+      const { parser } = parseInput(testCase)
+      expect(parser.errors).toHaveLength(0)
+    })
+
+    it('should parse a realize declaration with a named environment', () => {
+      const testCase = 'realize A as B in MyEnv;'
+      const { parser } = parseInput(testCase)
+      expect(parser.errors).toHaveLength(0)
+    })
+
+    it('should parse a realize declaration without an environment', () => {
+      const testCase = 'realize A as B;'
+      const { parser } = parseInput(testCase)
+      expect(parser.errors).toHaveLength(0)
+    })
+
+    it('should parse a realize declaration mixed with other declarations', () => {
+      const testCase = 'create A as string;\nrealize A as B in MyEnv;\ngenerate A;'
       const { parser } = parseInput(testCase)
       expect(parser.errors).toHaveLength(0)
     })

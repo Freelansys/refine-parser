@@ -1,0 +1,16 @@
+-- The Python CLI environment.
+--
+-- A subobject of the shared Cli environment intersected with the shared
+-- Python environment.
+
+import Cli from "todo.spex";
+import Python from "todo.spex";
+
+create PythonCliEnv as
+from Cli intersect Python
+select {
+  dependencies: standard library,
+  storage: JSON file
+};
+
+export PythonCliEnv;

@@ -76,9 +76,13 @@ string
 number
 bool
 unit
+concept
+environment
 ```
 
 `unit` is a special object that represent an empty type. It is useful in defining functions that take no input or do not return anything.
+
+`concept` and `environment` are abstract base objects. A `concept` represents an abstract specification of something that needs to be realized, while an `environment` describes the context in which concepts are realized. They are covered in depth in [Concepts, Environments, and Realization](#concepts-environments-and-realization).
 
 ## Arrays
 
@@ -265,6 +269,124 @@ CREATE Word AS /\w+/;
 
 CREATE DigitOrWord AS Digits UNION Word;
 ```
+
+# Concepts, Environments, and Realization
+
+Spex distinguishes between _what_ software should be and _where_ and _how_ it is realized. This separation is captured by three core ideas: concepts, environments, and realizations.
+
+## Concept
+
+A `concept` is a built-in base object that represents an abstract specification of something that needs to be realized. Concepts are ordinary Spex objects and can be subobjected just like any other object:
+
+```spex
+create HttpApi as
+from concept
+select {
+  serve HTTP requests and respond with JSON
+};
+
+create EchoApi as
+from HttpApi
+select {
+  return the request body unchanged
+};
+```
+
+Because `EchoApi` is a subobject of `HttpApi`, it inherits everything `HttpApi` stands for and only adds constraints on top of it.
+
+A concept can be abstract and can itself be composed of other abstract concepts. It does not need to directly correspond to executable code. The goal of concepts is to allow specifications to remain independent of implementation details: a concept describes _what_ the software should be, leaving _how_ it is built to be decided later.
+
+## Environment
+
+An `environment` is a second built-in base object. It describes the development and runtime context in which concepts are to be realized. An environment is independent from the application specification.
+
+An environment may specify:
+
+- the programming language
+- the language or runtime version
+- frameworks
+- libraries and dependencies
+- other tooling required to build or run the generated program
+
+Environments are ordinary Spex objects and can be specialized through subobjects:
+
+```spex
+create Python as
+from environment
+select {
+  language: Python
+};
+
+create FastAPI as
+from Python
+select {
+  dependencies: fastapi, uvicorn
+};
+```
+
+An environment is itself something that can be realized into an _environment artifact_: a reproducible description of the environment, such as a Dockerfile. Docker is not the only possible backend; any artifact that reproducibly describes the environment can serve this role.
+
+Environment construction is separate from application-code generation. Preparing the context in which the software runs is a distinct concern from generating the software itself.
+
+## Realization
+
+Realization is the mechanism that connects an abstract concept to a more concrete representation. It is fundamentally different from subobjecting:
+
+- a subobject preserves the object's base type
+- a realization may cross abstraction or type boundaries
+
+Therefore, realizing a `Concept` does not mean that the resulting object is a subobject of that concept.
+
+A realization is associated with an environment because different environments may realize the same abstract concept differently. The same abstract `HttpApi`, for example, might be realized using Flask in a Python environment or Express in a TypeScript environment:
+
+```text
+             HttpApi
+             /     \
+        Flask       Express
+          |            |
+     Python code   TypeScript code
+```
+
+In Spex, this is declared with the `realize` statement:
+
+```spex
+realize HttpApi as FlaskHttpApi in Python;
+```
+
+Realization is recursive: an abstract concept can be realized into objects that are themselves still abstract and require further realization. Code generation is possible when the relevant abstract concepts have reached concrete realizations.
+
+## Relationship Between the Three
+
+The overall model connects the specification to concrete implementations:
+
+```text
+Concept
+   |
+   | realization in an Environment
+   v
+Environment-specific representation
+   |
+   | generation
+   v
+Concrete implementation/code
+```
+
+Environments follow the same path towards a concrete artifact:
+
+```text
+Environment
+   |
+   | generation
+   v
+Environment artifact
+(e.g. Dockerfile)
+```
+
+The important distinction is:
+
+**Concepts describe what the software should be.
+Environments describe where/how it is to be realized.
+Realizations connect the abstract specification to concrete representations.**
 
 # Named Objects
 

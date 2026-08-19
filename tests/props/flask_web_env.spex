@@ -1,0 +1,16 @@
+-- The Flask web environment.
+--
+-- A subobject of the shared Web environment intersected with the shared
+-- Python environment.
+
+import Web from "todo.spex";
+import Python from "todo.spex";
+
+create FlaskWebEnv as
+from Web intersect Python
+select {
+  dependencies: flask,
+  database: SQLite
+};
+
+export FlaskWebEnv;
