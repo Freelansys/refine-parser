@@ -83,6 +83,10 @@ export const InTok = createToken({
   name: 'InTok',
   pattern: /in\b/i,
 })
+export const IncludeTok = createToken({
+  name: 'IncludeTok',
+  pattern: /include\b/i,
+})
 
 // Symbols
 export const ArrowTok = createToken({ name: 'ArrowTok', pattern: /->/ })
@@ -218,6 +222,7 @@ export const allTokens = [
   ExceptTok,
   RealizeTok,
   InTok,
+  IncludeTok,
 
   ArrowTok,
   PipeTok,

@@ -10,6 +10,7 @@ export type Declaration =
   | GenerateDeclaration
   | PackageDeclaration
   | RealizeDeclaration
+  | IncludeDeclaration
 
 export type PackageKind = 'EXECUTABLE' | 'MODULE'
 
@@ -48,6 +49,12 @@ export type RealizeDeclaration = {
   object: ObjectExpression
   target: ObjectExpression
   environment: ObjectExpression
+}
+
+export type IncludeDeclaration = {
+  kind: 'IncludeDeclaration'
+  name: string
+  address: string
 }
 
 export type ObjectExpression =

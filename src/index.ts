@@ -13,6 +13,7 @@ export type {
   GenerateDeclaration,
   PackageDeclaration,
   RealizeDeclaration,
+  IncludeDeclaration,
   ObjectExpression,
   NamedObject,
   ProductObject,

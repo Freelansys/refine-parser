@@ -7,6 +7,7 @@ import type {
   GenerateDeclaration,
   PackageDeclaration,
   RealizeDeclaration,
+  IncludeDeclaration,
   EnumObject,
   Constraint,
 } from '../src/ast.js'
@@ -1407,6 +1408,66 @@ describe('SpexParserVisitor', () => {
         target: { kind: 'NamedObject', name: 'B' },
         environment: { kind: 'NamedObject', name: 'MyEnv' },
       })
+    })
+  })
+
+  describe('include declaration', () => {
+    it('should convert include declaration to AST', () => {
+      const testCase = 'include "config.json" as config;'
+      const ast = parseToAst(testCase)
+      const decl = ast.declarations[0] as IncludeDeclaration
+      expect(decl).toEqual({
+        kind: 'IncludeDeclaration',
+        name: 'config',
+        address: 'config.json',
+      })
+    })
+
+    it('should convert include declaration case-insensitively to AST', () => {
+      const testCase = 'INCLUDE "config.json" AS config;'
+      const ast = parseToAst(testCase)
+      const decl = ast.declarations[0] as IncludeDeclaration
+      expect(decl).toEqual({
+        kind: 'IncludeDeclaration',
+        name: 'config',
+        address: 'config.json',
+      })
+    })
+
+    it('should convert include with single-quoted address to AST', () => {
+      const testCase = "include 'data/file.txt' as myfile;"
+      const ast = parseToAst(testCase)
+      const decl = ast.declarations[0] as IncludeDeclaration
+      expect(decl).toEqual({
+        kind: 'IncludeDeclaration',
+        name: 'myfile',
+        address: 'data/file.txt',
+      })
+    })
+
+    it('should convert include with folder address to AST', () => {
+      const testCase = 'include "images/" as assets;'
+      const ast = parseToAst(testCase)
+      const decl = ast.declarations[0] as IncludeDeclaration
+      expect(decl).toEqual({
+        kind: 'IncludeDeclaration',
+        name: 'assets',
+        address: 'images/',
+      })
+    })
+
+    it('should convert mixed declarations with include to AST', () => {
+      const testCase = 'include "config.json" as config;\ncreate Todo as (id: string);'
+      const ast = parseToAst(testCase)
+      expect(ast.declarations).toHaveLength(2)
+      const includeDecl = ast.declarations[0] as IncludeDeclaration
+      expect(includeDecl).toEqual({
+        kind: 'IncludeDeclaration',
+        name: 'config',
+        address: 'config.json',
+      })
+      const createDecl = ast.declarations[1] as ObjectDeclaration
+      expect(createDecl.kind).toBe('ObjectDeclaration')
     })
   })
 })

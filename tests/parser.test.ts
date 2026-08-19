@@ -685,4 +685,49 @@ describe('SpexParser', () => {
       expect(parser.errors).toHaveLength(0)
     })
   })
+
+  describe('include declaration', () => {
+    it('should parse include declaration', () => {
+      const testCase = 'include "config.json" as config;'
+      const { parser } = parseInput(testCase)
+      expect(parser.errors).toHaveLength(0)
+    })
+
+    it('should parse include declaration case-insensitively', () => {
+      const testCase = 'INCLUDE "config.json" AS config;'
+      const { parser } = parseInput(testCase)
+      expect(parser.errors).toHaveLength(0)
+    })
+
+    it('should parse include with single-quoted address', () => {
+      const testCase = "include 'data/file.txt' as myfile;"
+      const { parser } = parseInput(testCase)
+      expect(parser.errors).toHaveLength(0)
+    })
+
+    it('should parse include with folder address', () => {
+      const testCase = 'include "images/" as assets;'
+      const { parser } = parseInput(testCase)
+      expect(parser.errors).toHaveLength(0)
+    })
+
+    it('should parse include mixed with other declarations', () => {
+      const testCase =
+        'include "config.json" as config;\ncreate Todo as (id: string);\ngenerate Main;'
+      const { parser } = parseInput(testCase)
+      expect(parser.errors).toHaveLength(0)
+    })
+
+    it('should not parse include without address', () => {
+      const testCase = 'include as config;'
+      const { parser } = parseInput(testCase)
+      expect(parser.errors).not.toHaveLength(0)
+    })
+
+    it('should not parse include without name', () => {
+      const testCase = 'include "config.json" as ;'
+      const { parser } = parseInput(testCase)
+      expect(parser.errors).not.toHaveLength(0)
+    })
+  })
 })

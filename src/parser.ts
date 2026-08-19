@@ -17,6 +17,7 @@ import {
   ExceptTok,
   RealizeTok,
   InTok,
+  IncludeTok,
   ArrowTok,
   PipeTok,
   SelectBlock,
@@ -75,6 +76,10 @@ export class SpexParser extends CstParser {
       {
         GATE: this.BACKTRACK(this.exportDeclaration),
         ALT: () => this.SUBRULE(this.exportDeclaration),
+      },
+      {
+        GATE: this.BACKTRACK(this.includeDeclaration),
+        ALT: () => this.SUBRULE(this.includeDeclaration),
       },
       {
         ALT: () => this.SUBRULE(this.generateDeclaration),
@@ -275,6 +280,14 @@ export class SpexParser extends CstParser {
       this.CONSUME(InTok)
       this.SUBRULE3(this.setObject, { LABEL: 'environment' })
     })
+    this.CONSUME(Semicolon)
+  })
+
+  private includeDeclaration = this.RULE('includeDeclaration', () => {
+    this.CONSUME(IncludeTok)
+    this.CONSUME(StringLiteral)
+    this.CONSUME(AsTok)
+    this.CONSUME(Identifier)
     this.CONSUME(Semicolon)
   })
 }
