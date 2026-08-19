@@ -533,6 +533,49 @@ SELECT {
 
 ---
 
+# Including Resources
+
+A _resource_ is an external artifact that is not generated, such as an image, a JSON file, or a folder of assets. Use the `INCLUDE` declaration to bring a resource into scope:
+
+```spex
+INCLUDE "config.json" AS config;
+INCLUDE "images/logo.png" AS logo;
+```
+
+The address is a string literal pointing to a file or folder. The name becomes a first-class object in the current scope and can be referenced in constraints with `@`:
+
+```spex
+INCLUDE "schema.sql" AS schema;
+
+CREATE LoadSchema AS
+FROM unit -> string
+SELECT {
+  1. read the SQL file at @schema
+  2. return its contents as a string
+};
+```
+
+## Folders
+
+When the address points to a folder, the resource is treated as a product object whose fields correspond to the files inside it:
+
+```spex
+INCLUDE "assets/" AS assets;
+
+CREATE LoadConfig AS
+FROM unit -> Config
+SELECT {
+  1. read @assets.config.json
+  2. return its content as a Config object
+};
+```
+
+## Constraints
+
+Resources cannot be subobjected. That is, `FROM <resource> SELECT { ... }` is not valid. This is because a resource represents a concrete external artifact, not a space of possible implementations.
+
+---
+
 # Generating Code
 
 To specify what objects in an specification has to be generated as explicit code:
