@@ -18,9 +18,11 @@ import {
   RealizeTok,
   InTok,
   IncludeTok,
+  LambdaTok,
   ArrowTok,
   PipeTok,
   SelectBlock,
+  CodeBlock,
   LBracket,
   RBracket,
   LParen,
@@ -153,6 +155,10 @@ export class SpexParser extends CstParser {
       },
       {
         ALT: () => this.SUBRULE(this.patternObject),
+      },
+      {
+        GATE: this.BACKTRACK(this.lambdaObject),
+        ALT: () => this.SUBRULE(this.lambdaObject),
       },
       {
         GATE: this.BACKTRACK(this.subObject),
@@ -289,5 +295,13 @@ export class SpexParser extends CstParser {
     this.CONSUME(AsTok)
     this.CONSUME(Identifier)
     this.CONSUME(Semicolon)
+  })
+
+  private lambdaObject = this.RULE('lambdaObject', () => {
+    this.CONSUME(LambdaTok)
+    this.SUBRULE(this.objectOperand, { LABEL: 'base' })
+    this.CONSUME(ArrowTok)
+    this.SUBRULE(this.setObject, { LABEL: 'exponent' })
+    this.CONSUME(CodeBlock)
   })
 }

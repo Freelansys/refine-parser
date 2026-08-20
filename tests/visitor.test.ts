@@ -8,6 +8,7 @@ import type {
   PackageDeclaration,
   RealizeDeclaration,
   IncludeDeclaration,
+  ExponentialPattern,
   EnumObject,
   Constraint,
 } from '../src/ast.js'
@@ -1468,6 +1469,110 @@ describe('SpexParserVisitor', () => {
       })
       const createDecl = ast.declarations[1] as ObjectDeclaration
       expect(createDecl.kind).toBe('ObjectDeclaration')
+    })
+  })
+
+  describe('lambda object', () => {
+    it('should convert lambda with product domain to AST', () => {
+      const testCase = 'create sum as lambda (a: number, b: number) -> number ```python\nreturn a + b\n```;'
+      const ast = parseToAst(testCase)
+      const decl = ast.declarations[0] as ObjectDeclaration
+      const lambda = decl.object as ExponentialPattern
+      expect(lambda).toEqual({
+        kind: 'ExponentialPattern',
+        base: {
+          kind: 'ProductObject',
+          fields: {
+            a: { kind: 'NamedObject', name: 'number' },
+            b: { kind: 'NamedObject', name: 'number' },
+          },
+        },
+        exponent: { kind: 'NamedObject', name: 'number' },
+        language: 'python',
+        body: 'return a + b',
+        patterns: [],
+      })
+    })
+
+    it('should convert lambda with named domain to AST', () => {
+      const testCase = 'create double as lambda number -> number ```python\nreturn @n * 2\n```;'
+      const ast = parseToAst(testCase)
+      const decl = ast.declarations[0] as ObjectDeclaration
+      const lambda = decl.object as ExponentialPattern
+      expect(lambda).toEqual({
+        kind: 'ExponentialPattern',
+        base: { kind: 'NamedObject', name: 'number' },
+        exponent: { kind: 'NamedObject', name: 'number' },
+        language: 'python',
+        body: 'return @n * 2',
+        patterns: [],
+      })
+    })
+
+    it('should extract pattern blocks from lambda body', () => {
+      const testCase =
+        'create transform as lambda (x: number) -> number ```python\nif @x > 0:\n  @{return sin(@x)}\nelse:\n  @{return cos(@x)}\n```;'
+      const ast = parseToAst(testCase)
+      const decl = ast.declarations[0] as ObjectDeclaration
+      const lambda = decl.object as ExponentialPattern
+      expect(lambda.patterns).toHaveLength(2)
+      expect(lambda.patterns[0]).toEqual({
+        raw: 'return sin(@x)',
+        parts: [
+          { kind: 'ConstraintText', text: 'return sin(' },
+          { kind: 'ConstraintReference', name: 'x' },
+          { kind: 'ConstraintText', text: ')' },
+        ],
+        start: expect.any(Number),
+        end: expect.any(Number),
+      })
+      expect(lambda.patterns[1]).toEqual({
+        raw: 'return cos(@x)',
+        parts: [
+          { kind: 'ConstraintText', text: 'return cos(' },
+          { kind: 'ConstraintReference', name: 'x' },
+          { kind: 'ConstraintText', text: ')' },
+        ],
+        start: expect.any(Number),
+        end: expect.any(Number),
+      })
+    })
+
+    it('should track correct positions for multiple pattern blocks', () => {
+      const testCase =
+        'create transform as lambda (x: number) -> number ```python\nif @x > 0:\n  @{return sin(@x)}\nelse:\n  @{return cos(@x)}\n```;'
+      const ast = parseToAst(testCase)
+      const decl = ast.declarations[0] as ObjectDeclaration
+      const lambda = decl.object as ExponentialPattern
+      expect(lambda.patterns[0].start).toBeLessThan(lambda.patterns[0].end)
+      expect(lambda.patterns[1].start).toBeGreaterThan(lambda.patterns[0].end)
+      expect(lambda.patterns[1].start).toBeLessThan(lambda.patterns[1].end)
+    })
+
+    it('should convert lambda in product field to AST', () => {
+      const testCase =
+        'create Config as (handler: lambda (x: string) -> string ```typescript\nreturn x.toUpperCase();\n```, port: number);'
+      const ast = parseToAst(testCase)
+      const decl = ast.declarations[0] as ObjectDeclaration
+      expect(decl.object).toEqual({
+        kind: 'ProductObject',
+        fields: {
+          handler: {
+            kind: 'ExponentialPattern',
+            base: {
+              kind: 'ProductObject',
+              fields: {
+                x: { kind: 'NamedObject', name: 'string' },
+              },
+            },
+            exponent: { kind: 'NamedObject', name: 'string' },
+            language: 'typescript',
+            body: 'return x.toUpperCase();',
+            patterns: [],
+          },
+          port: { kind: 'NamedObject', name: 'number' },
+        },
+      })
     })
   })
 })
