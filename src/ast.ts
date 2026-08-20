@@ -68,6 +68,7 @@ export type ObjectExpression =
   | SetObject
   | CoproductObject
   | PatternLiteralObject
+  | ExponentialPattern
 
 export type NamedObject = {
   kind: 'NamedObject'
@@ -167,4 +168,20 @@ export type PatternLiteralObject = {
   kind: 'PatternLiteralObject'
   source: string
   flags: string
+}
+
+export type PatternBlock = {
+  raw: string
+  parts: ConstraintPart[]
+  start: number
+  end: number
+}
+
+export type ExponentialPattern = {
+  kind: 'ExponentialPattern'
+  base: ObjectExpression
+  exponent: ObjectExpression
+  language: string
+  body: string
+  patterns: PatternBlock[]
 }

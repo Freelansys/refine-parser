@@ -5,7 +5,7 @@ export type Constant =
   | { kind: 'NumberConstant'; value: string }
   | { kind: 'BoolConstant'; value: boolean }
   | { kind: 'ProductConstant'; fields: Record<string, Constant> }
-  | { kind: 'FunctionConstant'; domain: Constant; codomain: Constant }
+  | { kind: 'ExponentialConstant'; base: Constant; exponent: Constant }
 
 export function constantOf(expr: ObjectExpression): Constant | null {
   switch (expr.kind) {
@@ -27,12 +27,12 @@ export function constantOf(expr: ObjectExpression): Constant | null {
       return { kind: 'ProductConstant', fields }
     }
     case 'ExponentialObject': {
-      const domain = constantOf(expr.exponent)
-      const codomain = constantOf(expr.base)
-      if (domain === null || codomain === null) {
+      const base = constantOf(expr.base)
+      const exponent = constantOf(expr.exponent)
+      if (base === null || exponent === null) {
         return null
       }
-      return { kind: 'FunctionConstant', domain, codomain }
+      return { kind: 'ExponentialConstant', base, exponent }
     }
     default:
       return null

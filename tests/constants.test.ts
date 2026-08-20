@@ -50,9 +50,9 @@ describe('constantOf', () => {
 
   it('should identify exponentials of constants as constants', () => {
     expect(constantOf(firstObject('create K as "a" -> "b";'))).toEqual({
-      kind: 'FunctionConstant',
-      domain: { kind: 'StringConstant', value: 'a' },
-      codomain: { kind: 'StringConstant', value: 'b' },
+      kind: 'ExponentialConstant',
+      base: { kind: 'StringConstant', value: 'b' },
+      exponent: { kind: 'StringConstant', value: 'a' },
     })
   })
 

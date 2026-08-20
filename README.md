@@ -161,7 +161,7 @@ CREATE Y AS
 
 ## Exponentials
 
-Spex support function types as well which are refered to as exponential objects. An exponential is defined by its domain and codomain which have to be objects themselves:
+Spex supports function types which are referred to as exponential objects. An exponential has a base (the result type) and an exponent (the parameter type), both of which must be objects:
 
 ```spex
 string -> number
@@ -171,6 +171,33 @@ unit -> string
 ```
 
 `string -> unit` represents all functions that take a string as input and do not return anything. `unit -> string` on the other hand, is a function that takes nothing as input, but returns a string.
+
+## Lambda Expressions
+
+A lambda expression defines an exponential pattern with an implementation body. It specifies the function type along with its implementation in a programming language:
+
+````spex
+CREATE double AS
+lambda number -> number ```python
+return @n * 2
+```
+````
+
+The domain (left side of `->`) defines the parameter type, and the codomain (right side) defines the return type. The body is written in a fenced code block with a language identifier.
+
+Lambda expressions support pattern blocks using `@{...}` syntax. Pattern blocks are extracted from the body and can contain references to the function's parameters:
+
+````spex
+CREATE transform AS
+lambda (x: number) -> number ```python
+if @x > 0:
+  @{return sin(@x)}
+else:
+  @{return cos(@x)}
+```
+````
+
+Pattern blocks are parsed into structured AST nodes with their positions tracked, making it easy to analyze and transform them programmatically. Multiple pattern blocks in a single body are distinguished by their start and end positions.
 
 ## Subobjects
 
