@@ -365,8 +365,8 @@ export class SpexParserVisitor extends BaseSpexVisitor implements ICstVisitor<an
 
     return {
       kind: 'ExponentialPattern',
-      base: this.visit(ctx.base),
-      exponent: this.visit(ctx.exponent),
+      base: this.visit(ctx.exponent),
+      exponent: this.visit(ctx.base),
       language,
       body,
       patterns,

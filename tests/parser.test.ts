@@ -732,13 +732,13 @@ describe('SpexParser', () => {
   })
 
   describe('lambda object', () => {
-    it('should parse lambda with product domain', () => {
+    it('should parse lambda with product base', () => {
       const testCase = 'create sum as lambda (a: number, b: number) -> number ```python\nreturn a + b\n```;'
       const { parser } = parseInput(testCase)
       expect(parser.errors).toHaveLength(0)
     })
 
-    it('should parse lambda with named domain', () => {
+    it('should parse lambda with named base', () => {
       const testCase = 'create double as lambda number -> number ```python\nreturn @n * 2\n```;'
       const { parser } = parseInput(testCase)
       expect(parser.errors).toHaveLength(0)

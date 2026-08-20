@@ -1473,28 +1473,28 @@ describe('SpexParserVisitor', () => {
   })
 
   describe('lambda object', () => {
-    it('should convert lambda with product domain to AST', () => {
+    it('should convert lambda with product base to AST', () => {
       const testCase = 'create sum as lambda (a: number, b: number) -> number ```python\nreturn a + b\n```;'
       const ast = parseToAst(testCase)
       const decl = ast.declarations[0] as ObjectDeclaration
       const lambda = decl.object as ExponentialPattern
       expect(lambda).toEqual({
         kind: 'ExponentialPattern',
-        base: {
+        base: { kind: 'NamedObject', name: 'number' },
+        exponent: {
           kind: 'ProductObject',
           fields: {
             a: { kind: 'NamedObject', name: 'number' },
             b: { kind: 'NamedObject', name: 'number' },
           },
         },
-        exponent: { kind: 'NamedObject', name: 'number' },
         language: 'python',
         body: 'return a + b',
         patterns: [],
       })
     })
 
-    it('should convert lambda with named domain to AST', () => {
+    it('should convert lambda with named base to AST', () => {
       const testCase = 'create double as lambda number -> number ```python\nreturn @n * 2\n```;'
       const ast = parseToAst(testCase)
       const decl = ast.declarations[0] as ObjectDeclaration
@@ -1559,13 +1559,13 @@ describe('SpexParserVisitor', () => {
         fields: {
           handler: {
             kind: 'ExponentialPattern',
-            base: {
+            base: { kind: 'NamedObject', name: 'string' },
+            exponent: {
               kind: 'ProductObject',
               fields: {
                 x: { kind: 'NamedObject', name: 'string' },
               },
             },
-            exponent: { kind: 'NamedObject', name: 'string' },
             language: 'typescript',
             body: 'return x.toUpperCase();',
             patterns: [],
