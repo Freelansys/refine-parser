@@ -739,9 +739,9 @@ describe('SpexParser', () => {
       expect(parser.errors).toHaveLength(0)
     })
 
-    it('should parse subobject with a universal spex code pattern', () => {
+    it('should parse subobject with a universal skit code pattern', () => {
       const testCase =
-        'create Even as from int select ```spex\n@n % 2 == 0\n```;'
+        'create Even as from int select ```skit\n@n % 2 == 0\n```;'
       const { parser } = parseInput(testCase)
       expect(parser.errors).toHaveLength(0)
     })

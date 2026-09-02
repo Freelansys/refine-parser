@@ -1496,12 +1496,12 @@ describe('SpexParserVisitor', () => {
       expect(pattern.body).toBe('@n % 2 == 0')
     })
 
-    it('should default a language-less code pattern to the universal spex pattern', () => {
+    it('should default a language-less code pattern to the universal skit pattern', () => {
       const testCase = 'create Even as from int select ```\n@n % 2 == 0\n```;'
       const ast = parseToAst(testCase)
       const decl = ast.declarations[0] as ObjectDeclaration
       const pattern = (decl.object as SubObject).constraint as CodePattern
-      expect(pattern.language).toBe('spex')
+      expect(pattern.language).toBe('skit')
     })
 
     it('should extract pattern blocks from a code pattern body', () => {

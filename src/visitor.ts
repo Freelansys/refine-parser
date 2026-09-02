@@ -98,7 +98,7 @@ function parseCodePattern(image: string): CodePattern {
   const body = image.slice(firstNewline + 1, -3).trimEnd()
   return {
     kind: 'CodePattern',
-    language: language === '' ? 'spex' : language,
+    language: language === '' ? 'skit' : language,
     body,
     patterns: extractPatternBlocks(body),
   }

@@ -180,7 +180,7 @@ A subobject selects exactly one constraint block: either a `{ ... }` block or a 
 
 There are two kinds of code patterns:
 
-- A _universal_ code pattern is declared with `` ```spex ...``` `` (or plain `` ``` ...``` ``, which defaults to the universal pattern). Its grammar will be defined by Spex itself.
+- A _universal_ code pattern is declared with `` ```skit ...``` `` (or plain `` ``` ...``` ``, which defaults to the universal pattern). Its grammar will be defined by Spex itself.
 - A _language-specific_ code pattern is declared with a language identifier, such as `` ```python ...``` `` or `` ```typescript ...``` ``, and is valid in that language's own grammar.
 
 ```spex
@@ -192,7 +192,7 @@ return @n * 2
 
 CREATE Even AS
 FROM int
-SELECT ```spex
+SELECT ```skit
 @n % 2 == 0
 ```
 ```
