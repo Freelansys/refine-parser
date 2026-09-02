@@ -68,7 +68,6 @@ export type ObjectExpression =
   | SetObject
   | CoproductObject
   | PatternLiteralObject
-  | ExponentialPattern
 
 export type NamedObject = {
   kind: 'NamedObject'
@@ -103,10 +102,12 @@ export type Constraint = {
   parts: ConstraintPart[]
 }
 
+export type SubObjectConstraint = Constraint | CodePattern
+
 export type SubObject = {
   kind: 'SubObject'
   base: ObjectExpression
-  constraint: Constraint
+  constraint: SubObjectConstraint
 }
 
 export type ArrayObject = {
@@ -177,10 +178,8 @@ export type PatternBlock = {
   end: number
 }
 
-export type ExponentialPattern = {
-  kind: 'ExponentialPattern'
-  base: ObjectExpression
-  exponent: ObjectExpression
+export type CodePattern = {
+  kind: 'CodePattern'
   language: string
   body: string
   patterns: PatternBlock[]

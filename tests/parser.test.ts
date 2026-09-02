@@ -731,49 +731,25 @@ describe('SpexParser', () => {
     })
   })
 
-  describe('lambda object', () => {
-    it('should parse lambda with product base', () => {
-      const testCase = 'create sum as lambda (a: number, b: number) -> number ```python\nreturn a + b\n```;'
-      const { parser } = parseInput(testCase)
-      expect(parser.errors).toHaveLength(0)
-    })
-
-    it('should parse lambda with named base', () => {
-      const testCase = 'create double as lambda number -> number ```python\nreturn @n * 2\n```;'
-      const { parser } = parseInput(testCase)
-      expect(parser.errors).toHaveLength(0)
-    })
-
-    it('should parse lambda case-insensitively', () => {
-      const testCase = 'create sum as LAMBDA (a: number) -> number ```python\nreturn @a\n```;'
-      const { parser } = parseInput(testCase)
-      expect(parser.errors).toHaveLength(0)
-    })
-
-    it('should parse lambda with pattern blocks', () => {
+  describe('code patterns in subobjects', () => {
+    it('should parse subobject with a language-specific code pattern', () => {
       const testCase =
-        'create transform as lambda (x: number) -> number ```python\nif @x > 0:\n  @{return sin(@x)}\nelse:\n  @{return cos(@x)}\n```;'
+        'create double as from number select ```python\nreturn @n * 2\n```;'
       const { parser } = parseInput(testCase)
       expect(parser.errors).toHaveLength(0)
     })
 
-    it('should parse lambda in product field', () => {
+    it('should parse subobject with a universal spex code pattern', () => {
       const testCase =
-        'create Config as (handler: lambda (x: string) -> string ```typescript\nreturn x.toUpperCase();\n```, port: number);'
+        'create Even as from int select ```spex\n@n % 2 == 0\n```;'
       const { parser } = parseInput(testCase)
       expect(parser.errors).toHaveLength(0)
     })
 
-    it('should not parse lambda without language', () => {
-      const testCase = 'create sum as lambda (a: number) -> number ```\nreturn @a\n```;'
+    it('should default to a universal pattern when no language is given', () => {
+      const testCase = 'create Even as from int select ```\n@n % 2 == 0\n```;'
       const { parser } = parseInput(testCase)
-      expect(parser.errors).not.toHaveLength(0)
-    })
-
-    it('should not parse lambda without code block', () => {
-      const testCase = 'create sum as lambda (a: number) -> number;'
-      const { parser } = parseInput(testCase)
-      expect(parser.errors).not.toHaveLength(0)
+      expect(parser.errors).toHaveLength(0)
     })
   })
 })

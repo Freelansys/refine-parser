@@ -172,24 +172,37 @@ unit -> string
 
 `string -> unit` represents all functions that take a string as input and do not return anything. `unit -> string` on the other hand, is a function that takes nothing as input, but returns a string.
 
-## Lambda Expressions
+## Code Patterns
 
-A lambda expression defines an exponential pattern with an implementation body. It specifies the function type along with its implementation in a programming language:
+A code pattern is a formal constraint describing an implementation in a programming language. Unlike `{ ... }` constraint blocks, which are natural language, code patterns express constraints as code and can be validated against the grammar of their language.
 
-````spex
+A subobject selects exactly one constraint block: either a `{ ... }` block or a `` ``` ... ``` `` block.
+
+There are two kinds of code patterns:
+
+- A _universal_ code pattern is declared with `` ```spex ...``` `` (or plain `` ``` ...``` ``, which defaults to the universal pattern). Its grammar will be defined by Spex itself.
+- A _language-specific_ code pattern is declared with a language identifier, such as `` ```python ...``` `` or `` ```typescript ...``` ``, and is valid in that language's own grammar.
+
+```spex
 CREATE double AS
-lambda number -> number ```python
+FROM number
+SELECT ```python
 return @n * 2
 ```
-````
 
-The domain (left side of `->`) defines the parameter type, and the codomain (right side) defines the return type. The body is written in a fenced code block with a language identifier.
+CREATE Even AS
+FROM int
+SELECT ```spex
+@n % 2 == 0
+```
+```
 
-Lambda expressions support pattern blocks using `@{...}` syntax. Pattern blocks are extracted from the body and can contain references to the function's parameters:
+Language-specific patterns support pattern blocks using `@{...}` syntax. Pattern blocks are extracted from the body and can contain references to the surrounding context:
 
 ````spex
 CREATE transform AS
-lambda (x: number) -> number ```python
+FROM number
+SELECT ```python
 if @x > 0:
   @{return sin(@x)}
 else:

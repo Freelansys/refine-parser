@@ -1,6 +1,6 @@
 export { SpexLexer } from './lexer.js'
 export { SpexParser } from './parser.js'
-export { SpexParserVisitor, parseToAst, parseConstraint } from './visitor.js'
+export { SpexParserVisitor, parseToAst, parseConstraint, extractPatternBlocks } from './visitor.js'
 export { constantOf } from './constants.js'
 export type { Constant } from './constants.js'
 export type {
@@ -18,8 +18,10 @@ export type {
   NamedObject,
   ProductObject,
   ExponentialObject,
-  ExponentialPattern,
   SubObject,
+  SubObjectConstraint,
+  CodePattern,
+  PatternBlock,
   ArrayObject,
   LiteralObject,
   StringLiteralObject,
@@ -31,7 +33,6 @@ export type {
   SetDifferenceObject,
   CoproductObject,
   PatternLiteralObject,
-  PatternBlock,
   PackageKind,
   Constraint,
   ConstraintPart,
