@@ -296,6 +296,7 @@ export class SpexParserVisitor extends BaseSpexVisitor implements ICstVisitor<an
       packageType,
       name: ctx.Identifier[0].image,
       objectName: this.visit(ctx.setObject),
+      environment: this.visit(ctx.environment),
     }
   }
 

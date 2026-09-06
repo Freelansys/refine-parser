@@ -108,4 +108,4 @@ realize TodoWeb as (
 ) in FlaskWebEnv;
 
 generate FlaskTodoWeb;
-package executable flasktodo as FlaskTodoWeb;
+package executable flasktodo as FlaskTodoWeb in FlaskWebEnv;

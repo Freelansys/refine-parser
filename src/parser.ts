@@ -274,6 +274,8 @@ export class SpexParser extends CstParser {
     this.CONSUME(Identifier)
     this.CONSUME(AsTok)
     this.SUBRULE(this.setObject)
+    this.CONSUME(InTok)
+    this.SUBRULE2(this.setObject, { LABEL: 'environment' })
     this.CONSUME(Semicolon)
   })
 

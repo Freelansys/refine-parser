@@ -1268,7 +1268,7 @@ describe('SpexParserVisitor', () => {
 
   describe('package declaration', () => {
     it('should convert package executable declaration to AST', () => {
-      const testCase = 'package executable myapp as Main;'
+      const testCase = 'package executable myapp as Main in Python;'
       const ast = parseToAst(testCase)
       const decl = ast.declarations[0] as PackageDeclaration
       expect(decl).toEqual({
@@ -1276,11 +1276,12 @@ describe('SpexParserVisitor', () => {
         packageType: 'EXECUTABLE',
         name: 'myapp',
         objectName: { kind: 'NamedObject', name: 'Main' },
+        environment: { kind: 'NamedObject', name: 'Python' },
       })
     })
 
     it('should convert package module declaration to AST', () => {
-      const testCase = 'package module mylib as utils;'
+      const testCase = 'package module mylib as utils in Node;'
       const ast = parseToAst(testCase)
       const decl = ast.declarations[0] as PackageDeclaration
       expect(decl).toEqual({
@@ -1288,11 +1289,12 @@ describe('SpexParserVisitor', () => {
         packageType: 'MODULE',
         name: 'mylib',
         objectName: { kind: 'NamedObject', name: 'utils' },
+        environment: { kind: 'NamedObject', name: 'Node' },
       })
     })
 
     it('should convert package executable with complex object to AST', () => {
-      const testCase = 'package executable cli as (path: string) -> unit;'
+      const testCase = 'package executable cli as (path: string) -> unit in Python;'
       const ast = parseToAst(testCase)
       const decl = ast.declarations[0] as PackageDeclaration
       expect(decl).toEqual({
@@ -1307,11 +1309,12 @@ describe('SpexParserVisitor', () => {
           },
           base: { kind: 'NamedObject', name: 'unit' },
         },
+        environment: { kind: 'NamedObject', name: 'Python' },
       })
     })
 
     it('should convert package executable with dotted name to AST', () => {
-      const testCase = 'package executable myapp as app.Main;'
+      const testCase = 'package executable myapp as app.Main in Python;'
       const ast = parseToAst(testCase)
       const decl = ast.declarations[0] as PackageDeclaration
       expect(decl).toEqual({
@@ -1319,11 +1322,12 @@ describe('SpexParserVisitor', () => {
         packageType: 'EXECUTABLE',
         name: 'myapp',
         objectName: { kind: 'NamedObject', name: 'app.Main' },
+        environment: { kind: 'NamedObject', name: 'Python' },
       })
     })
 
     it('should convert package executable with array type to AST', () => {
-      const testCase = 'package module mylib as string[];'
+      const testCase = 'package module mylib as string[] in Python;'
       const ast = parseToAst(testCase)
       const decl = ast.declarations[0] as PackageDeclaration
       expect(decl).toEqual({
@@ -1331,11 +1335,13 @@ describe('SpexParserVisitor', () => {
         packageType: 'MODULE',
         name: 'mylib',
         objectName: { kind: 'ArrayObject', base: { kind: 'NamedObject', name: 'string' } },
+        environment: { kind: 'NamedObject', name: 'Python' },
       })
     })
 
     it('should convert mixed declarations with package to AST', () => {
-      const testCase = 'create Main as Number;\npackage executable myapp as Main;'
+      const testCase =
+        'create Main as Number;\npackage executable myapp as Main in Python;'
       const ast = parseToAst(testCase)
       expect(ast.declarations).toHaveLength(2)
       const createDecl = ast.declarations[0] as ObjectDeclaration
@@ -1350,6 +1356,7 @@ describe('SpexParserVisitor', () => {
         packageType: 'EXECUTABLE',
         name: 'myapp',
         objectName: { kind: 'NamedObject', name: 'Main' },
+        environment: { kind: 'NamedObject', name: 'Python' },
       })
     })
   })

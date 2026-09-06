@@ -67,4 +67,4 @@ realize TodoCli as (
 ) in PythonCliEnv;
 
 generate PythonTodoCli;
-package executable mytodocli as PythonTodoCli;
+package executable mytodocli as PythonTodoCli in PythonCliEnv;

@@ -517,62 +517,69 @@ describe('SpexParser', () => {
 
   describe('package declaration', () => {
     it('should parse package executable declaration', () => {
-      const testCase = 'package executable myapp as Main;'
+      const testCase = 'package executable myapp as Main in Python;'
       const { parser } = parseInput(testCase)
       expect(parser.errors).toHaveLength(0)
     })
 
     it('should parse package module declaration', () => {
-      const testCase = 'package module mylib as utils;'
+      const testCase = 'package module mylib as utils in Node;'
       const { parser } = parseInput(testCase)
       expect(parser.errors).toHaveLength(0)
     })
 
     it('should parse package executable with exponential object', () => {
-      const testCase = 'package executable cli as (path: string) -> unit;'
+      const testCase = 'package executable cli as (path: string) -> unit in Python;'
       const { parser } = parseInput(testCase)
       expect(parser.errors).toHaveLength(0)
     })
 
     it('should parse package executable with dotted name', () => {
-      const testCase = 'package executable myapp as app.Main;'
+      const testCase = 'package executable myapp as app.Main in Python;'
       const { parser } = parseInput(testCase)
       expect(parser.errors).toHaveLength(0)
     })
 
     it('should parse package module with array type', () => {
-      const testCase = 'package module mylib as string[];'
+      const testCase = 'package module mylib as string[] in Python;'
       const { parser } = parseInput(testCase)
       expect(parser.errors).toHaveLength(0)
     })
 
     it('should parse package executable with product type', () => {
-      const testCase = 'package module mylib as (name: string, count: number);'
+      const testCase = 'package module mylib as (name: string, count: number) in Python;'
       const { parser } = parseInput(testCase)
       expect(parser.errors).toHaveLength(0)
     })
 
     it('should parse package executable with subobject', () => {
-      const testCase = 'package executable myapp as from string select { is a valid command };'
+      const testCase =
+        'package executable myapp as from string select { is a valid command } in Python;'
       const { parser } = parseInput(testCase)
       expect(parser.errors).toHaveLength(0)
     })
 
     it('should parse package declaration case-insensitively', () => {
-      const testCase = 'PACKAGE EXECUTABLE myapp AS Main;'
+      const testCase = 'PACKAGE EXECUTABLE myapp AS Main IN Python;'
       const { parser } = parseInput(testCase)
       expect(parser.errors).toHaveLength(0)
     })
 
     it('should parse mixed package and generate declarations', () => {
-      const testCase = 'package executable myapp as Main;\ngenerate Main;'
+      const testCase = 'package executable myapp as Main in Python;\ngenerate Main;'
       const { parser } = parseInput(testCase)
       expect(parser.errors).toHaveLength(0)
     })
 
     it('should parse package declaration with complex nested type', () => {
       const testCase =
-        'package module mylib as from (x: number, y: number) -> number select { computes distance };'
+        'package module mylib as from (x: number, y: number) -> number select { computes distance } in Node;'
+      const { parser } = parseInput(testCase)
+      expect(parser.errors).toHaveLength(0)
+    })
+
+    it('should parse package with complex environment object', () => {
+      const testCase = 'package executable myapp as Main in from environment select { python };'
       const { parser } = parseInput(testCase)
       expect(parser.errors).toHaveLength(0)
     })

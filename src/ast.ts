@@ -19,6 +19,7 @@ export type PackageDeclaration = {
   packageType: PackageKind
   name: string
   objectName: ObjectExpression
+  environment: ObjectExpression
 }
 
 export type ObjectDeclaration = {

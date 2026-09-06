@@ -620,22 +620,22 @@ Generation of some object naturally triggers generation of it's dependencies as 
 To specify how generated code should be packaged, use the `PACKAGE` declaration:
 
 ```spex
-PACKAGE EXECUTABLE <name> AS <object>
-PACKAGE MODULE <name> AS <object>
+PACKAGE EXECUTABLE <name> AS <object> IN <environment>
+PACKAGE MODULE <name> AS <object> IN <environment>
 ```
 
-`EXECUTABLE` packages the object as a standalone application entry point. `MODULE` packages it as a library or module that can be imported by other code.
+`EXECUTABLE` packages the object as a standalone application entry point. `MODULE` packages it as a library or module that can be imported by other code. The object after `IN` is an environment describing where the package is realized.
 
 ```spex
-PACKAGE EXECUTABLE myapp AS Main;
-PACKAGE MODULE mylib AS utils;
+PACKAGE EXECUTABLE myapp AS Main IN Python;
+PACKAGE MODULE mylib AS utils IN Node;
 ```
 
 The object can be any valid Spex expression:
 
 ```spex
-PACKAGE EXECUTABLE cli AS (path: string) -> unit;
-PACKAGE MODULE mylib AS app.handlers;
+PACKAGE EXECUTABLE cli AS (path: string) -> unit IN Python;
+PACKAGE MODULE mylib AS app.handlers IN Node;
 ```
 
 ---
@@ -851,7 +851,7 @@ SELECT {
 ## Code Generation
 
 ```spex
-package executable MyTodo as Main;
+package executable MyTodo as Main in Python;
 ```
 
 This triggers generation of the complete CLI application and all required dependencies.
